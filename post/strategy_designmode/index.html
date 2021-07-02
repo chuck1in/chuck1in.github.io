@@ -1,0 +1,355 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>策略设计模式 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://example.com/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://example.com/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://example.com/favicon-16x16.png><link rel=manifest href=https://example.com/site.webmanifest><link rel=mask-icon href=https://example.com/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://example.com/css/fonts.css><link rel=stylesheet href=https://example.com/css/style.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://example.com/><img src=https://example.com/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://example.com/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">策略设计模式</h1><p class=post-date>Posted on
+<time class=dt-published datetime=2018-01-02T14:01:23+08:00>2 January, 2018 at 14:01 +0800</time> by <a href=https://example.com/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><p>策略设计模式定义了算法族（行为族）分别封装起来让他们之间可以互相替换。此模式让算法的变化独立于使用算法的客户。</p><h2 id=为什么要用策略设计模式>为什么要用策略设计模式？</h2><p>试想这样一种业务场景。
+公司设计了一款与鸭子有关的游戏，游戏中有各种各样的鸭子在水里嬉戏。
+现在游戏里一共有两种鸭子，分别是红头鸭与绿头鸭，且具备喊叫与游泳这两种行为。</p><p><img src=http://static.zybuluo.com/mikumikulch/ndvvr3zivx6ncokiryj18pzv/duck.png alt=duck.png-21.3kB></p><p>每种鸭子的外观都不同，所以 display() 是抽象方法。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+</span><span style=color:#75715e> * 策略设计模式
+</span><span style=color:#75715e> * 鸭子超类
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>abstract</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Duck</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>quack</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;鸭子叫&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>swim</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;鸭子游泳&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>abstract</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>display</span><span style=color:#f92672>();</span>
+
+<span style=color:#f92672>}</span>
+
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 绿头鸭
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MallardDuck</span> <span style=color:#66d9ef>extends</span> Duck <span style=color:#f92672>{</span>
+
+  <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>display</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;绿头鸭&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+<span style=color:#f92672>}</span>
+
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 红头鸭
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>RedHeadDuck</span> <span style=color:#66d9ef>extends</span> Duck <span style=color:#f92672>{</span>
+
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>display</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;红头鸭&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+<span style=color:#f92672>}</span>
+
+</code></pre></div><p>随着市场竞争变得越来越大，公司高层经过讨论决定需要给鸭子加上一个会飞的功能。这个需求太简单了，我只要一分钟就可以解决。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+</span><span style=color:#75715e> * 策略设计模式
+</span><span style=color:#75715e> * 鸭子超类
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>abstract</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Duck</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>quack</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;鸭子叫&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>swim</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;游泳&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>fly</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;飞翔&#34;</span><span style=color:#f92672>)</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>abstract</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>display</span><span style=color:#f92672>();</span>
+<span style=color:#f92672>}</span>
+</code></pre></div><p>新功能上线后的第二天经理通知我咱们遇到了大麻烦。原来公司游戏里除了红头、绿头鸭以外还有一种橡皮鸭。现在橡皮鸭在天空中飞来飞去。这该如何是好呢？我毕竟是一个面向对象程序员，立刻就想到了使用 override 来解决这个问题。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 橡皮鸭
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>RubberDuck</span> <span style=color:#66d9ef>extends</span> Duck <span style=color:#f92672>{</span>
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>quack</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        <span style=color:#75715e>//do nothing
+</span><span style=color:#75715e></span>    <span style=color:#f92672>}</span>
+
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>fly</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        <span style=color:#75715e>//do nothing
+</span><span style=color:#75715e></span>    <span style=color:#f92672>}</span>
+
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>display</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;橡皮鸭&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+<span style=color:#f92672>}</span>
+
+</code></pre></div><p>问题解决了。可是，若是将来游戏里出现了诱饵鸭、机械鸭等等其他鸭子，每种鸭子的行为都有所不同,难道每次加入新的鸭子都去检查并覆盖 duck 中的方法吗？
+看来使用继承来为所有的鸭子提供行为会造成很多麻烦，于是我想到了尝试用接口来解决这个问题。</p><p><img src=http://static.zybuluo.com/mikumikulch/6qh59l7jyhttsn1vr4oirg97/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202016-11-06%20%E4%B8%8B%E5%8D%882.40.27.png alt="屏幕快照 2016-11-06 下午2.40.27.png-41.5kB"></p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>abstract</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Duck</span> <span style=color:#f92672>{</span>
+
+<span style=color:#75715e>//    public void quack() {
+</span><span style=color:#75715e>//        System.out.println(&#34;鸭子叫&#34;);
+</span><span style=color:#75715e>//    }
+</span><span style=color:#75715e></span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>swim</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;鸭子游泳&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+<span style=color:#75715e>//    public void fly() {
+</span><span style=color:#75715e>//        System.out.println(&#34;飞行&#34;);
+</span><span style=color:#75715e>//    }
+</span><span style=color:#75715e></span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>abstract</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>display</span><span style=color:#f92672>();</span>
+
+<span style=color:#f92672>}</span>
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 会飞的接口
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>interface</span> <span style=color:#a6e22e>Flyable</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>fly</span><span style=color:#f92672>();</span>
+<span style=color:#f92672>}</span>
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 会叫的接口
+</span><span style=color:#75715e> *
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>interface</span> <span style=color:#a6e22e>Quackable</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>quack</span><span style=color:#f92672>();</span>
+<span style=color:#f92672>}</span>
+
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 绿头鸭
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MallardDuck</span> <span style=color:#66d9ef>extends</span> Duck <span style=color:#66d9ef>implements</span> Flyable<span style=color:#f92672>,</span> Quackable <span style=color:#f92672>{</span>
+
+
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>fly</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;飞行&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>quack</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;鸭子叫&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+     <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>display</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;绿头鸭&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+<span style=color:#f92672>}</span>
+
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 橡皮鸭
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>RubberDuck</span> <span style=color:#66d9ef>extends</span> Duck <span style=color:#f92672>{</span>
+
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>display</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;橡皮鸭&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+<span style=color:#f92672>}</span>
+
+</code></pre></div><p>将容易产生变化的行为独立抽象成为接口，在需要这些行为的子类对象中分别实现不同的具体行为，这样就避免了每个子类都需要去检查并覆盖父类方法的工作！然而经理对这样的做法产生了疑问。由于将变化的行为声明为接口后，需要该行为的子类对象都需要去实现接口中的方法。
+若有 100 支鸭子岂不是要实现 100 次行为？这无疑加大了工作量甚至会造成项目延期交付！</p><p>幸运的是，有一个设计原则刚好适用于此种情况：</p><blockquote><p>找出应用中可能需要变化之处，把它们独立出来，不要和那些不需要变化的代码混在一起。</p></blockquote><h2 id=策略设计模式怎么用>策略设计模式怎么用？</h2><p>现在，根据此原则来重新设计这个鸭子游戏。
+首先将容易产生变化的部分（quack 与 fly）抽取出来，重构为两组实现了 quackable 与 flyable 的类。（别误会，我不是让你使用多重继承）接着想办法让鸭子把容易变化的 fly 与 quack 委托（delegate）给别人处理。最后为了提供更强的灵活性，我们需要在运行中也能给鸭子对象灵活的设置不同的行为模式。比如增加一个火箭发射器使橡皮鸭也能飞！</p><p>具体应该怎么样实现这样的设计呢？另一个设计原则发挥作用的时候到了。</p><blockquote><p>多用组合，少用继承。抽象变化的部分，将变化的部分独立出来封装成单独的模块。</p></blockquote><p><img src=http://static.zybuluo.com/mikumikulch/o56vg1gayivbj66zxrjpjd0v/Duck4.png alt=Duck4.png-61kB></p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 飞行的行为接口
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>interface</span> <span style=color:#a6e22e>Flyable</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>fly</span><span style=color:#f92672>();</span>
+
+<span style=color:#f92672>}</span>
+
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 飞行行为类
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Fly</span> <span style=color:#66d9ef>implements</span> Flyable <span style=color:#f92672>{</span>
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>fly</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;飞翔&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+<span style=color:#f92672>}</span>
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 不能飞行为类
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>FlyNoWay</span> <span style=color:#66d9ef>implements</span> Flyable <span style=color:#f92672>{</span>
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>fly</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;不能飞&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+<span style=color:#f92672>}</span>
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 火箭飞行行为类
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>FlyWithRockets</span> <span style=color:#66d9ef>implements</span> Flyable <span style=color:#f92672>{</span>
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>fly</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;火箭飞行&#34;</span><span style=color:#f92672>);</span>
+
+    <span style=color:#f92672>}</span>
+<span style=color:#f92672>}</span>
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 呱呱叫行为接口
+</span><span style=color:#75715e> *
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>interface</span> <span style=color:#a6e22e>Quackable</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>quack</span><span style=color:#f92672>();</span>
+<span style=color:#f92672>}</span>
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 沉默行为类
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MuteQuack</span> <span style=color:#66d9ef>implements</span> Quackable <span style=color:#f92672>{</span>
+
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>quack</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;无法呱呱叫&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+<span style=color:#f92672>}</span>
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 呱呱叫行为类
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Quack</span> <span style=color:#66d9ef>implements</span> Quackable <span style=color:#f92672>{</span>
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>quack</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;呱呱叫&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+<span style=color:#f92672>}</span>
+
+</code></pre></div><p>接着想办法让鸭子把容易变化的 fly 与 quack 委托（delegate）给别人处理。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+</span><span style=color:#75715e> * 策略设计模式
+</span><span style=color:#75715e> * 鸭子超类
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>abstract</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Duck</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#66d9ef>public</span> Flyable flyable<span style=color:#f92672>;</span>
+
+    <span style=color:#66d9ef>public</span> Quackable quackable<span style=color:#f92672>;</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>swim</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;鸭子游泳&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>abstract</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>display</span><span style=color:#f92672>();</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>performFly</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+
+        flyable<span style=color:#f92672>.</span><span style=color:#a6e22e>fly</span><span style=color:#f92672>();</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>performQuack</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        quackable<span style=color:#f92672>.</span><span style=color:#a6e22e>quack</span><span style=color:#f92672>();</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>setQuackable</span><span style=color:#f92672>(</span>Quackable quackable<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>quackable</span> <span style=color:#f92672>=</span> quackable<span style=color:#f92672>;</span>
+    <span style=color:#f92672>}</span>
+
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>setFlyable</span><span style=color:#f92672>(</span>Flyable flyable<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>flyable</span> <span style=color:#f92672>=</span> flyable<span style=color:#f92672>;</span>
+    <span style=color:#f92672>}</span>
+
+<span style=color:#f92672>}</span>
+
+</code></pre></div><p>为了提供更强的灵活性，我们需要在运行中也能给鸭子对象灵活的设置不同的行为模式。比如增加一个火箭发射器使橡皮鸭也能飞。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+</span><span style=color:#75715e> * 绿头鸭
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MallardDuck</span> <span style=color:#66d9ef>extends</span> Duck <span style=color:#f92672>{</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#a6e22e>MallardDuck</span><span style=color:#f92672>(</span>Flyable flyable<span style=color:#f92672>,</span> Quackable quackable<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>flyable</span> <span style=color:#f92672>=</span> flyable<span style=color:#f92672>;</span>
+        <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>quackable</span> <span style=color:#f92672>=</span> quackable<span style=color:#f92672>;</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>display</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;绿头鸭&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+<span style=color:#f92672>}</span>
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 红头鸭
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>RedHeadDuck</span> <span style=color:#66d9ef>extends</span> Duck <span style=color:#f92672>{</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#a6e22e>RedHeadDuck</span><span style=color:#f92672>(</span>Flyable flyable<span style=color:#f92672>,</span> Quackable quackable<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>flyable</span> <span style=color:#f92672>=</span> flyable<span style=color:#f92672>;</span>
+        <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>quackable</span> <span style=color:#f92672>=</span> quackable<span style=color:#f92672>;</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>display</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;红头鸭&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+<span style=color:#f92672>}</span>
+
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 橡皮鸭
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>RubberDuck</span> <span style=color:#66d9ef>extends</span> Duck <span style=color:#f92672>{</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#a6e22e>RubberDuck</span><span style=color:#f92672>(</span>Flyable flyable<span style=color:#f92672>,</span> Quackable quackable<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>flyable</span> <span style=color:#f92672>=</span> flyable<span style=color:#f92672>;</span>
+        <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>quackable</span> <span style=color:#f92672>=</span> quackable<span style=color:#f92672>;</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#a6e22e>@Override</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>display</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;橡皮鸭&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+<span style=color:#f92672>}</span>
+
+</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+</span><span style=color:#75715e> * 策略设计模式测试类
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>DuckGameTester</span> <span style=color:#f92672>{</span>
+
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>main</span><span style=color:#f92672>(</span>String args<span style=color:#f92672>[])</span> <span style=color:#f92672>{</span>
+        <span style=color:#75715e>// 创建行为类
+</span><span style=color:#75715e></span>        Flyable flyNoWay <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> FlyNoWay<span style=color:#f92672>();</span>
+        Flyable flyWithRockets <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> FlyWithRockets<span style=color:#f92672>();</span>
+        Flyable fly <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Fly<span style=color:#f92672>();</span>
+        Quackable muteQuack <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> MuteQuack<span style=color:#f92672>();</span>
+        Quackable quack <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Quack<span style=color:#f92672>();</span>
+
+        <span style=color:#75715e>// 创建各种类型的鸭子对象
+</span><span style=color:#75715e></span>        MallardDuck mallardDuck <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> MallardDuck<span style=color:#f92672>(</span>fly<span style=color:#f92672>,</span> quack<span style=color:#f92672>);</span>
+        mallardDuck<span style=color:#f92672>.</span><span style=color:#a6e22e>performFly</span><span style=color:#f92672>();</span>
+        mallardDuck<span style=color:#f92672>.</span><span style=color:#a6e22e>performQuack</span><span style=color:#f92672>();</span>
+        mallardDuck<span style=color:#f92672>.</span><span style=color:#a6e22e>setQuackable</span><span style=color:#f92672>(</span>muteQuack<span style=color:#f92672>);</span>
+        mallardDuck<span style=color:#f92672>.</span><span style=color:#a6e22e>performQuack</span><span style=color:#f92672>();</span>
+
+        <span style=color:#75715e>// 创建橡皮鸭对象
+</span><span style=color:#75715e></span>        RubberDuck rubberDuck <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> RubberDuck<span style=color:#f92672>(</span>flyNoWay<span style=color:#f92672>,</span> muteQuack<span style=color:#f92672>);</span>
+        rubberDuck<span style=color:#f92672>.</span><span style=color:#a6e22e>performFly</span><span style=color:#f92672>();</span>
+        rubberDuck<span style=color:#f92672>.</span><span style=color:#a6e22e>performQuack</span><span style=color:#f92672>();</span>
+        rubberDuck<span style=color:#f92672>.</span><span style=color:#a6e22e>setFlyable</span><span style=color:#f92672>(</span>flyWithRockets<span style=color:#f92672>);</span>
+        rubberDuck<span style=color:#f92672>.</span><span style=color:#a6e22e>performFly</span><span style=color:#f92672>();</span>
+
+        <span style=color:#75715e>// 继续创建其他新鸭子对象,只需要将行为委托给对应的行为对象就可以
+</span><span style=color:#75715e></span>    <span style=color:#f92672>}</span>
+<span style=color:#f92672>}</span>
+
+</code></pre></div><h2 id=总结>总结</h2><p>我们将变化部分的代码抽取封装与稳定部分独立开来，接着通过委托的方式使目标对象将变化的功能委托给了抽取出来的行为（算法族）对象。并且在运行中我们还能随意的改变对象的行为。这种通过组合的方式建立的系统具有很大的弹性，这就是策略设计模式的运用方式。</p></section><footer><a class="permalink u-url" href=https://example.com/post/strategy_designmode/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
+<a href=https://example.com/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://example.com/images/site-logo.svg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://example.com/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>Love and Peace</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://example.com/post/prototype_designmode/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://example.com/post/status_designmode/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://example.com/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>

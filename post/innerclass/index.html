@@ -1,0 +1,181 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>正确使用内部类 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://example.com/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://example.com/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://example.com/favicon-16x16.png><link rel=manifest href=https://example.com/site.webmanifest><link rel=mask-icon href=https://example.com/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://example.com/css/fonts.css><link rel=stylesheet href=https://example.com/css/style.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://example.com/><img src=https://example.com/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://example.com/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">正确使用内部类</h1><p class=post-date>Posted on
+<time class=dt-published datetime=2020-01-13T09:23:00+08:00>13 January, 2020 at 09:23 +0800</time> by <a href=https://example.com/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><p>Java 的内部类种类较多，语法比较复杂，用法也不尽相同。
+由于篇幅所限，本篇文章只对实际项目开发中用的较多的普通内部类与匿名内部类做一定介绍。</p><p>内部类概括下来，可以分类为以下五种内部类。</p><ul><li>内部类</li><li>嵌套内部类</li><li>局部内部类</li><li>接口内部类</li><li>匿名内部类</li></ul><h2 id=内部类的语法结构>内部类的语法结构</h2><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#f92672>import</span> java.util.HashMap<span style=color:#f92672>;</span>
+
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Parcell</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#66d9ef>private</span> HashMap<span style=color:#f92672>&lt;</span>String<span style=color:#f92672>,</span> String<span style=color:#f92672>&gt;</span> testMap <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> HashMap<span style=color:#f92672>&lt;</span>String<span style=color:#f92672>,</span> String<span style=color:#f92672>&gt;();</span>
+
+    <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Contents</span> <span style=color:#f92672>{</span>
+        <span style=color:#75715e>// 返回一个外部类的引用.
+</span><span style=color:#75715e></span>        <span style=color:#66d9ef>public</span> Parcell ParcellRef <span style=color:#f92672>=</span> Parcell<span style=color:#f92672>.</span><span style=color:#a6e22e>this</span><span style=color:#f92672>;</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Destination</span> <span style=color:#f92672>{</span>
+        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>putSomethingInMap</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+            testMap<span style=color:#f92672>.</span><span style=color:#a6e22e>put</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;hello&#34;</span><span style=color:#f92672>,</span> <span style=color:#e6db74>&#34;world&#34;</span><span style=color:#f92672>);</span>
+            System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span>testMap<span style=color:#f92672>.</span><span style=color:#a6e22e>get</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;hello&#34;</span><span style=color:#f92672>));</span>
+        <span style=color:#f92672>}</span>
+
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> Destination <span style=color:#a6e22e>to</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> Destination<span style=color:#f92672>();</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> Contents <span style=color:#a6e22e>contents</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> Contents<span style=color:#f92672>();</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>ship</span><span style=color:#f92672>(</span>String dest<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        Contents c <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Contents<span style=color:#f92672>();</span>
+        Destination d <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Destination<span style=color:#f92672>();</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>main</span><span style=color:#f92672>(</span>String<span style=color:#f92672>[]</span> args<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        Parcell p <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Parcell<span style=color:#f92672>();</span>
+        Parcell<span style=color:#f92672>.</span><span style=color:#a6e22e>Contents</span> c <span style=color:#f92672>=</span> p<span style=color:#f92672>.</span><span style=color:#a6e22e>contents</span><span style=color:#f92672>();</span>
+        Parcell<span style=color:#f92672>.</span><span style=color:#a6e22e>Destination</span> d <span style=color:#f92672>=</span> p<span style=color:#f92672>.</span><span style=color:#a6e22e>to</span><span style=color:#f92672>();</span>
+        d<span style=color:#f92672>.</span><span style=color:#a6e22e>putSomethingInMap</span><span style=color:#f92672>();</span>
+        Parcell<span style=color:#f92672>.</span><span style=color:#a6e22e>Contents</span> c1 <span style=color:#f92672>=</span> p<span style=color:#f92672>.</span><span style=color:#a6e22e>new</span> <span style=color:#a6e22e>Contents</span><span style=color:#f92672>();</span>
+    <span style=color:#f92672>}</span>
+
+<span style=color:#f92672>}</span>
+
+</code></pre></div><p><strong>简要概括一下内部类的语法特点：</strong></p><ol><li>普通内部类持有一个指向外部类的引用。要创建普通内部类，一定要先创建外部类。</li><li>普通内部类就像人体的心脏一样，能够随意访问外部类的任意成员变量。</li><li>在内部类中可以通过“外部类类名.this”的方式返回一个指向外部类实例的引用.如 Parcell.this</li><li>在外部类的 static 方法中若要创建内部类对象，则需要通过“外部类类名.new XXX()”的方式来创建。</li><li>普通内部类中不能拥有静态成员变量。静态内部类中可以拥有静态成员变量。也可以拥有非静态成员变量。但是静态内部类不能访问外部类中非静态的成员变量。而普通内部类可以访问外部类的静态成员变量。</li></ol><h2 id=什么时候应该使用内部类>什么时候应该使用内部类</h2><dl><dt>回归主题，内部类到底有什么用？归根结底，主要就是一点：</dt><dd>“内部类，主要是设计出来用来解决 java 中所‘缺少’的，多重继承的概念的。”</dd></dl><p>等等，Java 不是靠接口来实现多重继承的吗？我认为，这种说法对，也不对。下面我们来看这样一个例子。
+你正在参与一项代号 X 的星际飞船项目。</p><p>宇航局的人希望飞船上的综合机器人能够完成两个工作。一是作为向导，能够供人们查阅信息。二是作为修理机器人，完成一些简单的飞船日常维护工作。
+作为软件工程师，你被要求编写一段代码来实现这两个功能。</p><p>好消息是，向导部分的功能与飞船修理维护的功能，已经由你的同事们完成了！太好了，我只需要调用他们提供给我们的接口就大功告成了！坏消息是，同事们编写的向导功能与飞船修理功能的接口，竟然都叫做 work!
+这可伤脑筋了，应该怎么办呢？</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Guider</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>work</span><span style=color:#f92672>(</span>String name<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;欢迎光临&#34;</span> <span style=color:#f92672>+</span> name <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34;,请查阅飞船信息&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+<span style=color:#f92672>}</span>
+
+<span style=color:#f92672>-------------------------------------------------------------------</span>
+
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Repairer</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>work</span> <span style=color:#f92672>(</span>String name<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;你好&#34;</span> <span style=color:#f92672>+</span> name <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34;,开始准备对飞船进行维护.&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+<span style=color:#f92672>}</span>
+
+<span style=color:#f92672>-------------------------------------------------------------------</span>
+
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>SpacecraftRobot</span> <span style=color:#66d9ef>extends</span> Guider <span style=color:#f92672>{</span>
+
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>doGuidWork</span><span style=color:#f92672>(</span>String name<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        <span style=color:#75715e>// 调用guider的work方法
+</span><span style=color:#75715e></span>        work<span style=color:#f92672>(</span>name<span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>doRepairWork</span><span style=color:#f92672>(</span>String name<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        <span style=color:#75715e>// 返回内部类引用，调用内部类实例的work方法。
+</span><span style=color:#75715e></span>        <span style=color:#66d9ef>new</span> repairerRobot<span style=color:#f92672>().</span><span style=color:#a6e22e>doRepairWork</span><span style=color:#f92672>(</span>name<span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>repairerRobot</span> <span style=color:#66d9ef>extends</span> Repairer <span style=color:#f92672>{</span>
+
+        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>doRepairWork</span><span style=color:#f92672>(</span>String name<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+            work<span style=color:#f92672>(</span>name<span style=color:#f92672>);</span>
+        <span style=color:#f92672>}</span>
+    <span style=color:#f92672>}</span>
+<span style=color:#f92672>}</span>
+
+</code></pre></div><p>太棒了。通过使用内部类与“多重继承”，我们实现了这个功能。现在这个综合机器人能够正常工作了！对于用户来说，只需要走到机器人面前，告诉机器人你想要 doGuidWork 还是 doRepairWork，它就能够帮你干活儿了。内部类的代码对用户，对外界彻底隐藏了起来，用户唯一能够获得的信息就是这两个方法而已。</p><h3 id=关于匿名内部类>关于匿名内部类</h3><p>综合机器人原型机试做成功后，新的工作来了！
+我们需要对原型机进行量产。以满足每艘星际飞船的需要。
+现在我们要编写一间生产综合机器人的工厂。每当我们访问一次工厂，就能够从工厂中提取出一台崭新的综合机器人。聪明的你想到了用工厂设计模式来解决这个问题！但是由于有了内部类，所以我们的工厂，稍稍显得有点不同</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>// 机器人工厂接口。通过getSpaceCraftRobot方法对外提供机器人
+</span><span style=color:#75715e></span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>interface</span> <span style=color:#a6e22e>SpaceCraftRobotFactory</span> <span style=color:#f92672>{</span>
+    SpacecraftRobot <span style=color:#a6e22e>getSpaceCraftRobot</span><span style=color:#f92672>();</span>
+<span style=color:#f92672>}</span>
+
+<span style=color:#f92672>-------------------------------------------------------------------</span>
+
+
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>ProduceSpaceCraftRobot</span> <span style=color:#f92672>{</span>
+    <span style=color:#75715e>// 再也不用显示的创建工厂类的对象了！
+</span><span style=color:#75715e></span>    <span style=color:#66d9ef>private</span> <span style=color:#a6e22e>ProduceSpaceCraftRobot</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#f92672>}</span>
+    <span style=color:#75715e>// 通过匿名内部类，创建工厂对象！将工厂封装到了内部。不对外界暴露
+</span><span style=color:#75715e></span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> SpaceCraftRobotFactory produceRobot <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> SpaceCraftRobotFactory <span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        <span style=color:#66d9ef>public</span> SpacecraftRobot <span style=color:#a6e22e>getSpaceCraftRobot</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+            <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> SpacecraftRobot<span style=color:#f92672>();</span>
+        <span style=color:#f92672>}</span>
+    <span style=color:#f92672>};</span>
+
+<span style=color:#f92672>}</span>
+
+<span style=color:#f92672>-------------------------------------------------------------------</span>
+
+<span style=color:#75715e>// 客户
+</span><span style=color:#75715e></span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Consumer</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>main</span><span style=color:#f92672>(</span>String<span style=color:#f92672>[]</span> args<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        <span style=color:#75715e>// 客户来提取机器人了.
+</span><span style=color:#75715e></span>        SpacecraftRobot x1 <span style=color:#f92672>=</span> ProduceSpaceCraftRobot<span style=color:#f92672>.</span><span style=color:#a6e22e>produceRobot</span><span style=color:#f92672>.</span><span style=color:#a6e22e>getSpaceCraftRobot</span><span style=color:#f92672>();</span>
+        x1<span style=color:#f92672>.</span><span style=color:#a6e22e>doGuidWork</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;lch&#34;</span><span style=color:#f92672>);</span>
+        x1<span style=color:#f92672>.</span><span style=color:#a6e22e>doRepairWork</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;lch&#34;</span><span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+<span style=color:#f92672>}</span>
+
+</code></pre></div><p>通过创建匿名内部类，我们使传统的工厂设计模式优雅了许多！再也不用在外部编写 new xxxFactory()这样丑陋，多余的代码了。
+现在的工厂被匿名内部类隐藏了起来。客户只需要关心有没有拿到称心如意的机器人。不应该，不需要关心工厂的名字，也不需要知道工厂是干嘛的。恭喜，你顺利完成了宇航局交给你的任务。</p><h2 id=内部类与闭包的关系>内部类与闭包的关系</h2><p>作为一个程序员，即使你从来没有使用过，你也应该听说过闭包与回调。
+使用 Java 来讲解闭包与回调会比较困难。所以我们用 python 语言作为示例，来了解闭包与回调到底是什么。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#75715e>#定义一个返回sum函数的名叫base_sum函数的函数</span>
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>base_sum</span>(a,b):
+    <span style=color:#75715e>#在base_sum中定义一个sum()函数用来计算base_sum(a,b)的形参之合</span>
+    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>sum</span>():
+        <span style=color:#75715e>#返回a+b的值</span>
+        <span style=color:#66d9ef>return</span> a <span style=color:#f92672>+</span> b
+    <span style=color:#75715e>#返回定义的sum函数</span>
+    <span style=color:#66d9ef>return</span> sum
+<span style=color:#75715e>#调用base_sum返回函数sum()，可以理解为返回了一个函数指针</span>
+return_method <span style=color:#f92672>=</span> base_sum(<span style=color:#ae81ff>1</span>,<span style=color:#ae81ff>2</span>)
+<span style=color:#75715e>#打印出返回的函数对象</span>
+print(return_method)
+<span style=color:#75715e>#通过指针回调函数对象，返回a与b的合</span>
+print(return_method())
+
+<span style=color:#f92672>----------</span>
+<span style=color:#f92672>&lt;</span>function base_sum<span style=color:#f92672>.&lt;</span>locals<span style=color:#f92672>&gt;.</span>sum at <span style=color:#ae81ff>0x1018f3c80</span><span style=color:#f92672>&gt;</span>
+<span style=color:#ae81ff>3</span>
+</code></pre></div><p>对于 java 程序员来说，在一个函数中定义另外一个函数也许会比较烧脑。你可以试着这样去理解他：</p><p><strong>首先你需要了解的是，函数也需要占据内存空间，所以函数在内存中也是有地址的。在 c 语言中，函数名就代表这个函数的地址。
+如果你有过 c 语言的编程经验，你就应该知道在一个函数中，返回一个指针是一件很容易的事情。
+所以，对于以上这段 python 代码，你可以尝试把它理解为：
+base_sum()函数中定义了一个指向 sum()函数的指针，并且这个指针作为 base_sum()的返回值。</strong></p><dl><dt>好了，现在我们根据上面的例子，来“定义一下闭包”。</dt><dd>调用外部函数，返回一个持有外部函数变量，参数引用的内部函数对象的程序结构，我们就称它为“闭包”。</dd></dl><p>遗憾的是，java 中没有为我们显示的提供指针供我们操作，也没有提供类似 python，javascrpit 中的函数定义的语法，那么我们应该如何实现闭包呢？
+不妨还是通过综合机器人来解答这个疑问吧。这一次，让我们稍稍修改一下综合机器人的代码如下：</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>SpacecraftRobot</span> <span style=color:#66d9ef>extends</span> Guider <span style=color:#f92672>{</span>
+    <span style=color:#75715e>// 外部类的成员变量
+</span><span style=color:#75715e></span>    <span style=color:#66d9ef>private</span> String name<span style=color:#f92672>;</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#a6e22e>SpacecraftRobot</span><span style=color:#f92672>(</span>String name<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>name</span> <span style=color:#f92672>=</span> name<span style=color:#f92672>;</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>repairerRobot</span> <span style=color:#66d9ef>extends</span> Repairer <span style=color:#f92672>{</span>
+
+        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>doRepairWork</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+            <span style=color:#75715e>// 内部类持有外部类的引用，访问外部类的成员变量name。
+</span><span style=color:#75715e></span>            work<span style=color:#f92672>(</span>name<span style=color:#f92672>);</span>
+        <span style=color:#f92672>}</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>doGuidWork</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        <span style=color:#75715e>// 调用guider的work方法
+</span><span style=color:#75715e></span>        work<span style=color:#f92672>(</span>name<span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>doRepairWork</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        <span style=color:#75715e>// 返回一个持有外部类变量引用的内部类的对象,然后调用这个对象,实现具体的业务逻辑.
+</span><span style=color:#75715e></span>        <span style=color:#66d9ef>new</span> repairerRobot<span style=color:#f92672>().</span><span style=color:#a6e22e>doRepairWork</span><span style=color:#f92672>();</span>
+    <span style=color:#f92672>}</span>
+<span style=color:#f92672>}</span>
+
+</code></pre></div><p>通过对 java 内部类的合理利用，我们“模拟”出了一个闭包的程序结构。
+该程序通过调用外部类对象，从而返回了一个持有外部类对象变量引用的内部类对象。当我们再次调用内部类对象的某个方法时，我们实现了具体的业务逻辑。</p><h2 id=总结>总结</h2><ol><li>内部类通常用来解决“多重继承”的问题。</li><li>当你希望隐藏一个类的实现，减少工程中.java 文件数量，或者这个类不想被扩展时，你可以通过匿名内部类来创建一个类的对象。</li><li>java 虽然无法直接在语法层面上支持闭包，但是可以通过内部类来模拟一个闭包的程序结构。</li></ol></section><footer><a class="permalink u-url" href=https://example.com/post/innerclass/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
+<a href=https://example.com/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://example.com/images/site-logo.svg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://example.com/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>Love and Peace</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://example.com/post/genericity/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://example.com/post/softskill/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://example.com/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>

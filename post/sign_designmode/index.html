@@ -1,0 +1,117 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>单例设计模式 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://example.com/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://example.com/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://example.com/favicon-16x16.png><link rel=manifest href=https://example.com/site.webmanifest><link rel=mask-icon href=https://example.com/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://example.com/css/fonts.css><link rel=stylesheet href=https://example.com/css/style.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://example.com/><img src=https://example.com/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://example.com/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">单例设计模式</h1><p class=post-date>Posted on
+<time class=dt-published datetime=2018-10-01T18:23:00+08:00>1 October, 2018 at 18:23 +0800</time> by <a href=https://example.com/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><p>单例设计模式是应用最广泛的设计模式，没有之一。当我们需要控制一个类只能被创建出单个对象时，就可以采用单例设计模式。
+使用 java 来实现单例设计模式，普遍有四种实现方式。</p><ul><li>懒汉式</li><li>饿汉式</li><li>双检锁</li><li>innerclass holder</li></ul><h2 id=怎么用>怎么用？</h2><h3 id=懒汉式>懒汉式</h3><p>懒汉式是最常见的单例设计模式的实现方式之一。懒汉代表的含义为 lazy-load，意味着当单例对象在项目中真正被某个业务模块使用时，对象才会被创建。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#f92672>package</span> com.designpattern.singleton<span style=color:#f92672>;</span>
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 单例设计模式-懒汉式
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>SingletonLazyMode</span> <span style=color:#f92672>{</span>
+
+
+    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> SingletonLazyMode shm<span style=color:#f92672>;</span>
+
+    <span style=color:#75715e>/**
+</span><span style=color:#75715e>     * 私有化构造器
+</span><span style=color:#75715e>     */</span>
+    <span style=color:#66d9ef>private</span> <span style=color:#a6e22e>SingletonLazyMode</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#75715e>/**
+</span><span style=color:#75715e>     * 获取单例
+</span><span style=color:#75715e>     * 面临并发安全问题,可能会创建多个实例
+</span><span style=color:#75715e>     * 需要对方法进行同步.(独占锁)
+</span><span style=color:#75715e>     *
+</span><span style=color:#75715e>     * @return obj
+</span><span style=color:#75715e>     */</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>synchronized</span> SingletonLazyMode <span style=color:#a6e22e>getSingleton</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        <span style=color:#75715e>// 在判断处可能发生并发安全问题.
+</span><span style=color:#75715e></span>        <span style=color:#66d9ef>if</span> <span style=color:#f92672>(</span>shm <span style=color:#f92672>!=</span> <span style=color:#66d9ef>null</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+            <span style=color:#66d9ef>return</span> shm<span style=color:#f92672>;</span>
+        <span style=color:#f92672>}</span> <span style=color:#66d9ef>else</span> <span style=color:#f92672>{</span>
+            shm <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> SingletonLazyMode<span style=color:#f92672>();</span>
+            <span style=color:#66d9ef>return</span> shm<span style=color:#f92672>;</span>
+        <span style=color:#f92672>}</span>
+    <span style=color:#f92672>}</span>
+
+<span style=color:#f92672>}</span>
+</code></pre></div><h3 id=饿汉式>饿汉式</h3><p>饿汉式与懒汉式刚好是一对反例。一旦饿汉式的 class 被加载且进行初始化后，单例对象就会被马上创建。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#f92672>package</span> com.designpattern.singleton<span style=color:#f92672>;</span>
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 单例设计模式-饿汉式
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>SingletonHungryMode</span> <span style=color:#f92672>{</span>
+
+
+    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> SingletonHungryMode shm <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> SingletonHungryMode<span style=color:#f92672>();</span>
+
+
+    <span style=color:#75715e>// 构造器
+</span><span style=color:#75715e></span>    <span style=color:#66d9ef>private</span> <span style=color:#a6e22e>SingletonHungryMode</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+
+
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#75715e>/**
+</span><span style=color:#75715e>     * 返回实例对象
+</span><span style=color:#75715e>     * 饿汉式避免了并发安全问题,但是却无法实现lazyLoad
+</span><span style=color:#75715e>     *
+</span><span style=color:#75715e>     * @return
+</span><span style=color:#75715e>     */</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> SingletonHungryMode <span style=color:#a6e22e>getSingleton</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        <span style=color:#66d9ef>return</span> shm<span style=color:#f92672>;</span>
+    <span style=color:#f92672>}</span>
+
+<span style=color:#f92672>}</span>
+
+</code></pre></div><p>饿汉式对象无法实现 lazy-load。当类被反射调用或设置读取类的静态字段以及执行某个静态方法时，类的静态成员变量就会被初始化。</p><h3 id=innerclass-holder>innerclass holder</h3><p>配合静态内部类实现的单例模式。即使外部类的任何成员被访问，持有外部类单例对象的内部类，直到 getInstance 方法被调用为止，都不会被初始化。
+这种模式即实现了 lazy-load，又避免了普通懒汉式的并发安全问题。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#f92672>package</span> com.designpattern.singleton<span style=color:#f92672>;</span>
+
+<span style=color:#75715e>/**
+</span><span style=color:#75715e> * 单例设计模式-innerclass holder
+</span><span style=color:#75715e> */</span>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>SingletonInnerMode</span> <span style=color:#f92672>{</span>
+
+
+    <span style=color:#75715e>/**
+</span><span style=color:#75715e>     * 私有化构造器
+</span><span style=color:#75715e>     */</span>
+    <span style=color:#66d9ef>private</span> <span style=color:#a6e22e>SingletonInnerMode</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#f92672>}</span>
+
+
+    <span style=color:#75715e>/**
+</span><span style=color:#75715e>     * 持有外部类对象的引用.
+</span><span style=color:#75715e>     * 每次被初始化后,sim只会被加载一次.
+</span><span style=color:#75715e>     */</span>
+    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>SingletonInnerHolder</span> <span style=color:#f92672>{</span>
+
+        <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> SingletonInnerMode sim <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> SingletonInnerMode<span style=color:#f92672>();</span>
+
+        <span style=color:#75715e>/**
+</span><span style=color:#75715e>         * 私有化构造器
+</span><span style=color:#75715e>         */</span>
+        <span style=color:#66d9ef>private</span> <span style=color:#a6e22e>SingletonInnerHolder</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+
+        <span style=color:#f92672>}</span>
+
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#75715e>/**
+</span><span style=color:#75715e>     * 获取单例对象.
+</span><span style=color:#75715e>     * getInstance被调用时候,内部类才会被加载
+</span><span style=color:#75715e>     *
+</span><span style=color:#75715e>     * @return
+</span><span style=color:#75715e>     */</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> SingletonInnerMode <span style=color:#a6e22e>getInstanse</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        <span style=color:#75715e>// 访问成员变量时,内部类的静态成员变量才被初始化
+</span><span style=color:#75715e></span>        <span style=color:#66d9ef>return</span> SingletonInnerHolder<span style=color:#f92672>.</span><span style=color:#a6e22e>sim</span><span style=color:#f92672>;</span>
+    <span style=color:#f92672>}</span>
+
+<span style=color:#f92672>}</span>
+
+
+</code></pre></div><h2 id=总结>总结</h2><p>在大多数项目中，如果你对性能不是要求特别苛刻，饿汉式可以满足我们的需求。如果你喜欢 lazy-load，那么普通的懒汉式在大部分项目中也完全够用。innerclass holder 实现很巧妙，如果你的某个类在初始化时会进行大量运算，则推荐使用它来解决问题。</p></section><footer><a class="permalink u-url" href=https://example.com/post/sign_designmode/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
+<a href=https://example.com/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://example.com/images/site-logo.svg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://example.com/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>Love and Peace</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://example.com/post/git/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://example.com/post/command_designmode/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://example.com/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>

@@ -1,0 +1,136 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>什么是优秀的测试？ | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://example.com/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://example.com/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://example.com/favicon-16x16.png><link rel=manifest href=https://example.com/site.webmanifest><link rel=mask-icon href=https://example.com/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://example.com/css/fonts.css><link rel=stylesheet href=https://example.com/css/style.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://example.com/><img src=https://example.com/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://example.com/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">什么是优秀的测试？</h1><p class=post-date>Posted on
+<time class=dt-published datetime=2020-01-29T09:51:00+08:00>29 January, 2020 at 09:51 +0800</time> by <a href=https://example.com/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h2 id=单元测试的意义>单元测试的意义</h2><p>合理编写单元测试，可使团队工程师告别牛仔式编程，产出易维护的高质量代码。随着单元测试覆盖率的上升，项目会更加的健壮，团队的信心满满，充满斗志。无论是瀑布团队还是敏捷团队，单元测试及自动化单元测试作为重要的质量保证手段的价值已经被大家接纳与认可。</p><p>对于大多数团队来讲，当测试覆盖率提升一定阶段后，收益会迎来瓶颈。</p><p><img src=http://static.zybuluo.com/mikumikulch/njz109ixdoxpnosgi7jn11nh/image_1bvct211t71ccjb1stq18u91nuom.png alt=image_1bvct211t71ccjb1stq18u91nuom.png-479.9kB></p><p>而单元测试除了作为质量保证手段以外，更应该作为设计手段。单元测试成为设计手段会使你在测试中学习，以调用者的思维方式来写代码。这种方式的收益会比作为保护手段更高。
+利用测试驱动开发，可以让你的设计更加优良、编写出可测试的代码、还能避免在不切实际的假设上过度设计系统。</p><h2 id=优秀测试的共性>优秀测试的共性</h2><ol><li>良好的测试代码的可读性和可维护性。</li><li>测试代码在项目中有结构化的组织方式。</li><li>测试具备可靠性和可重复性。</li><li>合理的使用测试替身。</li><li>准备、执行、断言。当你编写测试代码时，有一个大多数程序员认为合理的、确定的实践、叫做准备、执行、断言。先准备用于测试的对象、触发执行、然后输出断言。</li></ol><h2 id=测试替身test-double>测试替身（test double）</h2><p>为了方便的测试代码以及绕开各种环境限制，应该使用替身来代替真实对象。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Car</span> <span style=color:#f92672>{</span>
+
+    <span style=color:#75715e>// 对外封闭的引擎对象。你无法知道内在信息。
+</span><span style=color:#75715e></span>    <span style=color:#66d9ef>private</span> Engine engine<span style=color:#f92672>;</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#a6e22e>Car</span><span style=color:#f92672>(</span>Engine engine<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>engine</span> <span style=color:#f92672>=</span> engine<span style=color:#f92672>;</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#75715e>// 需要测试的启动功能
+</span><span style=color:#75715e></span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>start</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        engine<span style=color:#f92672>.</span><span style=color:#a6e22e>start</span><span style=color:#f92672>();</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#75715e>// 需要测试汽车的驾驶功能
+</span><span style=color:#75715e></span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>drive</span><span style=color:#f92672>(</span>Route route<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+        <span style=color:#75715e>// 根据路线状态获取提供给 car 使用的各种方向 (十分复杂的算法，初始化时需要涉及 gis 算法。最终获取的对对象与当前的时间有关）
+</span><span style=color:#75715e></span>        <span style=color:#66d9ef>for</span> <span style=color:#f92672>(</span>Directions directions <span style=color:#f92672>:</span> route<span style=color:#f92672>.</span><span style=color:#a6e22e>getDirections</span><span style=color:#f92672>())</span> <span style=color:#f92672>{</span>
+            directions<span style=color:#f92672>.</span><span style=color:#a6e22e>follow</span><span style=color:#f92672>();</span>
+        <span style=color:#f92672>}</span>
+    <span style=color:#f92672>}</span>
+
+<span style=color:#f92672>}</span>
+
+
+</code></pre></div><p>为了验证一段代码的行为符合你的期望，最好的选择是替换其周围的代码，使你获得对环境的完整控制。使用了替身，能让执行速度变得更快，并且可以随意模拟特殊情况。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>TestRoute</span> <span style=color:#66d9ef>extends</span> Route <span style=color:#f92672>{</span>
+        <span style=color:#75715e>// 伪造的替身实现了快速返回路线以及返回固定路线的方法，使测试具备了可靠与可重复性
+</span><span style=color:#75715e></span>        <span style=color:#a6e22e>@Override</span>
+        <span style=color:#66d9ef>public</span> List<span style=color:#f92672>&lt;</span>Directions<span style=color:#f92672>&gt;</span> <span style=color:#a6e22e>getDirections</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+            System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;快速的返回固定的路线&#34;</span><span style=color:#f92672>);</span>
+            <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> ArrayList<span style=color:#f92672>&lt;</span>Directions<span style=color:#f92672>&gt;();</span>
+        <span style=color:#f92672>}</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>TestEngine</span> <span style=color:#66d9ef>extends</span> Engine <span style=color:#f92672>{</span>
+
+        <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>boolean</span> engineFlg <span style=color:#f92672>=</span> <span style=color:#66d9ef>false</span><span style=color:#f92672>;</span>
+
+        <span style=color:#a6e22e>@Override</span>
+        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>start</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+            engineFlg <span style=color:#f92672>=</span> <span style=color:#66d9ef>true</span><span style=color:#f92672>;</span>
+        <span style=color:#f92672>}</span>
+
+        <span style=color:#a6e22e>@Override</span>
+        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>stop</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+
+            engineFlg <span style=color:#f92672>=</span> <span style=color:#66d9ef>false</span><span style=color:#f92672>;</span>
+        <span style=color:#f92672>}</span>
+
+        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>boolean</span> <span style=color:#a6e22e>isEngineFlg</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+            <span style=color:#66d9ef>return</span> engineFlg<span style=color:#f92672>;</span>
+        <span style=color:#f92672>}</span>
+
+        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>setEngineFlg</span><span style=color:#f92672>(</span><span style=color:#66d9ef>boolean</span> engineFlg<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+            <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>engineFlg</span> <span style=color:#f92672>=</span> engineFlg<span style=color:#f92672>;</span>
+        <span style=color:#f92672>}</span>
+    <span style=color:#f92672>}</span>
+
+
+</code></pre></div><p>使用替身替换协作者，隔离被测代码意味着将需要测试的代码与其他代码隔离开来。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#a6e22e>@Test</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>testCarStart</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        TestEngine engine <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> TestEngine<span style=color:#f92672>();</span>
+        <span style=color:#66d9ef>new</span> Car<span style=color:#f92672>(</span>engine<span style=color:#f92672>).</span><span style=color:#a6e22e>start</span><span style=color:#f92672>();</span>
+        assertTrue<span style=color:#f92672>(</span>engine<span style=color:#f92672>.</span><span style=color:#a6e22e>isEngineFlg</span><span style=color:#f92672>());</span>
+    <span style=color:#f92672>}</span>
+
+    <span style=color:#a6e22e>@Test</span>
+    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>testCarDrive</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+        TestRoute testRoute <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> TestRoute<span style=color:#f92672>();</span>
+        TestEngine engine <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> TestEngine<span style=color:#f92672>();</span>
+        <span style=color:#66d9ef>new</span> Car<span style=color:#f92672>(</span>engine<span style=color:#f92672>).</span><span style=color:#a6e22e>drive</span><span style=color:#f92672>(</span>testRoute<span style=color:#f92672>);</span>
+    <span style=color:#f92672>}</span>
+
+</code></pre></div><p>如何区分协作者被测代码的关系呢？
+上面的代码中，与对象 Car 一起工作的对象为 Engine 和 Route、以及 directions。Car 直接的使用了 Engine 和 Route ，间接的使用了 Directions。所以 Car 的协作者只有 Engine 和 Route。</p><h3 id=测试替身的类型>测试替身的类型</h3><p>替身拥有多种类型。不同的测试场景选择合理的测试替身是优秀测试的必要条件之一。测试替身的类型也决定了测试类的命名方法，尤其特别注意。</p><h4 id=桩stub>桩（stub）</h4><p>用最简单的可能实现来代替真实实现。桩总是短小的。最好的例子就是一个对象的所有方法都只有一行，并且返回一个默认值。</p><pre><code>public class LoggerStub implements Logger {
+
+    @Override
+    public void log() {
+        // Nope
+    }
+}
+
+</code></pre><h4 id=伪造对象-fake>伪造对象 （fake）</h4><p>有时，我们至少需要填充一些行为，而有时候你需要测试替身根据收到的消息种类来表现出不同的行为。这些情况下，你会借助伪造对象。Fake 就像是真实事物的简单版本，优化滴伪造真实事物的行为，但是没有副作用或者使用真实事物的其他后果。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>TestRoute</span> <span style=color:#66d9ef>extends</span> Route <span style=color:#f92672>{</span>
+        <span style=color:#75715e>// 伪造的替身实现了快速返回路线以及返回固定路线的方法，使测试具备了可靠与可重复性
+</span><span style=color:#75715e></span>        <span style=color:#a6e22e>@Override</span>
+        <span style=color:#66d9ef>public</span> List<span style=color:#f92672>&lt;</span>Directions<span style=color:#f92672>&gt;</span> <span style=color:#a6e22e>getDirections</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+            System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;快速的返回固定的路线&#34;</span><span style=color:#f92672>);</span>
+            <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> ArrayList<span style=color:#f92672>&lt;</span>Directions<span style=color:#f92672>&gt;();</span>
+        <span style=color:#f92672>}</span>
+    <span style=color:#f92672>}</span>
+
+</code></pre></div><p>伪造对象与测试桩十分常用，你可以在测试时用它们替换掉缓慢的真实事物，以及鞭长莫及的依赖。</p><h4 id=测试间谍-spy>测试间谍 (spy)</h4><p>测试间谍用于记录你和某个不对你开放的对象之间的交互。当对象与协作者之间交互时，无法获取协作者交互结果的情况下，会使用测试间谍。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>// 测试间谍
+</span><span style=color:#75715e></span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>TestEngine</span> <span style=color:#66d9ef>extends</span> Engine <span style=color:#f92672>{</span>
+        <span style=color:#75715e>// 对外暴露信息
+</span><span style=color:#75715e></span>        <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>boolean</span> engineFlg <span style=color:#f92672>=</span> <span style=color:#66d9ef>false</span><span style=color:#f92672>;</span>
+
+        <span style=color:#75715e>// 比真实对象的 start 方法更具有交互性的方法。
+</span><span style=color:#75715e></span>        <span style=color:#a6e22e>@Override</span>
+        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>start</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+            engineFlg <span style=color:#f92672>=</span> <span style=color:#66d9ef>true</span><span style=color:#f92672>;</span>
+        <span style=color:#f92672>}</span>
+
+        <span style=color:#a6e22e>@Override</span>
+        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>stop</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+
+            engineFlg <span style=color:#f92672>=</span> <span style=color:#66d9ef>false</span><span style=color:#f92672>;</span>
+        <span style=color:#f92672>}</span>
+        <span style=color:#75715e>// 对外提供用于获取交互结果的接口，用于断言。
+</span><span style=color:#75715e></span>        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>boolean</span> <span style=color:#a6e22e>isEngineFlg</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+            <span style=color:#66d9ef>return</span> engineFlg<span style=color:#f92672>;</span>
+        <span style=color:#f92672>}</span>
+
+        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>setEngineFlg</span><span style=color:#f92672>(</span><span style=color:#66d9ef>boolean</span> engineFlg<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+            <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>engineFlg</span> <span style=color:#f92672>=</span> engineFlg<span style=color:#f92672>;</span>
+        <span style=color:#f92672>}</span>
+    <span style=color:#f92672>}</span>
+
+</code></pre></div><h4 id=模拟对象-mock>模拟对象 mock</h4><p>模拟对象是在一个特定情境下可配置行为的对象。模拟对象时一种更加高级与特殊的测试间谍。
+下面是一段关于 Mock 的伪代码。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>mockTest</span><span style=color:#f92672>(){</span>
+    <span style=color:#66d9ef>final</span> Internet internet <span style=color:#f92672>=</span> context<span style=color:#f92672>.</span><span style=color:#a6e22e>mock</span><span style=color:#f92672>(</span>Internet<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>);</span>
+    context<span style=color:#f92672>.</span><span style=color:#a6e22e>checking</span><span style=color:#f92672>(</span><span style=color:#66d9ef>new</span> Expectations<span style=color:#f92672>()</span> <span style=color:#f92672>{{</span>
+        one<span style=color:#f92672>(</span>internet<span style=color:#f92672>).</span><span style=color:#a6e22e>get</span><span style=color:#f92672>(</span>with<span style=color:#f92672>(</span>containsString<span style=color:#f92672>(</span><span style=color:#e6db74>&#34;langpair=en&#34;</span><span style=color:#f92672>)));</span>
+        will<span style=color:#f92672>(</span>returnValue<span style=color:#f92672>(</span><span style=color:#e6db74>&#34;ok&#34;</span><span style=color:#f92672>))</span>
+    <span style=color:#f92672>}};</span>
+    Translator t <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Translator<span style=color:#f92672>(</span>internet<span style=color:#f92672>);</span>
+    String translation <span style=color:#f92672>=</span> t<span style=color:#f92672>.</span><span style=color:#a6e22e>translate</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;flower&#34;</span><span style=color:#f92672>,</span>ENGLISH<span style=color:#f92672>);</span>
+    assertEquals<span style=color:#f92672>(</span><span style=color:#e6db74>&#34;ok&#34;</span><span style=color:#f92672>,</span>translation<span style=color:#f92672>)</span>
+
+<span style=color:#f92672>}</span>
+
+</code></pre></div><p>通过使用模拟对象的预测返回值行为，我们可以更加精确的对交互行为进行验证。</p><h2 id=如何选择合适的替身类型>如何选择合适的替身类型</h2><ul><li>如果你测试的重点是交互，即两个对象之前的调用，你可能需要一个模拟对象 mock</li><li>如果你决定使用 Mock ，但测试代码最终看起来不像你想象的那么漂亮了，则考虑使用 Spy。</li><li>如果你只关心协作对象向被测对象输送的响应，用 stub 解决问题。</li><li>如果你运行的是一个复杂场景，其中它所依赖的服务无法供测试使用，而你所有的交互打桩快速尝试却戛然而止，或者产出了难以维护的糟糕代码，那就考虑使用 Fake。</li></ul><hr><p>《有效的单元测试》 <em>Lasse Koskela</em></p></section><footer><a class="permalink u-url" href=https://example.com/post/goodtest/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
+<a href=https://example.com/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://example.com/images/site-logo.svg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://example.com/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>Love and Peace</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://example.com/post/sql_inject/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://example.com/post/testphilosophy/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://example.com/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
