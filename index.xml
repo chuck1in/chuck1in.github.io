@@ -937,10 +937,16 @@ Content-Type: application/json
 &amp;quot;preferred_username&amp;quot;: &amp;quot;ChuckLin2020@hotmail.com&amp;quot;,
 &amp;quot;email&amp;quot;: &amp;quot;mikumiku.lch@hotmail.com&amp;quot;
 }
-&lt;/code>&lt;/pre>&lt;p>同时这也是 access_token 用于访问受保护资源，id_token 用于身份认证的一次结合应用。&lt;/p>
+&lt;/code>&lt;/pre>&lt;p>同时这也是 access_token 用于访问受保护资源，id_token 用于身份认证的一次结合应用。
+说了这么多，那学习 OIDC 有什么用呢？ OIDC 的其中一个用处就是可以用来构建一个单点登录系统（SSO）。&lt;/p>
+&lt;h2 id="一个标准化的-sso-场境">一个标准化的 SSO 场境&lt;/h2>
+&lt;p>假设企业为了自身的运营需要分别部署了 2 个系统：「A、B」。两个系统上线时间不同，提供的业务服务不同，用户体系与认证逻辑不同。所以这两个系统是完全「互不相通」的。
+现在需要在不影响现有系统逻辑的前提条件下，提供「一次登陆、多端有效」的功能。&lt;/p>
+&lt;p>经过构思，我们决定构建统一登陆中心；接着让两个系统都认可统一登陆中心的认证结果，来达到「最小化改动」现有系统的前提下实现 SSO 的功能。回顾上面的知识，OIDC 协议中的身份认证服务器就可以满足这一要求。&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/static/images/sso.png" alt="sso">&lt;/p>
+&lt;h1 id="heading">&lt;/h1>
 &lt;h2 id="sso-单点登录系统">SSO 单点登录系统&lt;/h2>
-&lt;p>说了这么多，那学习 OIDC 有什么用呢？ OIDC 的其中一个用处就是可以用来构建一个单点登录系统（SSO）。注意这也是一个容易搞错的知识点：没有任何规定要求必须使用 OIDC 来构建 SSO。实际上你完全可以不使用 OIDC，或是使用 OIDC 的隐式许可类型流程来构建一个 SSO，这都完全取决于你的选择，况且互联网上运行的大部分 SSO 都并没有严格遵守 OIDC 规范。&lt;/p>
-&lt;h1 id="heading">&lt;/h1></description></item><item><title>OAuth 2.0 简述</title><link>https://www.chucklin.net/post/oauth2/</link><pubDate>Tue, 24 Nov 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/oauth2/</guid><description>&lt;h2 id="什么是授权">什么是授权&lt;/h2>
+&lt;p>注意这也是一个容易搞错的知识点：没有任何规定要求必须使用 OIDC 来构建 SSO。实际上你完全可以不使用 OIDC，或是使用 OIDC 的隐式许可类型流程来构建一个 SSO，这都完全取决于你的选择，况且互联网上运行的大部分 SSO 都并没有严格遵守 OIDC 规范。&lt;/p></description></item><item><title>OAuth 2.0 简述</title><link>https://www.chucklin.net/post/oauth2/</link><pubDate>Tue, 24 Nov 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/oauth2/</guid><description>&lt;h2 id="什么是授权">什么是授权&lt;/h2>
 &lt;p>生活中有很多授权的场景，比如：假设你有一辆车，你现在指派一名代驾司机来帮你把车开回家，这就是一种授权。因为你授予了代驾司机使用你的小汽车的权利。在软件领域，授权通常指用户对某软件授予访问受保护资源权限的行为。OAuth2 就是为了将这种行为标准化所设计出来的协议。&lt;/p>
 &lt;h2 id="oauth-不是什么">OAuth 不是什么&lt;/h2>
 &lt;p>从上面的内容可以了解到：OAuth 是用户对软件行为授权的协议。用户除了对软件授权以外，当然也可以对用户授权——比如我授权 cherry 全权操作我的基金账户。OAuth 2 当然能够解决这样的问题（请查阅基于 OAuth 衍生出的 UMA 协议相关资料），但是需要记住这不是 OAuth 设计的初衷。
