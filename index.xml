@@ -943,7 +943,7 @@ Content-Type: application/json
 &lt;p>假设企业为了自身的运营需要分别部署了 2 个系统：「A、B」。两个系统上线时间不同，提供的业务服务不同，用户体系与认证逻辑不同。所以这两个系统是完全「互不相通」的。
 现在需要在不影响现有系统逻辑的前提条件下，提供「一次登陆、多端有效」的功能。&lt;/p>
 &lt;p>经过构思，我们决定构建统一登陆中心；接着让两个系统都认可统一登陆中心的认证结果，来达到「最小化改动」现有系统的前提下实现 SSO 的功能。回顾上面的知识，OIDC 协议中的身份认证服务器就可以满足这一要求。&lt;/p>
-&lt;p>&lt;img src="https://www.chucklin.net/static/images/sso.png" alt="sso">&lt;/p>
+&lt;p>&lt;img src="./images/sso.png" alt="sso">&lt;/p>
 &lt;h1 id="heading">&lt;/h1>
 &lt;h2 id="sso-单点登录系统">SSO 单点登录系统&lt;/h2>
 &lt;p>注意这也是一个容易搞错的知识点：没有任何规定要求必须使用 OIDC 来构建 SSO。实际上你完全可以不使用 OIDC，或是使用 OIDC 的隐式许可类型流程来构建一个 SSO，这都完全取决于你的选择，况且互联网上运行的大部分 SSO 都并没有严格遵守 OIDC 规范。&lt;/p></description></item><item><title>OAuth 2.0 简述</title><link>https://www.chucklin.net/post/oauth2/</link><pubDate>Tue, 24 Nov 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/oauth2/</guid><description>&lt;h2 id="什么是授权">什么是授权&lt;/h2>
