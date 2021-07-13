@@ -1787,19 +1787,19 @@ Db.Exec(sql)
 &lt;li>&lt;a href="https://blog.wilddog.com/?p=290">关于 Web 安全，99%的网站都忽略了这些&lt;/a>, by wilddog&lt;/li>
 &lt;li>&lt;a href="https://www.ibm.com/developerworks/cn/web/se-appscan-detect-csrf-xsrf/">预防跨站点请求伪造：了解浏览器选项卡中的隐藏危险&lt;/a>&lt;/li>
 &lt;li>&lt;a href="http://www.importnew.com/5839.html">CSRF 攻击的应对之道&lt;/a>&lt;/li>
-&lt;/ul></description></item><item><title>什么是优秀的测试？</title><link>https://www.chucklin.net/post/goodtest/</link><pubDate>Wed, 29 Jan 2020 09:51:00 +0800</pubDate><guid>https://www.chucklin.net/post/goodtest/</guid><description>&lt;h2 id="单元测试的意义">单元测试的意义&lt;/h2>
+&lt;/ul></description></item><item><title>什么是优秀的测试？</title><link>https://www.chucklin.net/post/goodtest/</link><pubDate>Wed, 29 Jan 2020 09:51:00 +0800</pubDate><guid>https://www.chucklin.net/post/goodtest/</guid><description>&lt;h2 id="单元测试的质量意义">单元测试的质量意义&lt;/h2>
 &lt;p>合理编写单元测试，可使团队工程师告别牛仔式编程，产出易维护的高质量代码。随着单元测试覆盖率的上升，项目会更加的健壮，团队的信心满满，充满斗志。无论是瀑布团队还是敏捷团队，单元测试及自动化单元测试作为重要的质量保证手段的价值已经被大家接纳与认可。&lt;/p>
-&lt;p>对于大多数团队来讲，当测试覆盖率提升一定阶段后，收益会迎来瓶颈。&lt;/p>
-&lt;p>&lt;img src="http://static.zybuluo.com/mikumikulch/njz109ixdoxpnosgi7jn11nh/image_1bvct211t71ccjb1stq18u91nuom.png" alt="image_1bvct211t71ccjb1stq18u91nuom.png-479.9kB">&lt;/p>
-&lt;p>而单元测试除了作为质量保证手段以外，更应该作为设计手段。单元测试成为设计手段会使你在测试中学习，以调用者的思维方式来写代码。这种方式的收益会比作为保护手段更高。
-利用测试驱动开发，可以让你的设计更加优良、编写出可测试的代码、还能避免在不切实际的假设上过度设计系统。&lt;/p>
+&lt;p>但是，对于大多数团队来讲当测试覆盖率提升一定阶段后，收益会迎来瓶颈。&lt;/p>
+&lt;h2 id="单元测试的设计意义">单元测试的设计意义&lt;/h2>
+&lt;p>单元测试除了作为质量保证手段以外，更应该作为设计手段。TDD 的核心思想之一，就是使用单元测试作为设计手段，使开发者在编写测试用例时，以调用者的思维方式来写代码，这种方式的收益会比作为保护手段更高。
+利用测试驱动开发可以让你的设计更加优良、编写出可测试的代码、还能避免在不切实际的假设上过度设计系统。&lt;/p>
 &lt;h2 id="优秀测试的共性">优秀测试的共性&lt;/h2>
 &lt;ol>
-&lt;li>良好的测试代码的可读性和可维护性。&lt;/li>
+&lt;li>良好的测试代码具备可读性和可维护性。&lt;/li>
 &lt;li>测试代码在项目中有结构化的组织方式。&lt;/li>
 &lt;li>测试具备可靠性和可重复性。&lt;/li>
 &lt;li>合理的使用测试替身。&lt;/li>
-&lt;li>准备、执行、断言。当你编写测试代码时，有一个大多数程序员认为合理的、确定的实践、叫做准备、执行、断言。先准备用于测试的对象、触发执行、然后输出断言。&lt;/li>
+&lt;li>AAA(Arrange, Act &amp;amp; Assert)——准备、执行、断言。 编写测试代码时，使用被称为三A模型：准备、执行、断言。&lt;/li>
 &lt;/ol>
 &lt;h2 id="测试替身test-double">测试替身（test double）&lt;/h2>
 &lt;p>为了方便的测试代码以及绕开各种环境限制，应该使用替身来代替真实对象。&lt;/p>
@@ -1849,7 +1849,7 @@ engineFlg &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9
 &lt;span style="color:#f92672">}&lt;/span>
 &lt;span style="color:#f92672">}&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>使用替身替换协作者，隔离被测代码意味着将需要测试的代码与其他代码隔离开来。&lt;/p>
-&lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">&lt;span style="color:#a6e22e">@Test&lt;/span>
+&lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java"> &lt;span style="color:#a6e22e">@Test&lt;/span>
 &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">testCarStart&lt;/span>&lt;span style="color:#f92672">()&lt;/span> &lt;span style="color:#f92672">{&lt;/span>
 TestEngine engine &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> TestEngine&lt;span style="color:#f92672">();&lt;/span>
 &lt;span style="color:#66d9ef">new&lt;/span> Car&lt;span style="color:#f92672">(&lt;/span>engine&lt;span style="color:#f92672">).&lt;/span>&lt;span style="color:#a6e22e">start&lt;/span>&lt;span style="color:#f92672">();&lt;/span>
@@ -1861,9 +1861,7 @@ TestRoute testRoute &lt;span style="color:#f92672">=&lt;/span> &lt;span style="c
 TestEngine engine &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> TestEngine&lt;span style="color:#f92672">();&lt;/span>
 &lt;span style="color:#66d9ef">new&lt;/span> Car&lt;span style="color:#f92672">(&lt;/span>engine&lt;span style="color:#f92672">).&lt;/span>&lt;span style="color:#a6e22e">drive&lt;/span>&lt;span style="color:#f92672">(&lt;/span>testRoute&lt;span style="color:#f92672">);&lt;/span>
 &lt;span style="color:#f92672">}&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>如何区分协作者被测代码的关系呢？
-上面的代码中，与对象 Car 一起工作的对象为 Engine 和 Route、以及 directions。Car 直接的使用了 Engine 和 Route ，间接的使用了 Directions。所以 Car 的协作者只有 Engine 和 Route。&lt;/p>
-&lt;h3 id="测试替身的类型">测试替身的类型&lt;/h3>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="测试替身的类型">测试替身的类型&lt;/h3>
 &lt;p>替身拥有多种类型。不同的测试场景选择合理的测试替身是优秀测试的必要条件之一。测试替身的类型也决定了测试类的命名方法，尤其特别注意。&lt;/p>
 &lt;h4 id="桩stub">桩（stub）&lt;/h4>
 &lt;p>用最简单的可能实现来代替真实实现。桩总是短小的。最好的例子就是一个对象的所有方法都只有一行，并且返回一个默认值。&lt;/p>
@@ -1874,8 +1872,9 @@ public void log() {
 }
 }
 &lt;/code>&lt;/pre>&lt;h4 id="伪造对象-fake">伪造对象 （fake）&lt;/h4>
-&lt;p>有时，我们至少需要填充一些行为，而有时候你需要测试替身根据收到的消息种类来表现出不同的行为。这些情况下，你会借助伪造对象。Fake 就像是真实事物的简单版本，优化滴伪造真实事物的行为，但是没有副作用或者使用真实事物的其他后果。&lt;/p>
-&lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">TestRoute&lt;/span> &lt;span style="color:#66d9ef">extends&lt;/span> Route &lt;span style="color:#f92672">{&lt;/span>
+&lt;p>有时，我们至少需要填充一些行为，而有时候你需要测试替身根据收到的消息种类来表现出不同的行为。
+Fake 就像是真实事物的简单版本，他能够伪造真实事物的行为，具备简单的业务逻辑，同时没有副作用或者使用真实事物的其他后果。&lt;/p>
+&lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java"> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">TestRoute&lt;/span> &lt;span style="color:#66d9ef">extends&lt;/span> Route &lt;span style="color:#f92672">{&lt;/span>
 &lt;span style="color:#75715e">// 伪造的替身实现了快速返回路线以及返回固定路线的方法，使测试具备了可靠与可重复性
 &lt;/span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#a6e22e">@Override&lt;/span>
 &lt;span style="color:#66d9ef">public&lt;/span> List&lt;span style="color:#f92672">&amp;lt;&lt;/span>Directions&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#a6e22e">getDirections&lt;/span>&lt;span style="color:#f92672">()&lt;/span> &lt;span style="color:#f92672">{&lt;/span>
@@ -1887,7 +1886,7 @@ System&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">o
 &lt;h4 id="测试间谍-spy">测试间谍 (spy)&lt;/h4>
 &lt;p>测试间谍用于记录你和某个不对你开放的对象之间的交互。当对象与协作者之间交互时，无法获取协作者交互结果的情况下，会使用测试间谍。&lt;/p>
 &lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">&lt;span style="color:#75715e">// 测试间谍
-&lt;/span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">TestEngine&lt;/span> &lt;span style="color:#66d9ef">extends&lt;/span> Engine &lt;span style="color:#f92672">{&lt;/span>
+&lt;/span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">TestEngine&lt;/span> &lt;span style="color:#66d9ef">extends&lt;/span> Engine &lt;span style="color:#f92672">{&lt;/span>
 &lt;span style="color:#75715e">// 对外暴露信息
 &lt;/span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">boolean&lt;/span> engineFlg &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">false&lt;/span>&lt;span style="color:#f92672">;&lt;/span>
 &lt;span style="color:#75715e">// 比真实对象的 start 方法更具有交互性的方法。
@@ -1908,8 +1907,7 @@ engineFlg &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9
 &lt;span style="color:#f92672">}&lt;/span>
 &lt;span style="color:#f92672">}&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="模拟对象-mock">模拟对象 mock&lt;/h4>
-&lt;p>模拟对象是在一个特定情境下可配置行为的对象。模拟对象时一种更加高级与特殊的测试间谍。
-下面是一段关于 Mock 的伪代码。&lt;/p>
+&lt;p>模拟对象是在一个特定情境下可配置行为的对象。模拟对象时一种更加高级与特殊的测试间谍，它关注的重点是两个对象之间的交互行为。&lt;/p>
 &lt;div class="highlight">&lt;pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">mockTest&lt;/span>&lt;span style="color:#f92672">(){&lt;/span>
 &lt;span style="color:#66d9ef">final&lt;/span> Internet internet &lt;span style="color:#f92672">=&lt;/span> context&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">mock&lt;/span>&lt;span style="color:#f92672">(&lt;/span>Internet&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">class&lt;/span>&lt;span style="color:#f92672">);&lt;/span>
 context&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">checking&lt;/span>&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#66d9ef">new&lt;/span> Expectations&lt;span style="color:#f92672">()&lt;/span> &lt;span style="color:#f92672">{{&lt;/span>
@@ -1923,10 +1921,10 @@ assertEquals&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#e6d
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>通过使用模拟对象的预测返回值行为，我们可以更加精确的对交互行为进行验证。&lt;/p>
 &lt;h2 id="如何选择合适的替身类型">如何选择合适的替身类型&lt;/h2>
 &lt;ul>
-&lt;li>如果你测试的重点是交互，即两个对象之前的调用，你可能需要一个模拟对象 mock&lt;/li>
+&lt;li>如果你测试的重点是交互，即两个对象之前的调用，你可能需要一个模拟对象 mock。&lt;/li>
 &lt;li>如果你决定使用 Mock ，但测试代码最终看起来不像你想象的那么漂亮了，则考虑使用 Spy。&lt;/li>
 &lt;li>如果你只关心协作对象向被测对象输送的响应，用 stub 解决问题。&lt;/li>
-&lt;li>如果你运行的是一个复杂场景，其中它所依赖的服务无法供测试使用，而你所有的交互打桩快速尝试却戛然而止，或者产出了难以维护的糟糕代码，那就考虑使用 Fake。&lt;/li>
+&lt;li>如果你运行的是一个复杂场景，其中它所依赖的服务无法供测试使用，但是你又需要这些服务提供的行为哪怕是一个简单的提示，那就应该考虑使用 Fake。&lt;/li>
 &lt;/ul>
 &lt;hr>
 &lt;p>《有效的单元测试》 &lt;em>Lasse Koskela&lt;/em>&lt;/p></description></item><item><title>单元测试的哲学</title><link>https://www.chucklin.net/post/testphilosophy/</link><pubDate>Mon, 27 Jan 2020 09:51:00 +0800</pubDate><guid>https://www.chucklin.net/post/testphilosophy/</guid><description>&lt;h2 id="审美之前先审丑">审美之前先审丑&lt;/h2>
