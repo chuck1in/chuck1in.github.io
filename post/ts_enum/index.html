@@ -54,7 +54,7 @@
 </p>
 </header>
 <section class="content e-content">
-<h3 id=枚举>枚举</h3>
+<h2 id=枚举>枚举</h2>
 <p>枚举是对客观事物的归纳与自然语言的抽象。这听起来似乎容易和类混淆，这是正常的。因为在大部分面向对象的语言里，枚举就是类。</p>
 <p>我们知道一周有七天 —— <code>Week={monday,Tuesday,...., Sunday}</code>。假设用枚举来描述这个概念的话就是下面这样：</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-typescript data-lang=typescript><span style=color:#66d9ef>enum</span> <span style=color:#a6e22e>Week</span> {
@@ -77,7 +77,7 @@
 
 <span style=color:#75715e>// f(&#34;happyDay&#34;);  ==&gt; type error! string is not Enum
 </span><span style=color:#75715e></span><span style=color:#a6e22e>f</span>(<span style=color:#a6e22e>Week</span>.<span style=color:#a6e22e>Monday</span>);
-</code></pre></div><h3 id=typescript-中枚举的行为>typescript 中枚举的行为</h3>
+</code></pre></div><h2 id=typescript-中枚举的行为>typescript 中枚举的行为</h2>
 <p>到目前为止，上述示例代码中的枚举行为都是符合预期的。但是「一切正常」向来不是 javascript 的风格。</p>
 <p>在 ts 中，下面这样的代码也可以编译成功。</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-typescript data-lang=typescript><span style=color:#66d9ef>enum</span> <span style=color:#a6e22e>Week</span> {

@@ -1,4 +1,4 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ChuckLin's Blog</title><link>https://www.chucklin.net/</link><description>Recent content on ChuckLin's Blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>Copyright © 2021 Chuck Lin. All rights reserved.</copyright><lastBuildDate>Mon, 26 Jul 2021 22:16:36 +0800</lastBuildDate><atom:link href="https://www.chucklin.net/index.xml" rel="self" type="application/rss+xml"/><item><title>Enum in Typescript</title><link>https://www.chucklin.net/post/ts_enum/</link><pubDate>Mon, 26 Jul 2021 22:16:36 +0800</pubDate><guid>https://www.chucklin.net/post/ts_enum/</guid><description>&lt;h3 id="枚举">枚举&lt;/h3>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ChuckLin's Blog</title><link>https://www.chucklin.net/</link><description>Recent content on ChuckLin's Blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>Copyright © 2021 Chuck Lin. All rights reserved.</copyright><lastBuildDate>Mon, 26 Jul 2021 22:16:36 +0800</lastBuildDate><atom:link href="https://www.chucklin.net/index.xml" rel="self" type="application/rss+xml"/><item><title>Enum in Typescript</title><link>https://www.chucklin.net/post/ts_enum/</link><pubDate>Mon, 26 Jul 2021 22:16:36 +0800</pubDate><guid>https://www.chucklin.net/post/ts_enum/</guid><description>&lt;h2 id="枚举">枚举&lt;/h2>
 &lt;p>枚举是对客观事物的归纳与自然语言的抽象。这听起来似乎容易和类混淆，这是正常的。因为在大部分面向对象的语言里，枚举就是类。&lt;/p>
 &lt;p>我们知道一周有七天 —— &lt;code>Week={monday,Tuesday,...., Sunday}&lt;/code>。假设用枚举来描述这个概念的话就是下面这样：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-typescript" data-lang="typescript">&lt;span style="color:#66d9ef">enum&lt;/span> &lt;span style="color:#a6e22e">Week&lt;/span> {
@@ -19,7 +19,7 @@
 }
 &lt;span style="color:#75715e">// f(&amp;#34;happyDay&amp;#34;); ==&amp;gt; type error! string is not Enum
 &lt;/span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#a6e22e">f&lt;/span>(&lt;span style="color:#a6e22e">Week&lt;/span>.&lt;span style="color:#a6e22e">Monday&lt;/span>);
-&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="typescript-中枚举的行为">typescript 中枚举的行为&lt;/h3>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="typescript-中枚举的行为">typescript 中枚举的行为&lt;/h2>
 &lt;p>到目前为止，上述示例代码中的枚举行为都是符合预期的。但是「一切正常」向来不是 javascript 的风格。&lt;/p>
 &lt;p>在 ts 中，下面这样的代码也可以编译成功。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-typescript" data-lang="typescript">&lt;span style="color:#66d9ef">enum&lt;/span> &lt;span style="color:#a6e22e">Week&lt;/span> {
