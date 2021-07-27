@@ -1,5 +1,64 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>Spring Security 如何进行权限验证 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">Spring Security 如何进行权限验证</h1><p class=post-date>Posted on
-<time class=dt-published datetime=2021-04-05T10:52:00+08:00>5 April, 2021 at 10:52 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h2 id=filtersecurityinterceptordofilter>FilterSecurityInterceptor.doFilter</h2><p>FilterSecurityIntercptor 是负责权限验证的过滤器。一般来说，权限验证是一系列业务逻辑处理完成以后，最后需要解决的问题。所以默认情况下 security 会把和权限有关的过滤器，放在 VirtualFilter chains 的最后一位。</p><p>FilterSecurityIntercptor.doFilter 方法定义了两个权限验证逻辑。分别是 super.beforeInvocation 方法代表的权限前置验证与 super.afterInvocation 代表的后置权限验证。</p><p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/filter.png alt></p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>invoke</span><span style=color:#f92672>(</span>FilterInvocation fi<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> IOException<span style=color:#f92672>,</span> ServletException <span style=color:#f92672>{</span>
+<!doctype html><html lang=zh-cn>
+<head>
+<meta charset=utf-8>
+<title>Spring Security 如何进行权限验证 | ChuckLin's Blog</title>
+<meta name=description content="Love and Peace">
+<meta name=author content>
+<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
+<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
+<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
+<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
+<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
+<meta name=msapplication-TileColor content="#00aba9">
+<meta name=theme-color content="#ffffff">
+<link rel=me href=mailto:mikumiku.lch@hotmail.com>
+<link rel=me href=https://github.com/chuck1in>
+<link rel=authorization_endpoint href=https://indieauth.com/auth>
+<link rel=token_endpoint href=https://tokens.indieauth.com/token>
+<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
+<meta name=viewport content="width=device-width,initial-scale=1">
+</head>
+<body>
+<div id=sitelogo>
+<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
+</div>
+<header>
+<nav>
+<div id=page-nav>
+<div class=page-nav-item>
+<a href=https://www.chucklin.net/>Home</a>
+</div>
+<div class=page-nav-item>
+<a href=/about/me>
+<span>About</span>
+</a>
+</div>
+<div class=page-nav-item>
+<a href=/tags>
+<span>Tag</span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<div id=content>
+<article class=h-entry>
+<header>
+<h1 class="post-title p-name">Spring Security 如何进行权限验证</h1>
+<p class=post-date>Posted on
+<time class=dt-published datetime=2021-04-05T10:52:00+08:00>
+5 April, 2021 at 10:52 +0800
+</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
+</p>
+</header>
+<section class="content e-content">
+<h2 id=filtersecurityinterceptordofilter>FilterSecurityInterceptor.doFilter</h2>
+<p>FilterSecurityIntercptor 是负责权限验证的过滤器。一般来说，权限验证是一系列业务逻辑处理完成以后，最后需要解决的问题。所以默认情况下 security 会把和权限有关的过滤器，放在 VirtualFilter chains 的最后一位。</p>
+<p>FilterSecurityIntercptor.doFilter 方法定义了两个权限验证逻辑。分别是 super.beforeInvocation 方法代表的权限前置验证与 super.afterInvocation 代表的后置权限验证。</p>
+<p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/filter.png alt></p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>invoke</span><span style=color:#f92672>(</span>FilterInvocation fi<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> IOException<span style=color:#f92672>,</span> ServletException <span style=color:#f92672>{</span>
 	<span style=color:#66d9ef>if</span> <span style=color:#f92672>((</span>fi<span style=color:#f92672>.</span><span style=color:#a6e22e>getRequest</span><span style=color:#f92672>()</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>null</span><span style=color:#f92672>)</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#f92672>(</span>fi<span style=color:#f92672>.</span><span style=color:#a6e22e>getRequest</span><span style=color:#f92672>().</span><span style=color:#a6e22e>getAttribute</span><span style=color:#f92672>(</span>FILTER_APPLIED<span style=color:#f92672>)</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>null</span><span style=color:#f92672>)</span> <span style=color:#f92672>&amp;&amp;</span> observeOncePerRequest<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
 			<span style=color:#75715e>// filter already applied to this request and user wants us to observe
 </span><span style=color:#75715e></span>			<span style=color:#75715e>// once-per-request handling, so don&#39;t re-do security checking
@@ -22,10 +81,16 @@
 		<span style=color:#66d9ef>super</span><span style=color:#f92672>.</span><span style=color:#a6e22e>afterInvocation</span><span style=color:#f92672>(</span>token<span style=color:#f92672>,</span> <span style=color:#66d9ef>null</span><span style=color:#f92672>);</span>
 	<span style=color:#f92672>}</span>
 <span style=color:#f92672>}</span>
-</code></pre></div><h2 id=abstractsecurityinterceptorbeforeinvocation>AbstractSecurityInterceptor.beforeInvocation</h2><p>和身份验证的设计类似，前置权限验证的业务处理也是参考模板方法设计模式的理念，将核心处理流程定义在父类 AbstractSecurityInterceptor 中的。再通过关联 AccessDecisionManager 的方式，把身份验证通过的认证对象委托给 AccessDecisionManager 执行。</p><p>在前置权限校验执行完毕后，会使用 this.runAsManager.buildRunAs 与 SecurityContextHolder.getContext().setAuthentication(runAs) 方法将当前上下文中的身份认证成功的对象备份，然后重新拷贝一个新的鉴权成功的对象到上下文的中。这个处理初看会有点难以理解，但是仔细思考一下，这其实是一个友好且细腻的操作。</p><p>原因是 FilterSecurityIntercptor 在大部分情况下是最后一个默认过滤器，如果说还有后续过滤操作的话，那这些肯定是你的自定义的过滤器对象行为产生的。安全起见，security 将权限认证过后的 authenticated 对象拷贝了一份副本，方便用户在后续的自定义过滤器中使用。</p><p>即使自定义过滤器中不小心修改了全局上下文中的 authenticate 对象也无妨，因为 super.finallyInvocation 方法</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>finally</span> <span style=color:#f92672>{</span>
+</code></pre></div><h2 id=abstractsecurityinterceptorbeforeinvocation>AbstractSecurityInterceptor.beforeInvocation</h2>
+<p>和身份验证的设计类似，前置权限验证的业务处理也是参考模板方法设计模式的理念，将核心处理流程定义在父类 AbstractSecurityInterceptor 中的。再通过关联 AccessDecisionManager 的方式，把身份验证通过的认证对象委托给 AccessDecisionManager 执行。</p>
+<p>在前置权限校验执行完毕后，会使用 this.runAsManager.buildRunAs 与 SecurityContextHolder.getContext().setAuthentication(runAs) 方法将当前上下文中的身份认证成功的对象备份，然后重新拷贝一个新的鉴权成功的对象到上下文的中。这个处理初看会有点难以理解，但是仔细思考一下，这其实是一个友好且细腻的操作。</p>
+<p>原因是 FilterSecurityIntercptor 在大部分情况下是最后一个默认过滤器，如果说还有后续过滤操作的话，那这些肯定是你的自定义的过滤器对象行为产生的。安全起见，security 将权限认证过后的 authenticated 对象拷贝了一份副本，方便用户在后续的自定义过滤器中使用。</p>
+<p>即使自定义过滤器中不小心修改了全局上下文中的 authenticate 对象也无妨，因为 super.finallyInvocation 方法</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>finally</span> <span style=color:#f92672>{</span>
 	<span style=color:#66d9ef>super</span><span style=color:#f92672>.</span><span style=color:#a6e22e>finallyInvocation</span><span style=color:#f92672>(</span>token<span style=color:#f92672>);</span>
 <span style=color:#f92672>}</span>
-</code></pre></div><p>会保证自定义过滤器全部执行完毕以后，再把 copy source 「归还」到上下文中。这样，在后续的业务处理中就不用担心获取到一个不安全地 Authentication 对象了。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>Authentication authenticated <span style=color:#f92672>=</span> authenticateIfRequired<span style=color:#f92672>();</span>
+</code></pre></div><p>会保证自定义过滤器全部执行完毕以后，再把 copy source 「归还」到上下文中。这样，在后续的业务处理中就不用担心获取到一个不安全地 Authentication 对象了。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>Authentication authenticated <span style=color:#f92672>=</span> authenticateIfRequired<span style=color:#f92672>();</span>
 Collection<span style=color:#f92672>&lt;</span>ConfigAttribute<span style=color:#f92672>&gt;</span> attributes <span style=color:#f92672>=</span> <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>obtainSecurityMetadataSource</span><span style=color:#f92672>()</span>
 <span style=color:#f92672>.</span><span style=color:#a6e22e>getAttributes</span><span style=color:#f92672>(</span>object<span style=color:#f92672>);</span>
 		<span style=color:#75715e>// Attempt authorization
@@ -65,9 +130,18 @@ Collection<span style=color:#f92672>&lt;</span>ConfigAttribute<span style=color:
 </span><span style=color:#75715e></span>	<span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> InterceptorStatusToken<span style=color:#f92672>(</span>origCtx<span style=color:#f92672>,</span> <span style=color:#66d9ef>true</span><span style=color:#f92672>,</span> attributes<span style=color:#f92672>,</span> object<span style=color:#f92672>);</span>
 <span style=color:#f92672>}</span>
 
-</code></pre></div><h2 id=prepostannotationsecuritymetadatasourcegetattributes>PrePostAnnotationSecurityMetadataSource.getAttributes</h2><p>在 security 中使用的几种鉴权注解一共有以下四种：</p><ul><li>PreFilter</li><li>PreAuthorize</li><li>PostFilter</li><li>PostAuthorize</li></ul><p>其中最常用的是 PreAuthorize，它的含义是在执行目标方法前执行鉴权逻辑。前置过滤器执行的第一个逻辑，就是使用 getAttributes 方法获取目标方法上的注解。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>Collection<span style=color:#f92672>&lt;</span>ConfigAttribute<span style=color:#f92672>&gt;</span> attributes <span style=color:#f92672>=</span> <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>obtainSecurityMetadataSource</span><span style=color:#f92672>()</span>
+</code></pre></div><h2 id=prepostannotationsecuritymetadatasourcegetattributes>PrePostAnnotationSecurityMetadataSource.getAttributes</h2>
+<p>在 security 中使用的几种鉴权注解一共有以下四种：</p>
+<ul>
+<li>PreFilter</li>
+<li>PreAuthorize</li>
+<li>PostFilter</li>
+<li>PostAuthorize</li>
+</ul>
+<p>其中最常用的是 PreAuthorize，它的含义是在执行目标方法前执行鉴权逻辑。前置过滤器执行的第一个逻辑，就是使用 getAttributes 方法获取目标方法上的注解。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>Collection<span style=color:#f92672>&lt;</span>ConfigAttribute<span style=color:#f92672>&gt;</span> attributes <span style=color:#f92672>=</span> <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>obtainSecurityMetadataSource</span><span style=color:#f92672>()</span>
 <span style=color:#f92672>.</span><span style=color:#a6e22e>getAttributes</span><span style=color:#f92672>(</span>object<span style=color:#f92672>);</span>
-</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> Collection<span style=color:#f92672>&lt;</span>ConfigAttribute<span style=color:#f92672>&gt;</span> <span style=color:#a6e22e>getAttributes</span><span style=color:#f92672>(</span>Method method<span style=color:#f92672>,</span> Class<span style=color:#f92672>&lt;?&gt;</span> targetClass<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> Collection<span style=color:#f92672>&lt;</span>ConfigAttribute<span style=color:#f92672>&gt;</span> <span style=color:#a6e22e>getAttributes</span><span style=color:#f92672>(</span>Method method<span style=color:#f92672>,</span> Class<span style=color:#f92672>&lt;?&gt;</span> targetClass<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
 		<span style=color:#66d9ef>if</span> <span style=color:#f92672>(</span>method<span style=color:#f92672>.</span><span style=color:#a6e22e>getDeclaringClass</span><span style=color:#f92672>()</span> <span style=color:#f92672>==</span> Object<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
 			<span style=color:#66d9ef>return</span> Collections<span style=color:#f92672>.</span><span style=color:#a6e22e>emptyList</span><span style=color:#f92672>();</span>
 		<span style=color:#f92672>}</span>
@@ -117,11 +191,12 @@ Collection<span style=color:#f92672>&lt;</span>ConfigAttribute<span style=color:
 		<span style=color:#66d9ef>return</span> attrs<span style=color:#f92672>;</span>
 	<span style=color:#f92672>}</span>
 
-</code></pre></div><p>当通过 getAttributes 获取到对应的鉴权注解后，通过 createPreInvocationAttribute 将注解的 value——一般是 el 表达式，解析成 Express 对象后封装起来等待后续取用。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>String preAuthorizeAttribute <span style=color:#f92672>=</span> preAuthorize <span style=color:#f92672>==</span> <span style=color:#66d9ef>null</span> <span style=color:#f92672>?</span> <span style=color:#66d9ef>null</span> <span style=color:#f92672>:</span> preAuthorize<span style=color:#f92672>.</span><span style=color:#a6e22e>value</span><span style=color:#f92672>();</span>
+</code></pre></div><p>当通过 getAttributes 获取到对应的鉴权注解后，通过 createPreInvocationAttribute 将注解的 value——一般是 el 表达式，解析成 Express 对象后封装起来等待后续取用。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>String preAuthorizeAttribute <span style=color:#f92672>=</span> preAuthorize <span style=color:#f92672>==</span> <span style=color:#66d9ef>null</span> <span style=color:#f92672>?</span> <span style=color:#66d9ef>null</span> <span style=color:#f92672>:</span> preAuthorize<span style=color:#f92672>.</span><span style=color:#a6e22e>value</span><span style=color:#f92672>();</span>
 PreInvocationAttribute pre <span style=color:#f92672>=</span> attributeFactory<span style=color:#f92672>.</span><span style=color:#a6e22e>createPreInvocationAttribute</span><span style=color:#f92672>(</span>
 				preFilterAttribute<span style=color:#f92672>,</span> filterObject<span style=color:#f92672>,</span> preAuthorizeAttribute<span style=color:#f92672>);</span>
 
-</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 <span style=color:#66d9ef>public</span> PreInvocationAttribute <span style=color:#a6e22e>createPreInvocationAttribute</span><span style=color:#f92672>(</span>String preFilterAttribute<span style=color:#f92672>,</span>
 			String filterObject<span style=color:#f92672>,</span> String preAuthorizeAttribute<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
 		<span style=color:#66d9ef>try</span> <span style=color:#f92672>{</span>
@@ -140,7 +215,11 @@ PreInvocationAttribute pre <span style=color:#f92672>=</span> attributeFactory<s
 					<span style=color:#f92672>+</span> e<span style=color:#f92672>.</span><span style=color:#a6e22e>getExpressionString</span><span style=color:#f92672>()</span> <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34;&#39;&#34;</span><span style=color:#f92672>,</span> e<span style=color:#f92672>);</span>
 		<span style=color:#f92672>}</span>
 	<span style=color:#f92672>}</span>
-</code></pre></div><h2 id=accessdecisionmanagerdecide---affirmativebaseddecide>AccessDecisionManager.decide -> AffirmativeBased.decide</h2><p>说完了 getAttribute，让我们回到 beforeInvocation 方法的后续处理。你可能已经猜到了，和身份认证一样 filter 是不会实现实际的权限验证逻辑的。权限验证被交给了过滤器关联的 AccessDecisionManage.decide 方法来决定。</p><p>AccessDecisionManager 是一个接口，它的实现一共有 3 个类。AbstractAccessDecisionManager 是实现接口的抽象类，提供模板方法的定义。AffirmativeBased、ConsensusBased、UnanimousBased 是三个继承 AbstractAccessDecisionManager 的子类实现，分别代表了三种不同的记分策略。</p><p>以 AffirmativeBased 作为代表来说明的话，主要内容就是把 authentication 与封装的鉴权注解 el 表达式传递给关联的成员 decisionVoters 的 vote 方法进行处理。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>decide</span><span style=color:#f92672>(</span>Authentication authentication<span style=color:#f92672>,</span> Object object<span style=color:#f92672>,</span>
+</code></pre></div><h2 id=accessdecisionmanagerdecide---affirmativebaseddecide>AccessDecisionManager.decide -> AffirmativeBased.decide</h2>
+<p>说完了 getAttribute，让我们回到 beforeInvocation 方法的后续处理。你可能已经猜到了，和身份认证一样 filter 是不会实现实际的权限验证逻辑的。权限验证被交给了过滤器关联的 AccessDecisionManage.decide 方法来决定。</p>
+<p>AccessDecisionManager 是一个接口，它的实现一共有 3 个类。AbstractAccessDecisionManager 是实现接口的抽象类，提供模板方法的定义。AffirmativeBased、ConsensusBased、UnanimousBased 是三个继承 AbstractAccessDecisionManager 的子类实现，分别代表了三种不同的记分策略。</p>
+<p>以 AffirmativeBased 作为代表来说明的话，主要内容就是把 authentication 与封装的鉴权注解 el 表达式传递给关联的成员 decisionVoters 的 vote 方法进行处理。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>decide</span><span style=color:#f92672>(</span>Authentication authentication<span style=color:#f92672>,</span> Object object<span style=color:#f92672>,</span>
 			Collection<span style=color:#f92672>&lt;</span>ConfigAttribute<span style=color:#f92672>&gt;</span> configAttributes<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> AccessDeniedException <span style=color:#f92672>{</span>
 		<span style=color:#66d9ef>int</span> deny <span style=color:#f92672>=</span> 0<span style=color:#f92672>;</span>
 
@@ -174,8 +253,10 @@ PreInvocationAttribute pre <span style=color:#f92672>=</span> attributeFactory<s
 </span><span style=color:#75715e></span>		checkAllowIfAllAbstainDecisions<span style=color:#f92672>();</span>
 	<span style=color:#f92672>}</span>
 
-</code></pre></div><h2 id=preinvocationauthorizationadvicevotervote>PreInvocationAuthorizationAdviceVoter.vote</h2><p>和上面的架构设计一样， AccessDecisionVoter 的实现 PreInvocationAuthorizationAdviceVoter.vote 看起来像是要开始处理真正意义上的权限问题了，但是其实依然没到最核心的部分。
-vote 方法会返回一个 preAdvice.before 的结果，这个结果会被转换成 ACCESS_GRANTED : ACCESS_DENIED 这两个数字。为什么 preAdvice.before 的调用不直接返回 boolean 类型的鉴权结果？想想之前的 AffirmativeBased.decide 方法的设计思路：根据多个不同的 voter 返回的结果，我们可以使用不同的投票策略来对分数进行判定。返回一个数字，而不是 boolean 更便于计算最终得分。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>int</span> <span style=color:#a6e22e>vote</span><span style=color:#f92672>(</span>Authentication authentication<span style=color:#f92672>,</span> MethodInvocation method<span style=color:#f92672>,</span>
+</code></pre></div><h2 id=preinvocationauthorizationadvicevotervote>PreInvocationAuthorizationAdviceVoter.vote</h2>
+<p>和上面的架构设计一样， AccessDecisionVoter 的实现 PreInvocationAuthorizationAdviceVoter.vote 看起来像是要开始处理真正意义上的权限问题了，但是其实依然没到最核心的部分。
+vote 方法会返回一个 preAdvice.before 的结果，这个结果会被转换成 ACCESS_GRANTED : ACCESS_DENIED 这两个数字。为什么 preAdvice.before 的调用不直接返回 boolean 类型的鉴权结果？想想之前的 AffirmativeBased.decide 方法的设计思路：根据多个不同的 voter 返回的结果，我们可以使用不同的投票策略来对分数进行判定。返回一个数字，而不是 boolean 更便于计算最终得分。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>int</span> <span style=color:#a6e22e>vote</span><span style=color:#f92672>(</span>Authentication authentication<span style=color:#f92672>,</span> MethodInvocation method<span style=color:#f92672>,</span>
 			Collection<span style=color:#f92672>&lt;</span>ConfigAttribute<span style=color:#f92672>&gt;</span> attributes<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
 
 		<span style=color:#75715e>// Find prefilter and preauth (or combined) attributes
@@ -194,8 +275,10 @@ vote 方法会返回一个 preAdvice.before 的结果，这个结果会被转换
 		<span style=color:#66d9ef>return</span> allowed <span style=color:#f92672>?</span> ACCESS_GRANTED <span style=color:#f92672>:</span> ACCESS_DENIED<span style=color:#f92672>;</span>
 	<span style=color:#f92672>}</span>
 
-</code></pre></div><h2 id=expressionbasedpreinvocationadvicebefore>ExpressionBasedPreInvocationAdvice.before</h2><p>这次我向你保证，ExpressionBasedPreInvocationAdvice.before 真的是专门负责判定权限校验是否通过的方法了。由于之前已经封装好了 el 表达式的 Express 对象，所以调用 ExpressionUtils.evaluateAsBoolean 就可以直接 getVaue 表达式的结果——即权限校验的结果。
-举一反三一下，既然鉴权逻辑就是一个运行时的 el 表达式解析后的结果，那利用 el 表达式可以调用类方法的特性，是不是自定义一个专门的表达式处理程序就可以随心所欲地返回鉴权结果了呢？</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><h2 id=expressionbasedpreinvocationadvicebefore>ExpressionBasedPreInvocationAdvice.before</h2>
+<p>这次我向你保证，ExpressionBasedPreInvocationAdvice.before 真的是专门负责判定权限校验是否通过的方法了。由于之前已经封装好了 el 表达式的 Express 对象，所以调用 ExpressionUtils.evaluateAsBoolean 就可以直接 getVaue 表达式的结果——即权限校验的结果。
+举一反三一下，既然鉴权逻辑就是一个运行时的 el 表达式解析后的结果，那利用 el 表达式可以调用类方法的特性，是不是自定义一个专门的表达式处理程序就可以随心所欲地返回鉴权结果了呢？</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>boolean</span> <span style=color:#a6e22e>before</span><span style=color:#f92672>(</span>Authentication authentication<span style=color:#f92672>,</span> MethodInvocation mi<span style=color:#f92672>,</span>
 			PreInvocationAttribute attr<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
 		PreInvocationExpressionAttribute preAttr <span style=color:#f92672>=</span> <span style=color:#f92672>(</span>PreInvocationExpressionAttribute<span style=color:#f92672>)</span> attr<span style=color:#f92672>;</span>
@@ -217,14 +300,16 @@ vote 方法会返回一个 preAdvice.before 的结果，这个结果会被转换
 		<span style=color:#66d9ef>return</span> ExpressionUtils<span style=color:#f92672>.</span><span style=color:#a6e22e>evaluateAsBoolean</span><span style=color:#f92672>(</span>preAuthorize<span style=color:#f92672>,</span> ctx<span style=color:#f92672>);</span>
 	<span style=color:#f92672>}</span>
 
-</code></pre></div><h3 id=自定义-el-表达式>自定义 EL 表达式</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>    <span style=color:#75715e>/**
+</code></pre></div><h3 id=自定义-el-表达式>自定义 EL 表达式</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>    <span style=color:#75715e>/**
 </span><span style=color:#75715e>     * sysdomain + edit permission
 </span><span style=color:#75715e>     */</span>
     <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>final</span> String SYSDOMAIN_AND_EDITPERMISSION <span style=color:#f92672>=</span> SYSDOMAIN <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34; &amp;&amp; &#34;</span> <span style=color:#f92672>+</span> EDIT_PERMISSION<span style=color:#f92672>;</span>
 
     <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>final</span> String EDIT_PERMISSION_MENU <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;@authorizeAppService.hasPermission(&#39;EDIT_PERMISSION_MENU&#39;)&#34;</span><span style=color:#f92672>;</span>
 
-</code></pre></div><h3 id=自定义-el-表达式处理方法>自定义 EL 表达式处理方法</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><h3 id=自定义-el-表达式处理方法>自定义 EL 表达式处理方法</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>AuthorizeAppService</span> <span style=color:#66d9ef>implements</span> AuthorizeAppInterface <span style=color:#f92672>{</span>
 
     <span style=color:#a6e22e>@Override</span>
@@ -258,7 +343,9 @@ vote 方法会返回一个 preAdvice.before 的结果，这个结果会被转换
     <span style=color:#f92672>}</span>
 <span style=color:#f92672>}</span>
 
-</code></pre></div><p>最后，我们来探讨一下 security 为什么要费尽周折，通过一长串的聚合和依赖把权限校验这个处理流程传递这么长的路径来实现？为什么不在一开始就是 make el Express and return el.value() 搞定所有的事情？</p><p>我想这是因为 security 是一个 architect first 的设计产物。架构优先的设计，高扩展性都特别的重要。这一系列的聚合和依赖，都是「用组合解决问题」思想的体现。尽量用组合来解决问题会带来了很多好处，比如通过 GlobalMethodSecurityConfiguration 类进行的高度可配置化。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><p>最后，我们来探讨一下 security 为什么要费尽周折，通过一长串的聚合和依赖把权限校验这个处理流程传递这么长的路径来实现？为什么不在一开始就是 make el Express and return el.value() 搞定所有的事情？</p>
+<p>我想这是因为 security 是一个 architect first 的设计产物。架构优先的设计，高扩展性都特别的重要。这一系列的聚合和依赖，都是「用组合解决问题」思想的体现。尽量用组合来解决问题会带来了很多好处，比如通过 GlobalMethodSecurityConfiguration 类进行的高度可配置化。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 <span style=color:#a6e22e>@Configuration</span><span style=color:#f92672>(</span>proxyBeanMethods <span style=color:#f92672>=</span> <span style=color:#66d9ef>false</span><span style=color:#f92672>)</span>
 <span style=color:#a6e22e>@Role</span><span style=color:#f92672>(</span>BeanDefinition<span style=color:#f92672>.</span><span style=color:#a6e22e>ROLE_INFRASTRUCTURE</span><span style=color:#f92672>)</span>
 <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>GlobalMethodSecurityConfiguration</span>
@@ -305,15 +392,19 @@ vote 方法会返回一个 preAdvice.before 的结果，这个结果会被转换
 	<span style=color:#f92672>}</span>
 
 <span style=color:#f92672>}</span>
-</code></pre></div><h2 id=异常处理>异常处理</h2><p>voter 与 advicer 只做他们的份内事——对鉴权结果投票并返回。不同的得分策略，决定了同样的分数在不同的策略下，可能会有不同的最终结果。
-所以 AffirmativeBased.decide 如果得出了鉴权失败的结论的话就会抛出一个 AccessDeniedException 异常。这个异常会一直沿着调用链往上抛，直到抛到 FilterSecurityIntercptor 的调用者，ExceptionTranslationFilter 中。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><h2 id=异常处理>异常处理</h2>
+<p>voter 与 advicer 只做他们的份内事——对鉴权结果投票并返回。不同的得分策略，决定了同样的分数在不同的策略下，可能会有不同的最终结果。
+所以 AffirmativeBased.decide 如果得出了鉴权失败的结论的话就会抛出一个 AccessDeniedException 异常。这个异常会一直沿着调用链往上抛，直到抛到 FilterSecurityIntercptor 的调用者，ExceptionTranslationFilter 中。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 		<span style=color:#66d9ef>if</span> <span style=color:#f92672>(</span>deny <span style=color:#f92672>&gt;</span> 0<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
 			<span style=color:#66d9ef>throw</span> <span style=color:#66d9ef>new</span> AccessDeniedException<span style=color:#f92672>(</span>messages<span style=color:#f92672>.</span><span style=color:#a6e22e>getMessage</span><span style=color:#f92672>(</span>
 					<span style=color:#e6db74>&#34;AbstractAccessDecisionManager.accessDenied&#34;</span><span style=color:#f92672>,</span> <span style=color:#e6db74>&#34;Access is denied&#34;</span><span style=color:#f92672>));</span>
 		<span style=color:#f92672>}</span>
 
 
-</code></pre></div><p>ExceptionTranslationFilter 过滤器专门处理和异常相关的事情。它的 doFilter 中定义的 AccessDeniedException 捕获处理会将异常处理交由 accessDeniedHandler.handle 处理。同时得益于组合的设计思想，accessDeniedHandler.handle 也是可配置化的。</p><p>回忆之前的自定义身份验证异常处理类 GlobalExceptionHandler。现在只要增加一个新的接口实现并重写 handle 方法，就可以在一个类里面处理身份验证和鉴权异常了。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><p>ExceptionTranslationFilter 过滤器专门处理和异常相关的事情。它的 doFilter 中定义的 AccessDeniedException 捕获处理会将异常处理交由 accessDeniedHandler.handle 处理。同时得益于组合的设计思想，accessDeniedHandler.handle 也是可配置化的。</p>
+<p>回忆之前的自定义身份验证异常处理类 GlobalExceptionHandler。现在只要增加一个新的接口实现并重写 handle 方法，就可以在一个类里面处理身份验证和鉴权异常了。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>handleSpringSecurityException</span><span style=color:#f92672>(</span>HttpServletRequest request<span style=color:#f92672>,</span>
 	HttpServletResponse response<span style=color:#f92672>,</span> FilterChain chain<span style=color:#f92672>,</span> RuntimeException exception<span style=color:#f92672>)</span>
 <span style=color:#66d9ef>throws</span> IOException<span style=color:#f92672>,</span> ServletException <span style=color:#f92672>{</span>
@@ -352,7 +443,7 @@ vote 方法会返回一个 preAdvice.before 的结果，这个结果会被转换
 	<span style=color:#f92672>}</span>
 <span style=color:#f92672>}</span>
 
-</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 
 <span style=color:#a6e22e>@RestControllerAdvice</span>
 <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>GlobalExceptionHandler</span> <span style=color:#66d9ef>implements</span> AuthenticationEntryPoint<span style=color:#f92672>,</span> AccessDeniedHandler <span style=color:#f92672>{</span>
@@ -369,6 +460,53 @@ vote 方法会返回一个 preAdvice.before 的结果，这个结果会被转换
         HttpResponseWriter<span style=color:#f92672>.</span><span style=color:#a6e22e>sendError</span><span style=color:#f92672>(</span>httpServletResponse<span style=color:#f92672>,</span> HttpServletResponse<span style=color:#f92672>.</span><span style=color:#a6e22e>SC_FORBIDDEN</span><span style=color:#f92672>,</span> <span style=color:#e6db74>&#34;鉴权失败&#34;</span><span style=color:#f92672>);</span>
     <span style=color:#f92672>}</span>
 <span style=color:#f92672>}</span>
-</code></pre></div><h2 id=uml-diagram>Uml Diagram</h2><p>权限验证和身份验证的架构设计类似，大量运用了模板方法设计模式和组合的设计思路，使得各项模块都具备高度配置化。每个类都只履行自己的职责，其余的任务都委托给关联的其他类来执行。</p><p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/springsecurity2.png alt></p></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/springsecurity_authority/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><p>&nbsp;</p></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/springsecurity_authentication2/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
+</code></pre></div><h2 id=uml-diagram>Uml Diagram</h2>
+<p>权限验证和身份验证的架构设计类似，大量运用了模板方法设计模式和组合的设计思路，使得各项模块都具备高度配置化。每个类都只履行自己的职责，其余的任务都委托给关联的其他类来执行。</p>
+<p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/springsecurity2.png alt></p>
+</section>
+<footer>
+<a class="permalink u-url" href=https://www.chucklin.net/post/springsecurity_authority/>🔗</a>
+<hr class=post-underline>
+<p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a>
+</p>
+</footer>
+</article>
+</div>
+<div class=h-card>
+<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
+<div class=card-content>
+<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
+<p class=card-subhead>
+<span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br>
+<a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a>
+</p>
+</div>
+<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
+</div>
+<div id=footer>
+<nav id=article-skip>
+<div class=next>
+<a alt="Newer article" href=https://www.chucklin.net/post/ts_enum/>&larr; Newer</a>
+</div>
+<div class=top>
+<a alt="Top of page" href=#>Top</a>
+</div>
+<div class=prev>
+<a alt="Older article" href=https://www.chucklin.net/post/springsecurity_authentication2/>Older &rarr;</a>
+</div>
+</nav>
+<aside id=social>
+<div id=social-icons>
+<div class=icon-24x24>
+<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
+</div>
+</div>
+</aside>
+<p class=copyright>
+Copyright © 2021 Chuck Lin. All rights reserved.
+</p>
+</div>
+</body>
+</html>

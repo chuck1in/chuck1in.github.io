@@ -1,15 +1,144 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>分析 SQL 语句的一般步骤 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">分析 SQL 语句的一般步骤</h1><p class=post-date>Posted on
-<time class=dt-published datetime=2020-02-20T09:52:00+08:00>20 February, 2020 at 09:52 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><p>数据库的性能调优是一个很大的话题。但是对于开发人员来讲，掌握一些常用的 SQL 优化手段却不是什么难事。
-从本章节开始，将连载总结常用的适合于开发人员的 SQL 优化手段与大家分享。</p><p>要想解决性能优化的问题，首先要想办法发现哪些 SQL 有性能问题。通过下面这几个手段可以比较准确的定位到有问题的 SQL 进行分析优化。</p><h2 id=show-status-命令了解各种-sql-的执行频率>Show status 命令了解各种 SQL 的执行频率</h2><p>在每一个 mysql session 中都可以使用 show status 命令查看当前数据库服务器的状态信息。如下所示：
-<img src=http://static.zybuluo.com/mikumikulch/r8kng6y5uh5bv0368tgww9g3/image_1bf763k1rs9j4kb66v1bnb1e1u9.png alt=image_1bf763k1rs9j4kb66v1bnb1e1u9.png-75.2kB></p><p>Com_xxx 表示每个 xxx 语句执行的次数。具体每个参数的意思你可以通过官方手册进行查询。总而言之，show status 向你展示了当前 mysql 服务器的运行状态。</p><h3 id=慢查询日志>慢查询日志</h3><p>慢查询日志是 mysql 自带的几种日志中的一种。它会自动的记录任何查询时间超出你设置的自定义时间的 sql 语句到你指定的日志目录中。通过慢查询日志可以定位到执行效率较低的具体的 SQL 语句。
-打开慢查询日志的方法等由于每个版本的 mysql 都有不同，请查阅相关的官方文档。</p><h2 id=explain>Explain</h2><p>通过慢查询日志，我们可以查询到效率低下的 SQL 语句。对于这些 SQL 语句又应该如何去分析它问题出在哪里呢？
+<!doctype html><html lang=zh-cn>
+<head>
+<meta charset=utf-8>
+<title>分析 SQL 语句的一般步骤 | ChuckLin's Blog</title>
+<meta name=description content="Love and Peace">
+<meta name=author content>
+<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
+<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
+<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
+<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
+<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
+<meta name=msapplication-TileColor content="#00aba9">
+<meta name=theme-color content="#ffffff">
+<link rel=me href=mailto:mikumiku.lch@hotmail.com>
+<link rel=me href=https://github.com/chuck1in>
+<link rel=authorization_endpoint href=https://indieauth.com/auth>
+<link rel=token_endpoint href=https://tokens.indieauth.com/token>
+<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
+<meta name=viewport content="width=device-width,initial-scale=1">
+</head>
+<body>
+<div id=sitelogo>
+<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
+</div>
+<header>
+<nav>
+<div id=page-nav>
+<div class=page-nav-item>
+<a href=https://www.chucklin.net/>Home</a>
+</div>
+<div class=page-nav-item>
+<a href=/about/me>
+<span>About</span>
+</a>
+</div>
+<div class=page-nav-item>
+<a href=/tags>
+<span>Tag</span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<div id=content>
+<article class=h-entry>
+<header>
+<h1 class="post-title p-name">分析 SQL 语句的一般步骤</h1>
+<p class=post-date>Posted on
+<time class=dt-published datetime=2020-02-20T09:52:00+08:00>
+20 February, 2020 at 09:52 +0800
+</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
+</p>
+</header>
+<section class="content e-content">
+<p>数据库的性能调优是一个很大的话题。但是对于开发人员来讲，掌握一些常用的 SQL 优化手段却不是什么难事。
+从本章节开始，将连载总结常用的适合于开发人员的 SQL 优化手段与大家分享。</p>
+<p>要想解决性能优化的问题，首先要想办法发现哪些 SQL 有性能问题。通过下面这几个手段可以比较准确的定位到有问题的 SQL 进行分析优化。</p>
+<h2 id=show-status-命令了解各种-sql-的执行频率>Show status 命令了解各种 SQL 的执行频率</h2>
+<p>在每一个 mysql session 中都可以使用 show status 命令查看当前数据库服务器的状态信息。如下所示：
+<img src=http://static.zybuluo.com/mikumikulch/r8kng6y5uh5bv0368tgww9g3/image_1bf763k1rs9j4kb66v1bnb1e1u9.png alt=image_1bf763k1rs9j4kb66v1bnb1e1u9.png-75.2kB></p>
+<p>Com_xxx 表示每个 xxx 语句执行的次数。具体每个参数的意思你可以通过官方手册进行查询。总而言之，show status 向你展示了当前 mysql 服务器的运行状态。</p>
+<h3 id=慢查询日志>慢查询日志</h3>
+<p>慢查询日志是 mysql 自带的几种日志中的一种。它会自动的记录任何查询时间超出你设置的自定义时间的 sql 语句到你指定的日志目录中。通过慢查询日志可以定位到执行效率较低的具体的 SQL 语句。
+打开慢查询日志的方法等由于每个版本的 mysql 都有不同，请查阅相关的官方文档。</p>
+<h2 id=explain>Explain</h2>
+<p>通过慢查询日志，我们可以查询到效率低下的 SQL 语句。对于这些 SQL 语句又应该如何去分析它问题出在哪里呢？
 <img src=http://static.zybuluo.com/mikumikulch/ijvquijfj0905hhq7wwk43eu/image_1bf77g112l9c1aqd1g431vuncu6m.png alt=image_1bf77g112l9c1aqd1g431vuncu6m.png-40.4kB>
 explain select 语句所返回的结果包含了该查询语句的执行细节。
 具体每一个列的含义可对照官方手册。这里我们只提最主要的一个列的含义【type】：访问类型。
-常见的访问类型如下：</p><ul><li>all 全表扫描</li><li>index 索引全表扫描。按照索引顺序扫描全表。避免排序工作。但实际上由于查询的字段不是在索引中，实际上还是走了全表扫描。</li><li>range 索引范围扫描 如： &lt;、>、between 等操作符</li><li>ref 使用非唯一索引扫描或前缀扫描。</li><li>eq-ref 每次与之前的表合并行都只在该表读取一行，这是除了 system，const 之外最好的一种。</li><li>const、system 当检索条件对应到索引中为固定的值时，查询类型为 const。当查询的表只有一行时，查询类型为 system。</li><li>NULL 不需要检索表就能得到结果，如 select 1</li></ul><p>从上到下，性能由最差到最好。一般来说，至少也要优化语句达到 range 这个等级。</p><h2 id=extra-列>Extra 列</h2><p><a href=https://img3.doubanio.com/view/note/large/public/p10068772.jpg!%5Bimage_1btlji639gf719d45kp1eag11kmp.png-188.3kB%5D%5B3%5D>https://img3.doubanio.com/view/note/large/public/p10068772.jpg![image_1btlji639gf719d45kp1eag11kmp.png-188.3kB][3]</a>
-<a href=https://img1.doubanio.com/view/note/large/public/p10068778.jpg!%5Bimage_1btljifq510oa66b14tk1v4ngfh16.png-167.2kB%5D%5B4%5D>https://img1.doubanio.com/view/note/large/public/p10068778.jpg![image_1btljifq510oa66b14tk1v4ngfh16.png-167.2kB][4]</a></p><p>关于 Using Where：
-<a href=https://img3.doubanio.com/view/note/large/public/p10073361.jpg!%5Bimage_1btljj0h51at71cnakhjt921vd61j.png-145.8kB%5D%5B5%5D>https://img3.doubanio.com/view/note/large/public/p10073361.jpg![image_1btljj0h51at71cnakhjt921vd61j.png-145.8kB][5]</a></p><h2 id=show-profile-分析-sql>show profile 分析 SQL</h2><p>show profle 能够在做 SQL 优化时帮助我们了解时间都耗费到哪里去了。
-通常来说，对于一般的开发人员来讲 Explain 已经足够解决问题了。对于相关 show profile 的信息请查阅 mysql 官方手册。</p><h2 id=trace-分析优化器>trace 分析优化器</h2><p>mysql 5.6 提供了对 SQL 的跟踪 trace。该功能进一步展示了优化器是如何选择执行计划的。对于开发人员来讲，explain 是最常用的分析手段。若对 trace 有兴趣请查阅相关的 mysql 官方手册。</p><h2 id=总结>总结</h2><p>性能优化最忌讳之一便是无用功优化。准确的找出问题 SQL 以及分析其原因，是优化 SQL 语句的第一步也是最重要的一步。</p><hr><p><em>参考书籍</em>
-<em>《深入浅出 mysql》</em></p></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/analysesql/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/sql class="post-tag p-category">sql</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/sqlindex/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/cors/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
+常见的访问类型如下：</p>
+<ul>
+<li>all 全表扫描</li>
+<li>index 索引全表扫描。按照索引顺序扫描全表。避免排序工作。但实际上由于查询的字段不是在索引中，实际上还是走了全表扫描。</li>
+<li>range 索引范围扫描 如： &lt;、>、between 等操作符</li>
+<li>ref 使用非唯一索引扫描或前缀扫描。</li>
+<li>eq-ref 每次与之前的表合并行都只在该表读取一行，这是除了 system，const 之外最好的一种。</li>
+<li>const、system 当检索条件对应到索引中为固定的值时，查询类型为 const。当查询的表只有一行时，查询类型为 system。</li>
+<li>NULL 不需要检索表就能得到结果，如 select 1</li>
+</ul>
+<p>从上到下，性能由最差到最好。一般来说，至少也要优化语句达到 range 这个等级。</p>
+<h2 id=extra-列>Extra 列</h2>
+<p><a href=https://img3.doubanio.com/view/note/large/public/p10068772.jpg!%5Bimage_1btlji639gf719d45kp1eag11kmp.png-188.3kB%5D%5B3%5D>https://img3.doubanio.com/view/note/large/public/p10068772.jpg![image_1btlji639gf719d45kp1eag11kmp.png-188.3kB][3]</a>
+<a href=https://img1.doubanio.com/view/note/large/public/p10068778.jpg!%5Bimage_1btljifq510oa66b14tk1v4ngfh16.png-167.2kB%5D%5B4%5D>https://img1.doubanio.com/view/note/large/public/p10068778.jpg![image_1btljifq510oa66b14tk1v4ngfh16.png-167.2kB][4]</a></p>
+<p>关于 Using Where：
+<a href=https://img3.doubanio.com/view/note/large/public/p10073361.jpg!%5Bimage_1btljj0h51at71cnakhjt921vd61j.png-145.8kB%5D%5B5%5D>https://img3.doubanio.com/view/note/large/public/p10073361.jpg![image_1btljj0h51at71cnakhjt921vd61j.png-145.8kB][5]</a></p>
+<h2 id=show-profile-分析-sql>show profile 分析 SQL</h2>
+<p>show profle 能够在做 SQL 优化时帮助我们了解时间都耗费到哪里去了。
+通常来说，对于一般的开发人员来讲 Explain 已经足够解决问题了。对于相关 show profile 的信息请查阅 mysql 官方手册。</p>
+<h2 id=trace-分析优化器>trace 分析优化器</h2>
+<p>mysql 5.6 提供了对 SQL 的跟踪 trace。该功能进一步展示了优化器是如何选择执行计划的。对于开发人员来讲，explain 是最常用的分析手段。若对 trace 有兴趣请查阅相关的 mysql 官方手册。</p>
+<h2 id=总结>总结</h2>
+<p>性能优化最忌讳之一便是无用功优化。准确的找出问题 SQL 以及分析其原因，是优化 SQL 语句的第一步也是最重要的一步。</p>
+<hr>
+<p><em>参考书籍</em>
+<em>《深入浅出 mysql》</em></p>
+</section>
+<footer>
+<a class="permalink u-url" href=https://www.chucklin.net/post/analysesql/>🔗</a>
+<hr class=post-underline>
+<p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/sql class="post-tag p-category">sql</a>
+</p>
+</footer>
+</article>
+</div>
+<div class=h-card>
+<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
+<div class=card-content>
+<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
+<p class=card-subhead>
+<span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br>
+<a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a>
+</p>
+</div>
+<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
+</div>
+<div id=footer>
+<nav id=article-skip>
+<div class=next>
+<a alt="Newer article" href=https://www.chucklin.net/post/sqlindex/>&larr; Newer</a>
+</div>
+<div class=top>
+<a alt="Top of page" href=#>Top</a>
+</div>
+<div class=prev>
+<a alt="Older article" href=https://www.chucklin.net/post/cors/>Older &rarr;</a>
+</div>
+</nav>
+<aside id=social>
+<div id=social-icons>
+<div class=icon-24x24>
+<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
+</div>
+</div>
+</aside>
+<p class=copyright>
+Copyright © 2021 Chuck Lin. All rights reserved.
+</p>
+</div>
+</body>
+</html>

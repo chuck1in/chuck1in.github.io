@@ -1,9 +1,80 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>SSO、OAuth2、与 OpenID connect | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">SSO、OAuth2、与 OpenID connect</h1><p class=post-date>Posted on
-<time class=dt-published datetime=2020-11-24T10:52:00+08:00>24 November, 2020 at 10:52 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h2 id=授权与认证>授权与认证</h2><p>上一章我们一直在反复阐述一个事实： OAuth2 协议是用来解决用户对软件授权的。为何要如此强调这个事实呢？因为授权、认证、单点登录非常容易被混淆。
-用户认证是指证明自己的身份。认证有时候会和授权一起使用，就像你去酒店必须首先用身份证证明你的身份，酒店才会授予你使用酒店服务的权利一样。</p><h2 id=oauth2-与-oidc>OAuth2 与 OIDC</h2><p>今天要介绍的是 OpenID connect 简称 OIDC 是一个关于第三方用户认证的标准化协议。这个协议是建立在我们之前介绍的 OAuth2.0 的基础上的。这又是一个容易混淆的地方：虽然授权和认证在语义上明显不同，但是他们却使用类似的协议来解决问题。还记得之前我们谈到过 OAuth2.0 是一个授权协议，但是他的功能不仅仅如此。OAuth 可以被用来解决任何问题，身份认证就是其中一种。
-于是，基于 OAuth 2.0 的协议流程，第三方用户认证协议 OpenID connect 就被设计出来了。所以 OIDC 是 OAuth2.0 的超集，但是认证并不是授权的超集。</p><h2 id=oidc-授权码许可类型流程简介>OIDC 授权码许可类型流程简介</h2><p>是的，OIDC 也有两种常用类型：授权码许可类型与隐式许可类型。由于 OIDC 在 OAuth2.0 的基础上被设计出来，所以 OAuth2.0 的流程基本上就是 OIDC 的流程。</p><p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/2020-11-24-17-51-45.png alt></p><p>在 OIDC 的流程中，相对 OAuth2.0 有 3 个变化。</p><ol><li>授权服务器 + 资源服务器 = 认证服务器。</li><li>根据授权码获取的 token 中包含 id_token。</li><li>用户详情可以使用 UserInfo 端点获取。
+<!doctype html><html lang=zh-cn>
+<head>
+<meta charset=utf-8>
+<title>SSO、OAuth2、与 OpenID connect | ChuckLin's Blog</title>
+<meta name=description content="Love and Peace">
+<meta name=author content>
+<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
+<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
+<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
+<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
+<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
+<meta name=msapplication-TileColor content="#00aba9">
+<meta name=theme-color content="#ffffff">
+<link rel=me href=mailto:mikumiku.lch@hotmail.com>
+<link rel=me href=https://github.com/chuck1in>
+<link rel=authorization_endpoint href=https://indieauth.com/auth>
+<link rel=token_endpoint href=https://tokens.indieauth.com/token>
+<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
+<meta name=viewport content="width=device-width,initial-scale=1">
+</head>
+<body>
+<div id=sitelogo>
+<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
+</div>
+<header>
+<nav>
+<div id=page-nav>
+<div class=page-nav-item>
+<a href=https://www.chucklin.net/>Home</a>
+</div>
+<div class=page-nav-item>
+<a href=/about/me>
+<span>About</span>
+</a>
+</div>
+<div class=page-nav-item>
+<a href=/tags>
+<span>Tag</span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<div id=content>
+<article class=h-entry>
+<header>
+<h1 class="post-title p-name">SSO、OAuth2、与 OpenID connect</h1>
+<p class=post-date>Posted on
+<time class=dt-published datetime=2020-11-24T10:52:00+08:00>
+24 November, 2020 at 10:52 +0800
+</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
+</p>
+</header>
+<section class="content e-content">
+<h2 id=授权与认证>授权与认证</h2>
+<p>上一章我们一直在反复阐述一个事实： OAuth2 协议是用来解决用户对软件授权的。为何要如此强调这个事实呢？因为授权、认证、单点登录非常容易被混淆。
+用户认证是指证明自己的身份。认证有时候会和授权一起使用，就像你去酒店必须首先用身份证证明你的身份，酒店才会授予你使用酒店服务的权利一样。</p>
+<h2 id=oauth2-与-oidc>OAuth2 与 OIDC</h2>
+<p>今天要介绍的是 OpenID connect 简称 OIDC 是一个关于第三方用户认证的标准化协议。这个协议是建立在我们之前介绍的 OAuth2.0 的基础上的。这又是一个容易混淆的地方：虽然授权和认证在语义上明显不同，但是他们却使用类似的协议来解决问题。还记得之前我们谈到过 OAuth2.0 是一个授权协议，但是他的功能不仅仅如此。OAuth 可以被用来解决任何问题，身份认证就是其中一种。
+于是，基于 OAuth 2.0 的协议流程，第三方用户认证协议 OpenID connect 就被设计出来了。所以 OIDC 是 OAuth2.0 的超集，但是认证并不是授权的超集。</p>
+<h2 id=oidc-授权码许可类型流程简介>OIDC 授权码许可类型流程简介</h2>
+<p>是的，OIDC 也有两种常用类型：授权码许可类型与隐式许可类型。由于 OIDC 在 OAuth2.0 的基础上被设计出来，所以 OAuth2.0 的流程基本上就是 OIDC 的流程。</p>
+<p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/2020-11-24-17-51-45.png alt></p>
+<p>在 OIDC 的流程中，相对 OAuth2.0 有 3 个变化。</p>
+<ol>
+<li>授权服务器 + 资源服务器 = 认证服务器。</li>
+<li>根据授权码获取的 token 中包含 id_token。</li>
+<li>用户详情可以使用 UserInfo 端点获取。
 认证服务器的变化很容易理解，由于身份认证不需要使用特定资源只需要对身份认证，所以整合了授权服务器和资源服务器合并为认证服务器。
-但是单独设计 id_token 的理由是什么呢？在授权的场景中，access_token 在协议中是对客户端透明的，不需要被解析。而身份认证需要告诉客户端用户的具体身份；另外 access_token 的用处是访问受保护资源，这是属于授权的概念而不是属于身份认证的概念；最后授权的有效时间和身份认证的有效时间很可能不一样，所以单独设计了 id_token。</li></ol><p>id_token 是一个内容基于 jwt 格式的身份令牌（结构如下）。客户端通过解析这个令牌获取用户的登录认证数据以后，就可以为用户提供基于认证中心的第三方登录功能了。</p><p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/jwtoidc.png alt></p><p>当然偶尔这个 jwt 的有效载荷会更加充实一点：</p><pre><code>{
+但是单独设计 id_token 的理由是什么呢？在授权的场景中，access_token 在协议中是对客户端透明的，不需要被解析。而身份认证需要告诉客户端用户的具体身份；另外 access_token 的用处是访问受保护资源，这是属于授权的概念而不是属于身份认证的概念；最后授权的有效时间和身份认证的有效时间很可能不一样，所以单独设计了 id_token。</li>
+</ol>
+<p>id_token 是一个内容基于 jwt 格式的身份令牌（结构如下）。客户端通过解析这个令牌获取用户的登录认证数据以后，就可以为用户提供基于认证中心的第三方登录功能了。</p>
+<p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/jwtoidc.png alt></p>
+<p>当然偶尔这个 jwt 的有效载荷会更加充实一点：</p>
+<pre><code>{
   &quot;iss&quot;: &quot;http://server.example.com&quot;,
   &quot;sub&quot;: &quot;248289761001&quot;,
   &quot;aud&quot;: &quot;s6BhdRkqt3&quot;,
@@ -18,7 +89,8 @@
   &quot;email&quot;: &quot;janedoe@example.com&quot;,
   &quot;picture&quot;: &quot;http://example.com/janedoe/me.jpg&quot;
 }
-</code></pre><p>至于 UserInfo 端点，由于 jwt 格式的 id_token 并不包含过多的用户业务信息，而在用户体验上客户端又需要向用户展示头像、昵称等内容，所以 OIDC 定义了客户端可以使用 access_token 访问 UserInfo 端点获取用户详情的标准化接口。</p><pre><code>HTTP/1.1 200 OK
+</code></pre><p>至于 UserInfo 端点，由于 jwt 格式的 id_token 并不包含过多的用户业务信息，而在用户体验上客户端又需要向用户展示头像、昵称等内容，所以 OIDC 定义了客户端可以使用 access_token 访问 UserInfo 端点获取用户详情的标准化接口。</p>
+<pre><code>HTTP/1.1 200 OK
 Content-Type: application/json
 
   {
@@ -30,8 +102,60 @@ Content-Type: application/json
    &quot;email&quot;: &quot;mikumiku.lch@hotmail.com&quot;
   }
 </code></pre><p>同时这也是 access_token 用于访问受保护资源，id_token 用于身份认证的一次结合应用。
-说了这么多，那学习 OIDC 有什么用呢？ OIDC 的其中一个用处就是可以用来构建一个单点登录系统（SSO）。</p><h2 id=一个标准化的-sso-场境>一个标准化的 SSO 场境</h2><p>假设企业为了自身的运营需要分别部署了 2 个系统：「A、B」。两个系统上线时间不同，提供的业务服务不同，用户体系与认证逻辑不同。所以这两个系统是完全「互不相通」的。
-现在需要在不影响现有系统逻辑的前提条件下，提供「一次登陆、多端有效」的功能。</p><p>经过构思，我们决定构建统一登陆中心；接着让两个系统都认可统一登陆中心的认证结果，来达到「最小化改动」现有系统的前提下实现 SSO 的功能。回顾上面的知识，OIDC 协议中的身份认证服务器就可以满足这一要求。</p><p><img src=/images/sso.png alt=sso></p><h1 id=heading></h1><h2 id=sso-单点登录系统>SSO 单点登录系统</h2><p>注意这也是一个容易搞错的知识点：没有任何规定要求必须使用 OIDC 来构建 SSO。实际上你完全可以不使用 OIDC，或是使用 OIDC 的隐式许可类型流程来构建一个 SSO，这都完全取决于你的选择，况且互联网上运行的大部分 SSO 都并没有严格遵守 OIDC 规范。</p></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/oidc/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
+说了这么多，那学习 OIDC 有什么用呢？ OIDC 的其中一个用处就是可以用来构建一个单点登录系统（SSO）。</p>
+<h2 id=一个标准化的-sso-场境>一个标准化的 SSO 场境</h2>
+<p>假设企业为了自身的运营需要分别部署了 2 个系统：「A、B」。两个系统上线时间不同，提供的业务服务不同，用户体系与认证逻辑不同。所以这两个系统是完全「互不相通」的。
+现在需要在不影响现有系统逻辑的前提条件下，提供「一次登陆、多端有效」的功能。</p>
+<p>经过构思，我们决定构建统一登陆中心；接着让两个系统都认可统一登陆中心的认证结果，来达到「最小化改动」现有系统的前提下实现 SSO 的功能。回顾上面的知识，OIDC 协议中的身份认证服务器就可以满足这一要求。</p>
+<p><img src=/images/sso.png alt=sso></p>
+<h1 id=heading></h1>
+<h2 id=sso-单点登录系统>SSO 单点登录系统</h2>
+<p>注意这也是一个容易搞错的知识点：没有任何规定要求必须使用 OIDC 来构建 SSO。实际上你完全可以不使用 OIDC，或是使用 OIDC 的隐式许可类型流程来构建一个 SSO，这都完全取决于你的选择，况且互联网上运行的大部分 SSO 都并没有严格遵守 OIDC 规范。</p>
+</section>
+<footer>
+<a class="permalink u-url" href=https://www.chucklin.net/post/oidc/>🔗</a>
+<hr class=post-underline>
+<p class=post-tag>Tags for this post:
 <a href=https://www.chucklin.net/tags/oauth class="post-tag p-category">oauth</a>
-<a href=https://www.chucklin.net/tags/oidc class="post-tag p-category">oidc</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/springsecurity_authentication/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/oauth2/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
+<a href=https://www.chucklin.net/tags/oidc class="post-tag p-category">oidc</a>
+</p>
+</footer>
+</article>
+</div>
+<div class=h-card>
+<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
+<div class=card-content>
+<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
+<p class=card-subhead>
+<span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br>
+<a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a>
+</p>
+</div>
+<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
+</div>
+<div id=footer>
+<nav id=article-skip>
+<div class=next>
+<a alt="Newer article" href=https://www.chucklin.net/post/springsecurity_authentication/>&larr; Newer</a>
+</div>
+<div class=top>
+<a alt="Top of page" href=#>Top</a>
+</div>
+<div class=prev>
+<a alt="Older article" href=https://www.chucklin.net/post/oauth2/>Older &rarr;</a>
+</div>
+</nav>
+<aside id=social>
+<div id=social-icons>
+<div class=icon-24x24>
+<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
+</div>
+</div>
+</aside>
+<p class=copyright>
+Copyright © 2021 Chuck Lin. All rights reserved.
+</p>
+</div>
+</body>
+</html>

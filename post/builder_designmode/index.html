@@ -1,8 +1,68 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>建造者设计模式 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">建造者设计模式</h1><p class=post-date>Posted on
-<time class=dt-published datetime=2018-01-12T09:23:00+08:00>12 January, 2018 at 09:23 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h2 id=什么是建造者设计模式>什么是建造者设计模式</h2><p>建造者设计模式是将一个复杂对象的构建与它的表示分离，使得同样的构建过程可以创建不同的表示的一种手段。
+<!doctype html><html lang=zh-cn>
+<head>
+<meta charset=utf-8>
+<title>建造者设计模式 | ChuckLin's Blog</title>
+<meta name=description content="Love and Peace">
+<meta name=author content>
+<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
+<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
+<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
+<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
+<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
+<meta name=msapplication-TileColor content="#00aba9">
+<meta name=theme-color content="#ffffff">
+<link rel=me href=mailto:mikumiku.lch@hotmail.com>
+<link rel=me href=https://github.com/chuck1in>
+<link rel=authorization_endpoint href=https://indieauth.com/auth>
+<link rel=token_endpoint href=https://tokens.indieauth.com/token>
+<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
+<meta name=viewport content="width=device-width,initial-scale=1">
+</head>
+<body>
+<div id=sitelogo>
+<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
+</div>
+<header>
+<nav>
+<div id=page-nav>
+<div class=page-nav-item>
+<a href=https://www.chucklin.net/>Home</a>
+</div>
+<div class=page-nav-item>
+<a href=/about/me>
+<span>About</span>
+</a>
+</div>
+<div class=page-nav-item>
+<a href=/tags>
+<span>Tag</span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<div id=content>
+<article class=h-entry>
+<header>
+<h1 class="post-title p-name">建造者设计模式</h1>
+<p class=post-date>Posted on
+<time class=dt-published datetime=2018-01-12T09:23:00+08:00>
+12 January, 2018 at 09:23 +0800
+</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
+</p>
+</header>
+<section class="content e-content">
+<h2 id=什么是建造者设计模式>什么是建造者设计模式</h2>
+<p>建造者设计模式是将一个复杂对象的构建与它的表示分离，使得同样的构建过程可以创建不同的表示的一种手段。
 建造者设计模式是创建者模式之一。建造者模式往往用来和工厂设计模式做类比，因为这两种设计模式在设计思路上有很相似的地方。
-不过需要注意的是，搞清楚这两者的区别非常重要。当理解了两种设计模式对应的问题场景，以及分别用来解决什么样的问题以后，才算真正掌握了建造者设计模式。</p><h2 id=建造者设计模式怎么用>建造者设计模式怎么用？</h2><p>设想这样一个业务场景。
-你需要设计一个类，这个类需要表示某个食品的外包装，外包装上需要显示这个食品所含有的成分。而每个食品含有的成分不同，并且有些成分是必然会印刷到包装上的，而有些成分则是某些食品所独有的。你应该怎么做？</p><p>分析上述问题，由于食品品种不同，成分不同，所以食品包装类中含有必须，非必须的成分字段。面对这样的问题，最容易想到的就是重叠构造器模式。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#f92672>package</span> builder<span style=color:#f92672>;</span>
+不过需要注意的是，搞清楚这两者的区别非常重要。当理解了两种设计模式对应的问题场景，以及分别用来解决什么样的问题以后，才算真正掌握了建造者设计模式。</p>
+<h2 id=建造者设计模式怎么用>建造者设计模式怎么用？</h2>
+<p>设想这样一个业务场景。
+你需要设计一个类，这个类需要表示某个食品的外包装，外包装上需要显示这个食品所含有的成分。而每个食品含有的成分不同，并且有些成分是必然会印刷到包装上的，而有些成分则是某些食品所独有的。你应该怎么做？</p>
+<p>分析上述问题，由于食品品种不同，成分不同，所以食品包装类中含有必须，非必须的成分字段。面对这样的问题，最容易想到的就是重叠构造器模式。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#f92672>package</span> builder<span style=color:#f92672>;</span>
 
 <span style=color:#75715e>/**
 </span><span style=color:#75715e> * 建造者设计模式
@@ -84,10 +144,13 @@
 
 <span style=color:#f92672>}</span>
 
-</code></pre></div><p>重叠构造器很容易理解。我们为食品包装类设计了复数个构造器，每个构造器，都拥有必须持有的两个字段。而每一个构造器都比上一个构造器多出一个可选字段。这样用户就可以根据需要，调用不同的构造器创建不同的对象了。</p><p>重叠构造器能够解决问题，但是却有一个重大的缺陷：代码非常难以阅读，用户也相当难以使用这样的类。
+</code></pre></div><p>重叠构造器很容易理解。我们为食品包装类设计了复数个构造器，每个构造器，都拥有必须持有的两个字段。而每一个构造器都比上一个构造器多出一个可选字段。这样用户就可以根据需要，调用不同的构造器创建不同的对象了。</p>
+<p>重叠构造器能够解决问题，但是却有一个重大的缺陷：代码非常难以阅读，用户也相当难以使用这样的类。
 原因很简单，用户在使用这样的类时，需要仔细去阅读 doc（如果有的话），还需要搞清楚到底哪个是可选哪个是必选。最后在创建对象时传参更是要小心翼翼-稍不注意，就会造成参数传递错误，并且是运行时错误，得不到任何检查。
-在本例中只拥有 6 个成员变量的类还算勉强可以接受，但假设这个类的成员变量膨胀到 20 个，那么通过这种方式创建这种类的对象的体验实在是太糟糕了。</p><p>如何让参数传递既安全，代码又易读呢？
-假设我们将大量参数分装为一个 javaBean，创建对象时，通过 getSet 方法来设值是否是一个可行的方法？</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#f92672>package</span> builder<span style=color:#f92672>;</span>
+在本例中只拥有 6 个成员变量的类还算勉强可以接受，但假设这个类的成员变量膨胀到 20 个，那么通过这种方式创建这种类的对象的体验实在是太糟糕了。</p>
+<p>如何让参数传递既安全，代码又易读呢？
+假设我们将大量参数分装为一个 javaBean，创建对象时，通过 getSet 方法来设值是否是一个可行的方法？</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#f92672>package</span> builder<span style=color:#f92672>;</span>
 
 <span style=color:#75715e>/**
 </span><span style=color:#75715e> * 建造者设计模式
@@ -169,9 +232,11 @@
     <span style=color:#f92672>}</span>
 <span style=color:#f92672>}</span>
 
-</code></pre></div><p>JavaBean 模式似乎用非常简单的方法解决了问题。但是却引发了一个致命的缺陷。食品包装对象从一个不可变对象成为了一个可变对象。在并发的逻辑中，你就不得不花心思在它的同步处理上面。这真是有点得不偿失的感觉。</p><p>那么创建这样的较复杂对象，有没有办法写出又安全，阅读性又强，用户又易用的代码呢？
+</code></pre></div><p>JavaBean 模式似乎用非常简单的方法解决了问题。但是却引发了一个致命的缺陷。食品包装对象从一个不可变对象成为了一个可变对象。在并发的逻辑中，你就不得不花心思在它的同步处理上面。这真是有点得不偿失的感觉。</p>
+<p>那么创建这样的较复杂对象，有没有办法写出又安全，阅读性又强，用户又易用的代码呢？
 答案当然是有。结合静态内部类的创建者模式就是用来解决这样的问题的。
-改进一下上例的 bean 模式，我们将 bean 改为不可变类，并且不允许外部创建对象。接下来通过创建内部的建造者对象，再调用建造方法来建造外部对象。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#f92672>package</span> builder<span style=color:#f92672>;</span>
+改进一下上例的 bean 模式，我们将 bean 改为不可变类，并且不允许外部创建对象。接下来通过创建内部的建造者对象，再调用建造方法来建造外部对象。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#f92672>package</span> builder<span style=color:#f92672>;</span>
 
 <span style=color:#75715e>/**
 </span><span style=color:#75715e> * 建造者设计模式
@@ -286,6 +351,59 @@
 <span style=color:#f92672>}</span>
 
 </code></pre></div><p>分析示例代码，NutritionFactsBuilderPattern 是不可变类，保证了线程安全。建造者类的 set 与 get 方法保证了代码的易读性，并且在编译阶段就为用户提供了参数约束性检查。通过必须字段设置为 final 防止用户漏传必须字段。
-建造者模式完美解决了我们的问题，还没有任何其他模式所带来的缺陷。所以它是当我们面临类似问题时应该优先选择的解决方案。</p><h2 id=总结>总结</h2><ol><li>建造者设计模式往往用来解决复杂对象的创建问题。</li><li>工厂设计模式的重点在于为多个产品提供创建途径，用户直接和工厂打交道，并不关注产品本身的创建复杂度的问题。</li><li>建造者设计模式重点在于产品本身的创建，用户直接与创建者打交道，主要解决的是复杂产品对象的创建问题。</li><li>当一个对象的初始化参数多余 5 个，并且有可选，非可选参数的情况出现时，请直接选用建造者设计模式。</li></ol><p>参考资料：《effectiveJava》</p></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/builder_designmode/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/command_designmode/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/decorater_designmode/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
+建造者模式完美解决了我们的问题，还没有任何其他模式所带来的缺陷。所以它是当我们面临类似问题时应该优先选择的解决方案。</p>
+<h2 id=总结>总结</h2>
+<ol>
+<li>建造者设计模式往往用来解决复杂对象的创建问题。</li>
+<li>工厂设计模式的重点在于为多个产品提供创建途径，用户直接和工厂打交道，并不关注产品本身的创建复杂度的问题。</li>
+<li>建造者设计模式重点在于产品本身的创建，用户直接与创建者打交道，主要解决的是复杂产品对象的创建问题。</li>
+<li>当一个对象的初始化参数多余 5 个，并且有可选，非可选参数的情况出现时，请直接选用建造者设计模式。</li>
+</ol>
+<p>参考资料：《effectiveJava》</p>
+</section>
+<footer>
+<a class="permalink u-url" href=https://www.chucklin.net/post/builder_designmode/>🔗</a>
+<hr class=post-underline>
+<p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a>
+</p>
+</footer>
+</article>
+</div>
+<div class=h-card>
+<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
+<div class=card-content>
+<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
+<p class=card-subhead>
+<span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br>
+<a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a>
+</p>
+</div>
+<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
+</div>
+<div id=footer>
+<nav id=article-skip>
+<div class=next>
+<a alt="Newer article" href=https://www.chucklin.net/post/command_designmode/>&larr; Newer</a>
+</div>
+<div class=top>
+<a alt="Top of page" href=#>Top</a>
+</div>
+<div class=prev>
+<a alt="Older article" href=https://www.chucklin.net/post/decorater_designmode/>Older &rarr;</a>
+</div>
+</nav>
+<aside id=social>
+<div id=social-icons>
+<div class=icon-24x24>
+<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
+</div>
+</div>
+</aside>
+<p class=copyright>
+Copyright © 2021 Chuck Lin. All rights reserved.
+</p>
+</div>
+</body>
+</html>

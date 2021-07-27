@@ -1,7 +1,67 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>单元测试的哲学 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">单元测试的哲学</h1><p class=post-date>Posted on
-<time class=dt-published datetime=2020-01-27T09:51:00+08:00>27 January, 2020 at 09:51 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h2 id=审美之前先审丑>审美之前先审丑</h2><p>单元测试的设计不是主观臆断凭直觉的产物。好的设计和工业设计一样，存在着公认的行为准则。
-在学习优秀的单元测试设计之前，了解一下糟糕的设计是快速掌握设计诀窍的“捷径”。</p><h2 id=单元测试的坏味道>单元测试的坏味道</h2><h3 id=不可读的单元测试>不可读的单元测试</h3><p>单元测试的可读性应该体现在程序员阅读测试代码之后，就该理解代码应当做什么。程序员运行那些测试时，就该了解代码实际上在做些什么。
-避免基本断言。基本断言的含义隐藏在了复杂的代码背后。使用更加自然化的描述语言来表达你的断言。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>      <span style=color:#a6e22e>@Test</span>
+<!doctype html><html lang=zh-cn>
+<head>
+<meta charset=utf-8>
+<title>单元测试的哲学 | ChuckLin's Blog</title>
+<meta name=description content="Love and Peace">
+<meta name=author content>
+<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
+<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
+<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
+<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
+<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
+<meta name=msapplication-TileColor content="#00aba9">
+<meta name=theme-color content="#ffffff">
+<link rel=me href=mailto:mikumiku.lch@hotmail.com>
+<link rel=me href=https://github.com/chuck1in>
+<link rel=authorization_endpoint href=https://indieauth.com/auth>
+<link rel=token_endpoint href=https://tokens.indieauth.com/token>
+<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
+<meta name=viewport content="width=device-width,initial-scale=1">
+</head>
+<body>
+<div id=sitelogo>
+<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
+</div>
+<header>
+<nav>
+<div id=page-nav>
+<div class=page-nav-item>
+<a href=https://www.chucklin.net/>Home</a>
+</div>
+<div class=page-nav-item>
+<a href=/about/me>
+<span>About</span>
+</a>
+</div>
+<div class=page-nav-item>
+<a href=/tags>
+<span>Tag</span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<div id=content>
+<article class=h-entry>
+<header>
+<h1 class="post-title p-name">单元测试的哲学 </h1>
+<p class=post-date>Posted on
+<time class=dt-published datetime=2020-01-27T09:51:00+08:00>
+27 January, 2020 at 09:51 +0800
+</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
+</p>
+</header>
+<section class="content e-content">
+<h2 id=审美之前先审丑>审美之前先审丑</h2>
+<p>单元测试的设计不是主观臆断凭直觉的产物。好的设计和工业设计一样，存在着公认的行为准则。
+在学习优秀的单元测试设计之前，了解一下糟糕的设计是快速掌握设计诀窍的“捷径”。</p>
+<h2 id=单元测试的坏味道>单元测试的坏味道</h2>
+<h3 id=不可读的单元测试>不可读的单元测试</h3>
+<p>单元测试的可读性应该体现在程序员阅读测试代码之后，就该理解代码应当做什么。程序员运行那些测试时，就该了解代码实际上在做些什么。
+避免基本断言。基本断言的含义隐藏在了复杂的代码背后。使用更加自然化的描述语言来表达你的断言。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>      <span style=color:#a6e22e>@Test</span>
     <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>outputHasLineNumbers</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
         String content <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;1st match on 1&#34;</span><span style=color:#f92672>;</span>
         assertTrue<span style=color:#f92672>(</span>content<span style=color:#f92672>.</span><span style=color:#a6e22e>indexOf</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;1&#34;</span><span style=color:#f92672>)</span> <span style=color:#f92672>!=</span> <span style=color:#f92672>-</span>1<span style=color:#f92672>);</span>
@@ -16,7 +76,9 @@
         assertThat<span style=color:#f92672>(</span>content<span style=color:#f92672>,</span> containsString<span style=color:#f92672>(</span><span style=color:#e6db74>&#34;1&#34;</span><span style=color:#f92672>));</span>
     <span style=color:#f92672>}</span>
 
-</code></pre></div><h3 id=拥有条件逻辑的单元测试>拥有条件逻辑的单元测试</h3><p>在测试中存在条件逻辑，一般都不是什么好事儿。你很难弄清楚究竟在测试什么。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java> <span style=color:#a6e22e>@Test</span>
+</code></pre></div><h3 id=拥有条件逻辑的单元测试>拥有条件逻辑的单元测试</h3>
+<p>在测试中存在条件逻辑，一般都不是什么好事儿。你很难弄清楚究竟在测试什么。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java> <span style=color:#a6e22e>@Test</span>
     <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>conditionTestDemo</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
         Map<span style=color:#f92672>&lt;</span>String<span style=color:#f92672>,</span> String<span style=color:#f92672>&gt;</span> strMap <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> HashMap<span style=color:#f92672>&lt;&gt;();</span>
         strMap<span style=color:#f92672>.</span><span style=color:#a6e22e>put</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;a&#34;</span><span style=color:#f92672>,</span> <span style=color:#e6db74>&#34;1&#34;</span><span style=color:#f92672>);</span>
@@ -33,7 +95,8 @@
     <span style=color:#f92672>}</span>
 
 </code></pre></div><p>条件逻辑会让本来需要被运行的断言操作因为轻微的改动，导致断言无法执行，让人误以为断言执行成功！
-想想办法，对上面的测试加以改动使他更加的清晰和准确。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java> <span style=color:#a6e22e>@Test</span>
+想想办法，对上面的测试加以改动使他更加的清晰和准确。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java> <span style=color:#a6e22e>@Test</span>
     <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>conditionTestDemo2</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
         Map<span style=color:#f92672>&lt;</span>String<span style=color:#f92672>,</span> String<span style=color:#f92672>&gt;</span> strMap <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> HashMap<span style=color:#f92672>&lt;&gt;();</span>
         strMap<span style=color:#f92672>.</span><span style=color:#a6e22e>put</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;a&#34;</span><span style=color:#f92672>,</span> <span style=color:#e6db74>&#34;1&#34;</span><span style=color:#f92672>);</span>
@@ -60,7 +123,10 @@
     <span style=color:#f92672>}</span>
 
 
-</code></pre></div><p>若所有的条件逻辑都没有执行时，记得一定要有一行 fail 使断言失败。</p><h3 id=脆弱的单元测试>脆弱的单元测试</h3><p>脆弱的测试往往都涉及了线程和静态条件或者依赖时间和平台的代码。或者访问一切 IO 的代码。避免代码涉及到日期等一切可变因素的影响。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Car</span> <span style=color:#f92672>{</span>
+</code></pre></div><p>若所有的条件逻辑都没有执行时，记得一定要有一行 fail 使断言失败。</p>
+<h3 id=脆弱的单元测试>脆弱的单元测试</h3>
+<p>脆弱的测试往往都涉及了线程和静态条件或者依赖时间和平台的代码。或者访问一切 IO 的代码。避免代码涉及到日期等一切可变因素的影响。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Car</span> <span style=color:#f92672>{</span>
 
     <span style=color:#75715e>// 对外封闭的引擎对象。你无法知道内在信息。
 </span><span style=color:#75715e></span>    <span style=color:#66d9ef>private</span> Engine engine<span style=color:#f92672>;</span>
@@ -84,7 +150,11 @@
 
 <span style=color:#f92672>}</span>
 
-</code></pre></div><p>用于获取地图最佳距离算法的 Route 对象依赖与时间以及当前某条线路的交通状况。它很可能会返回你预料之外的结果。</p><h3 id=运行缓慢的烦人测试>运行缓慢的烦人测试</h3><h4 id=使用-sleep>使用 sleep</h4><p>在测试代码在并发状态下的执行状况时，由于对测试结果的期待，或许会需要某些 Reduce 线程在 Map 线程之后才运行。最简单的方式是使用 Thread.sleep();</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#a6e22e>@Test</span>
+</code></pre></div><p>用于获取地图最佳距离算法的 Route 对象依赖与时间以及当前某条线路的交通状况。它很可能会返回你预料之外的结果。</p>
+<h3 id=运行缓慢的烦人测试>运行缓慢的烦人测试</h3>
+<h4 id=使用-sleep>使用 sleep</h4>
+<p>在测试代码在并发状态下的执行状况时，由于对测试结果的期待，或许会需要某些 Reduce 线程在 Map 线程之后才运行。最简单的方式是使用 Thread.sleep();</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#a6e22e>@Test</span>
     <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>threadTestDemo</span><span style=color:#f92672>()</span> <span style=color:#66d9ef>throws</span> InterruptedException <span style=color:#f92672>{</span>
         Runnable mapRunable <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Runnable<span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
             <span style=color:#a6e22e>@Override</span>
@@ -116,7 +186,8 @@
     <span style=color:#f92672>}</span>
 
 
-</code></pre></div><p>随着单元测试代码的日积月累，大量的 Thread.sleep 使测试速度越来越慢，单个本地测试也许还可以忍受，但全面自动化测试时乌龟一般的运行速度能让你抓狂。我猜你一定不想看到那一天。所以，现在开始想想办法，免去无意义的多余等待，尝试使用 CountDownLatch 来测试并发逻辑。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><p>随着单元测试代码的日积月累，大量的 Thread.sleep 使测试速度越来越慢，单个本地测试也许还可以忍受，但全面自动化测试时乌龟一般的运行速度能让你抓狂。我猜你一定不想看到那一天。所以，现在开始想想办法，免去无意义的多余等待，尝试使用 CountDownLatch 来测试并发逻辑。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
     <span style=color:#a6e22e>@Test</span>
     <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>threadCountDownLautchDemo</span><span style=color:#f92672>()</span> <span style=color:#66d9ef>throws</span> InterruptedException <span style=color:#f92672>{</span>
         CountDownLatch latch <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> CountDownLatch<span style=color:#f92672>(</span>1<span style=color:#f92672>);</span>
@@ -145,7 +216,12 @@
         reduceThread<span style=color:#f92672>.</span><span style=color:#a6e22e>start</span><span style=color:#f92672>();</span>
     <span style=color:#f92672>}</span>
 
-</code></pre></div><h4 id=在测试中使用-io-以及打印日志>在测试中使用 IO 以及打印日志</h4><p>IO 与日志也是 cpu 资源消耗大户。对于 IO 测试请使用替身来加快执行速度。而日志系统。。。。在测试运行环境中请关闭它吧！</p><h3 id=永不失败的快乐测试>永不失败的快乐测试</h3><p>促成快乐测试的原因往往有两点：</p><h4 id=有关于抛出异常的测试>有关于抛出异常的测试。</h4><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#a6e22e>@Test</span>
+</code></pre></div><h4 id=在测试中使用-io-以及打印日志>在测试中使用 IO 以及打印日志</h4>
+<p>IO 与日志也是 cpu 资源消耗大户。对于 IO 测试请使用替身来加快执行速度。而日志系统。。。。在测试运行环境中请关闭它吧！</p>
+<h3 id=永不失败的快乐测试>永不失败的快乐测试</h3>
+<p>促成快乐测试的原因往往有两点：</p>
+<h4 id=有关于抛出异常的测试>有关于抛出异常的测试。</h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#a6e22e>@Test</span>
     <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>exceptionTest</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
         <span style=color:#66d9ef>try</span> <span style=color:#f92672>{</span>
             System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;准备开始执行非法的业务处理逻辑&#34;</span><span style=color:#f92672>);</span>
@@ -157,7 +233,8 @@
     <span style=color:#f92672>}</span>
 
 </code></pre></div><p>我们期望在传入不存在的环境变量时运行报错，出现异常并且断言异常。但是若没有出现异常时，此测试依然能顺利结束，让我们误以为测试通过。
-增加 fail() 方法调用，使上面的测试正确的达成我们的期望。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#a6e22e>@Test</span>
+增加 fail() 方法调用，使上面的测试正确的达成我们的期望。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#a6e22e>@Test</span>
     <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>exceptionFailTest</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
         <span style=color:#66d9ef>try</span> <span style=color:#f92672>{</span>
             System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;准备开始执行非法的业务处理逻辑&#34;</span><span style=color:#f92672>);</span>
@@ -167,7 +244,8 @@
             assertThat<span style=color:#f92672>(</span>e<span style=color:#f92672>.</span><span style=color:#a6e22e>getMessage</span><span style=color:#f92672>(),</span> containsString<span style=color:#f92672>(</span><span style=color:#e6db74>&#34;不存在的环境变量&#34;</span><span style=color:#f92672>));</span>
         <span style=color:#f92672>}</span>
     <span style=color:#f92672>}</span>
-</code></pre></div><h4 id=没有断言的测试>没有断言的测试</h4><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java> <span style=color:#75715e>/**
+</code></pre></div><h4 id=没有断言的测试>没有断言的测试</h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java> <span style=color:#75715e>/**
 </span><span style=color:#75715e>     * 测试获取还款计划的方法
 </span><span style=color:#75715e>     *
 </span><span style=color:#75715e>     * @throws ServiceException exp
@@ -199,8 +277,77 @@
         List<span style=color:#f92672>&lt;</span>RepayPlanDetail<span style=color:#f92672>&gt;</span> list <span style=color:#f92672>=</span> simulatedCalculateService<span style=color:#f92672>.</span><span style=color:#a6e22e>getRepayPlan</span><span style=color:#f92672>(</span>commCustBaseInfoVO<span style=color:#f92672>);</span>
     <span style=color:#f92672>}</span>
 
-</code></pre></div><p>我们将修复这个快乐测试的任务留给各位亲爱的读者朋友们。给自己一些时间，想想应该从哪些点入手进行修改。</p><ol><li>删除多余的查询。</li><li>删除条件逻辑。</li><li>增加断言。</li><li>断言应该断言更加具体的内容。</li><li>搞清楚自己测试的范围是什么。将需要测试的数据和协作对象隔离开来，使测试保证单一职责原则。</li><li>最大的需要解决的问题，使还款计划的设计更加的可测。使用伪造对象替代 dao 层，保证利率信息在各环境都能获取到值并且计算出期望的结果。</li></ol><h2 id=优秀单元测试设计指南>优秀单元测试设计指南</h2><p>学习完了上述测试的坏味道再加上适当的实践，就可以编写出合格的单元测试的。
-但是，要设计出优秀的单元测试只是避开坏味道是不够的。下面这些设计指南能够帮助你更上一层楼，写出优秀的测试代码！</p><h3 id=复杂逻辑的方法不应该成为私有方法>复杂逻辑的方法不应该成为私有方法。</h3><p>private 的私有方法无法被外部访问，这对单元测试带来了困难。并不是说所有方法都不应该使用 private 方法。而是 private 方法应该尽可能短小，简单，其存在的目的是为了使 public 方法更易读。</p><h3 id=避免-final-方法>避免 final 方法。</h3><p>无法被覆盖以及定义为 static 的方法无法被打桩。不要去纠结 final 关键字的性能，但是当你出于维护目的编写 final 方法的时候，请考虑这个方法将来是否可能需要被打桩。</p><h3 id=警惕使用-new-关键字>警惕使用 new 关键字。</h3><p>因为在 new 关键字中已经指定了具体实现。今后会很难替换了。调用对象的方法时尽可能的使用注入的对象，利用组合解决问题。</p><h3 id=隔离与测试无关的协作者>隔离与测试无关的协作者。</h3><p>每个方法都完成一件事情，每个测试都测试一件事情。保持测试方法的单一职责。</p><h3 id=不要使用测试基类使用-beforeclass-代替-before>不要使用测试基类。使用 BeforeClass 代替 Before。</h3><p>before 注解在每个测试类的每个测试方法运行之前，都会运行一次。所以当你的初始化工作确定只需要一次时，请使用 BeforeClass 代替 Before。
-另外请不要使用测试基类。junit 在运行测试时会扫描 Before 注解遍历到最高父级。所以你的每个测试子类都可能运行 Before 注解很多次。</p><h2 id=结语>结语</h2><p>要想写出优雅的单元测试除了理论知识以外，大量实践是必不可少的。写测试的思路不同于单纯的业务逻辑开发。如果你觉得你的代码写的还行，那么现在就开始尝试 TDD 编程吧，一段时间过后你会和我一样，惊讶于之前的代码中竟然充满了糟糕透顶的设计，并庆幸自己使用 TDD 的时间还不算晚。</p><hr><p>《有效的单元测试》 Lasse Koskela</p></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/testphilosophy/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/goodtest/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/http2/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
+</code></pre></div><p>我们将修复这个快乐测试的任务留给各位亲爱的读者朋友们。给自己一些时间，想想应该从哪些点入手进行修改。</p>
+<ol>
+<li>删除多余的查询。</li>
+<li>删除条件逻辑。</li>
+<li>增加断言。</li>
+<li>断言应该断言更加具体的内容。</li>
+<li>搞清楚自己测试的范围是什么。将需要测试的数据和协作对象隔离开来，使测试保证单一职责原则。</li>
+<li>最大的需要解决的问题，使还款计划的设计更加的可测。使用伪造对象替代 dao 层，保证利率信息在各环境都能获取到值并且计算出期望的结果。</li>
+</ol>
+<h2 id=优秀单元测试设计指南>优秀单元测试设计指南</h2>
+<p>学习完了上述测试的坏味道再加上适当的实践，就可以编写出合格的单元测试的。
+但是，要设计出优秀的单元测试只是避开坏味道是不够的。下面这些设计指南能够帮助你更上一层楼，写出优秀的测试代码！</p>
+<h3 id=复杂逻辑的方法不应该成为私有方法>复杂逻辑的方法不应该成为私有方法。</h3>
+<p>private 的私有方法无法被外部访问，这对单元测试带来了困难。并不是说所有方法都不应该使用 private 方法。而是 private 方法应该尽可能短小，简单，其存在的目的是为了使 public 方法更易读。</p>
+<h3 id=避免-final-方法>避免 final 方法。</h3>
+<p>无法被覆盖以及定义为 static 的方法无法被打桩。不要去纠结 final 关键字的性能，但是当你出于维护目的编写 final 方法的时候，请考虑这个方法将来是否可能需要被打桩。</p>
+<h3 id=警惕使用-new-关键字>警惕使用 new 关键字。</h3>
+<p>因为在 new 关键字中已经指定了具体实现。今后会很难替换了。调用对象的方法时尽可能的使用注入的对象，利用组合解决问题。</p>
+<h3 id=隔离与测试无关的协作者>隔离与测试无关的协作者。</h3>
+<p>每个方法都完成一件事情，每个测试都测试一件事情。保持测试方法的单一职责。</p>
+<h3 id=不要使用测试基类使用-beforeclass-代替-before>不要使用测试基类。使用 BeforeClass 代替 Before。</h3>
+<p>before 注解在每个测试类的每个测试方法运行之前，都会运行一次。所以当你的初始化工作确定只需要一次时，请使用 BeforeClass 代替 Before。
+另外请不要使用测试基类。junit 在运行测试时会扫描 Before 注解遍历到最高父级。所以你的每个测试子类都可能运行 Before 注解很多次。</p>
+<h2 id=结语>结语</h2>
+<p>要想写出优雅的单元测试除了理论知识以外，大量实践是必不可少的。写测试的思路不同于单纯的业务逻辑开发。如果你觉得你的代码写的还行，那么现在就开始尝试 TDD 编程吧，一段时间过后你会和我一样，惊讶于之前的代码中竟然充满了糟糕透顶的设计，并庆幸自己使用 TDD 的时间还不算晚。</p>
+<hr>
+<p>《有效的单元测试》 Lasse Koskela</p>
+</section>
+<footer>
+<a class="permalink u-url" href=https://www.chucklin.net/post/testphilosophy/>🔗</a>
+<hr class=post-underline>
+<p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a>
+</p>
+</footer>
+</article>
+</div>
+<div class=h-card>
+<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
+<div class=card-content>
+<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
+<p class=card-subhead>
+<span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br>
+<a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a>
+</p>
+</div>
+<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
+</div>
+<div id=footer>
+<nav id=article-skip>
+<div class=next>
+<a alt="Newer article" href=https://www.chucklin.net/post/goodtest/>&larr; Newer</a>
+</div>
+<div class=top>
+<a alt="Top of page" href=#>Top</a>
+</div>
+<div class=prev>
+<a alt="Older article" href=https://www.chucklin.net/post/http2/>Older &rarr;</a>
+</div>
+</nav>
+<aside id=social>
+<div id=social-icons>
+<div class=icon-24x24>
+<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
+</div>
+</div>
+</aside>
+<p class=copyright>
+Copyright © 2021 Chuck Lin. All rights reserved.
+</p>
+</div>
+</body>
+</html>

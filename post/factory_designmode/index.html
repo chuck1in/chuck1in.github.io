@@ -1,6 +1,71 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>工厂设计模式 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">工厂设计模式</h1><p class=post-date>Posted on
-<time class=dt-published datetime=2018-01-01T16:43:09+08:00>1 January, 2018 at 16:43 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h2 id=什么是工厂设计模式>什么是工厂设计模式？</h2><p>工厂设计模式是将拥有共性的产品抽象封装到工厂类中统一进行管理和创建，以达到降低使用者与产品之间的耦合度的目的一种手段。
-工厂设计模式是创建者模式之一，且从结构上被划分为三大类。三种不同的结构类型，分别对应处理不同的问题。</p><ul><li>简单工厂模式</li><li>工厂方法模式</li><li>抽象工厂模式</li></ul><h2 id=工厂设计模式怎么用>工厂设计模式怎么用？</h2><h3 id=简单工厂模式>简单工厂模式</h3><p>简单工厂模式是最简单，也是最清晰的模式。理解了简单工厂模式，就理解了工厂设计模式的主要思想。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+<!doctype html><html lang=zh-cn>
+<head>
+<meta charset=utf-8>
+<title>工厂设计模式 | ChuckLin's Blog</title>
+<meta name=description content="Love and Peace">
+<meta name=author content>
+<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
+<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
+<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
+<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
+<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
+<meta name=msapplication-TileColor content="#00aba9">
+<meta name=theme-color content="#ffffff">
+<link rel=me href=mailto:mikumiku.lch@hotmail.com>
+<link rel=me href=https://github.com/chuck1in>
+<link rel=authorization_endpoint href=https://indieauth.com/auth>
+<link rel=token_endpoint href=https://tokens.indieauth.com/token>
+<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
+<meta name=viewport content="width=device-width,initial-scale=1">
+</head>
+<body>
+<div id=sitelogo>
+<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
+</div>
+<header>
+<nav>
+<div id=page-nav>
+<div class=page-nav-item>
+<a href=https://www.chucklin.net/>Home</a>
+</div>
+<div class=page-nav-item>
+<a href=/about/me>
+<span>About</span>
+</a>
+</div>
+<div class=page-nav-item>
+<a href=/tags>
+<span>Tag</span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<div id=content>
+<article class=h-entry>
+<header>
+<h1 class="post-title p-name">工厂设计模式</h1>
+<p class=post-date>Posted on
+<time class=dt-published datetime=2018-01-01T16:43:09+08:00>
+1 January, 2018 at 16:43 +0800
+</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
+</p>
+</header>
+<section class="content e-content">
+<h2 id=什么是工厂设计模式>什么是工厂设计模式？</h2>
+<p>工厂设计模式是将拥有共性的产品抽象封装到工厂类中统一进行管理和创建，以达到降低使用者与产品之间的耦合度的目的一种手段。
+工厂设计模式是创建者模式之一，且从结构上被划分为三大类。三种不同的结构类型，分别对应处理不同的问题。</p>
+<ul>
+<li>简单工厂模式</li>
+<li>工厂方法模式</li>
+<li>抽象工厂模式</li>
+</ul>
+<h2 id=工厂设计模式怎么用>工厂设计模式怎么用？</h2>
+<h3 id=简单工厂模式>简单工厂模式</h3>
+<p>简单工厂模式是最简单，也是最清晰的模式。理解了简单工厂模式，就理解了工厂设计模式的主要思想。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
 </span><span style=color:#75715e> * 工厂设计模式-简单工厂模式
 </span><span style=color:#75715e> * 发送接口.
 </span><span style=color:#75715e> *
@@ -99,7 +164,9 @@
 </code></pre></div><p>用户/客户端直接与 SenderFactory 交互，SenderFactory 根据参数决定具体创建的产品，用户最终从 SenderFactory 中得到了想要的产品。
 可见，通过简单工厂模式，达到了解耦用户与产品的效果。但是，这样的结构并不是完美的。
 在本例中，SenderFactory 掌管了所有的业务逻辑处理。这样的类，我们称为上帝类/全能类。上帝类耦合度非常高，每当需要增加新产品时，就需要更改 SenderFactory 中的代码。比如我们想要增加 FaxSender，则 SenderFactory 中的逻辑必然就会产生改动，这不符合设计模式的开闭原则(对扩展开放，对修改关闭)。
-所以，当需要频繁增加新产品时，我们就需要通过工厂方法模式来解决问题。</p><h3 id=工厂方法模式>工厂方法模式</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+所以，当需要频繁增加新产品时，我们就需要通过工厂方法模式来解决问题。</p>
+<h3 id=工厂方法模式>工厂方法模式</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
 </span><span style=color:#75715e> * 工厂设计模式-工厂方法模式
 </span><span style=color:#75715e> * 发送接口.
 </span><span style=color:#75715e> */</span>
@@ -219,10 +286,15 @@
     <span style=color:#f92672>}</span>
 <span style=color:#f92672>}</span>
 
-</code></pre></div><p>有别与简单工厂模式。工厂方法模式中工厂类被抽象成为了接口。而不同的产品对应不同的实现了工厂接口的具体工厂。比如 SMSSenderFactory 实现了工厂接口，并且只负责生产 SMSSender 对象产品。当出现新需求，如增加 FaxSender 产品时，我们不需要改动任何代码，只需要创建相应的 FaxSenderFactory 与 FaxSender 就够了。</p><p>细心的读者可能已经发现了，工厂方法模式同样拥有一些“致命”缺点，那就是随着产品的增加，相应的工厂类也会同比增加，造成项目文件十分臃肿巨大。于是，为了减少工厂类的出现数量，抽象工厂模式诞生了。</p><h3 id=抽象工厂模式>抽象工厂模式</h3><p>抽象工厂模式若采用“填鸭式”说明，会让人感觉难以理解。
-所以让我们先来尝试靠自己的力量解决一下上一小节中的，工厂方法模式所造成的工厂类大量增多的问题，已达到循序渐进地理解抽象工厂模式的目的。</p><p>工厂类疯狂增多的根本原因，是单个商品的生产对应了单个工厂。
+</code></pre></div><p>有别与简单工厂模式。工厂方法模式中工厂类被抽象成为了接口。而不同的产品对应不同的实现了工厂接口的具体工厂。比如 SMSSenderFactory 实现了工厂接口，并且只负责生产 SMSSender 对象产品。当出现新需求，如增加 FaxSender 产品时，我们不需要改动任何代码，只需要创建相应的 FaxSenderFactory 与 FaxSender 就够了。</p>
+<p>细心的读者可能已经发现了，工厂方法模式同样拥有一些“致命”缺点，那就是随着产品的增加，相应的工厂类也会同比增加，造成项目文件十分臃肿巨大。于是，为了减少工厂类的出现数量，抽象工厂模式诞生了。</p>
+<h3 id=抽象工厂模式>抽象工厂模式</h3>
+<p>抽象工厂模式若采用“填鸭式”说明，会让人感觉难以理解。
+所以让我们先来尝试靠自己的力量解决一下上一小节中的，工厂方法模式所造成的工厂类大量增多的问题，已达到循序渐进地理解抽象工厂模式的目的。</p>
+<p>工厂类疯狂增多的根本原因，是单个商品的生产对应了单个工厂。
 要减少他们的数量，最容易想到的解决方案则是想办法让一个工厂创建多个产品。然而有了第一小节简单工厂模式的知识，我们还知道要尽可能解耦工厂类，避免创建出全能类/上帝类，给将来的维护扩展造成负担。
-例如，在项目进行中，突然需要增加一个 Receiver 产品，如下：</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+例如，在项目进行中，突然需要增加一个 Receiver 产品，如下：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
 </span><span style=color:#75715e> * 工厂设计模式-抽象工厂模式
 </span><span style=color:#75715e> * 接收者对象
 </span><span style=color:#75715e> */</span>
@@ -285,9 +357,12 @@
     <span style=color:#f92672>}</span>
 <span style=color:#f92672>}</span>
 
-</code></pre></div><p>如果按照工厂方法设计模式的思路，上面这 3 个 Receiver 需要在项目中增加 3 个对应的具体工厂类。这显然是不太理想的做法。那么，有没有更加理想的做法呢？</p><p>继续分析，本例中 mailSender/mailReceiver，faxSender/faxReceiver，SMSSender/SMSReceiver 刚好能够组合为三对产品组合。如果一个工厂能够生产一对组合产品，是不是只需要三个工厂就能解决我们的需求呢？
+</code></pre></div><p>如果按照工厂方法设计模式的思路，上面这 3 个 Receiver 需要在项目中增加 3 个对应的具体工厂类。这显然是不太理想的做法。那么，有没有更加理想的做法呢？</p>
+<p>继续分析，本例中 mailSender/mailReceiver，faxSender/faxReceiver，SMSSender/SMSReceiver 刚好能够组合为三对产品组合。如果一个工厂能够生产一对组合产品，是不是只需要三个工厂就能解决我们的需求呢？
 在理清了思路后，我们开始动手写代码做一些尝试。
-为了方便，我们将 mailSender/mailReceiver 这样一对产品，称为一个产品簇。而 mailSender，faxSender，SMSSender 3 个产品，称为 3 个产品等级。</p><p><strong>Sender 类产品：</strong></p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+为了方便，我们将 mailSender/mailReceiver 这样一对产品，称为一个产品簇。而 mailSender，faxSender，SMSSender 3 个产品，称为 3 个产品等级。</p>
+<p><strong>Sender 类产品：</strong></p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
 </span><span style=color:#75715e> * 工厂设计模式-抽象工厂模式
 </span><span style=color:#75715e> * 信息发送产品统一接口
 </span><span style=color:#75715e> */</span>
@@ -354,7 +429,8 @@
 <span style=color:#f92672>}</span>
 
 
-</code></pre></div><p>一个产品簇工厂中，能够生产一个系列的产品。而非单个产品。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+</code></pre></div><p>一个产品簇工厂中，能够生产一个系列的产品。而非单个产品。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
 </span><span style=color:#75715e> * 工厂设计模式-抽象工厂模式
 </span><span style=color:#75715e> * 抽象工厂类
 </span><span style=color:#75715e> *
@@ -420,7 +496,7 @@
     <span style=color:#f92672>}</span>
 <span style=color:#f92672>}</span>
 
-</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 <span style=color:#75715e>/**
 </span><span style=color:#75715e> * 工厂设计模式-抽象工厂方法模式
 </span><span style=color:#75715e> * 客户端
@@ -449,6 +525,58 @@
 </code></pre></div><p>通过抽象工厂设计模式，将代码的共性重新进行了抽象，从而使代码结构发生了变化。现在一个工厂不再生产单个产品，而是生产一个产品簇。比如 SMSHandlerFactory 工厂生产与 SMS 有关的产品簇的全系列产品。他们包括 SMSReceiver 与 SMSSender。
 将来若需要进行产品等级的扩展，如加入了 Forwarder 类产品，我们不需要增加新的工厂类，仅需要在工厂接口中增加 Forwarder 的生产接口，再更改相应实现代码就可以了。
 若将来需要进行产品簇的扩展，如增加了 PhoneSender，PhoneRecevier 系列产品，则仅需要增加一个 phoneFactory 就可以解决问题。而不需要更改原有代码。
-也就是说，该设计模式再具备了一定的扩展性的同时，又尽可能的控制了类的大量扩张。</p><h2 id=总结>总结</h2><ol><li>工厂设计模式分为三类。简单工厂，工厂方法，抽象工厂。</li><li>简单工厂模式适合用于项目需求简单，产品很少并且几乎没有扩展可能性的情况。</li><li>工厂方法模式适合用于产品簇单一，但却经常发生改变的情况。</li><li>抽象工厂适合用于项目拥有多个产品簇，且产品等级经常发生改变，并且还需要尽可能控制项目体积的情况。</li></ol></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/factory_designmode/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/status_designmode/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/deadlock/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
+也就是说，该设计模式再具备了一定的扩展性的同时，又尽可能的控制了类的大量扩张。</p>
+<h2 id=总结>总结</h2>
+<ol>
+<li>工厂设计模式分为三类。简单工厂，工厂方法，抽象工厂。</li>
+<li>简单工厂模式适合用于项目需求简单，产品很少并且几乎没有扩展可能性的情况。</li>
+<li>工厂方法模式适合用于产品簇单一，但却经常发生改变的情况。</li>
+<li>抽象工厂适合用于项目拥有多个产品簇，且产品等级经常发生改变，并且还需要尽可能控制项目体积的情况。</li>
+</ol>
+</section>
+<footer>
+<a class="permalink u-url" href=https://www.chucklin.net/post/factory_designmode/>🔗</a>
+<hr class=post-underline>
+<p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a>
+</p>
+</footer>
+</article>
+</div>
+<div class=h-card>
+<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
+<div class=card-content>
+<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
+<p class=card-subhead>
+<span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br>
+<a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a>
+</p>
+</div>
+<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
+</div>
+<div id=footer>
+<nav id=article-skip>
+<div class=next>
+<a alt="Newer article" href=https://www.chucklin.net/post/status_designmode/>&larr; Newer</a>
+</div>
+<div class=top>
+<a alt="Top of page" href=#>Top</a>
+</div>
+<div class=prev>
+<a alt="Older article" href=https://www.chucklin.net/post/deadlock/>Older &rarr;</a>
+</div>
+</nav>
+<aside id=social>
+<div id=social-icons>
+<div class=icon-24x24>
+<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
+</div>
+</div>
+</aside>
+<p class=copyright>
+Copyright © 2021 Chuck Lin. All rights reserved.
+</p>
+</div>
+</body>
+</html>

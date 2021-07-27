@@ -1,8 +1,150 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>简述 Http/2 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">简述 Http/2</h1><p class=post-date>Posted on
-<time class=dt-published datetime=2020-01-25T09:23:00+08:00>25 January, 2020 at 09:23 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h2 id=先谈谈-http09-http10>先谈谈 Http/0.9 Http/1.0</h2><p>Http 最初来源于一个构想，即设计一个用于记录、查找和阅读 「由于大量的书面材料或图像材料以复杂的方式相互联系，因此不便在纸介质上呈现或展示」的信息的通用系统。 这个通用系统，由服务器和众多浏览器所组成。</p><p>最初的 Http/0.9 基本上只有 Get 方法，没有首部，它只是被用来获取 HTML。经过几年的发展，Http/1.0 在 0.9 的基础上增加了首部、响应码、重定向等功能。</p><h2 id=广泛使用的-http11>广泛使用的 Http/1.1</h2><p>Http/1.0 有很多问题，如每次通信后关闭连接，缓存首部设计简陋等等。为了应对快速膨胀的互联网 ，Http/1.1 接踵而至。1.1 版本带来了连接复用与缓存首部的扩展等等改进，大大提升了 web 服务器的性能。</p><h2 id=http11-的问题>Http/1.1 的问题</h2><p>时至今日，基于 Http/1.1 的互联网相比之前已经发生了天翻地覆的变化， 网站从最开始的只有文字，进化到现在的社交、直播等等 web 应用的同时，提供支持的 Http/1.1 却没有发生任何改变。由于时代背景的局限性，曾经设计上的小缺陷在当前的互联网环境下，对性能的影响变得愈发严重。</p><h3 id=队头阻塞>队头阻塞</h3><p>现代 web 应用除了文字以外，还包含各种 css、js、图片、甚至视频信息。Http1 协议没有提供真正意义上的同时请求多个资源的功能。如果在接受某个请求的响应时发生了延迟，那其后的所有请求都会被阻塞。即使现代浏览器会针对同一个域名一次性建立 6 个连接，但每个链接中的请求与响应如果发生异常的话，依然会产生后续请求被阻塞的问题。</p><h3 id=低效的-tcp-利用>低效的 TCP 利用</h3><p>Tcp 的核心思想是保证统一网络中的不同应用占用流量的「公平性」以及连接的「可用性」。为了保证公平与与可用，Tcp 的核心要素除了三次握手以外，还设计了「慢启动」来尽可能减轻网络连接的负担。</p><blockquote><p>慢启动的设计目标是为了让新连接搞清楚当前网络状况，避免给已经拥堵的网络继续添乱。在给定的拥塞窗口下，它允许发送者在网络条件良好的情况下，每下一次发送的数据按照窗口大小为指数进行增加。传统 TCP 实现利用拥塞控制算法会根据数据包的丢失来反馈调整。如果数据包确认丢失了，算法就会缩小拥塞窗口。</p></blockquote><h3 id=首部信息臃肿>首部信息臃肿</h3><p>据 HTTP 历史存档记录，2016 年末，请求首部一般集中在 460 字节左右。对于包含 140 个资源的普通 Web 页面，意味着它在发起的所有请求中大约占 63KB。想想之前关于 TCP 拥塞窗口管理的讨论，发送该页面相关的所有请求可能需要 3~4 轮往返，因此网络延迟的损耗会被迅速放大。此外，上行带宽通常会受到网络限制，尤其是在移动网络环境中，于是拥塞窗口机制根本来不及起作用，导致更多的请求和响应。</p><h2 id=http2-协议的特点>Http2 协议的特点</h2><p>现在来看看 Http2 如何解决上述问题。</p><h3 id=二进制协议>二进制协议</h3><p>HTTP/2 是基于二进制的协议。在设计上取消了类似 Http1 那样的通过分隔符来区分首部和消息体的做法。
-HTTP/2 大致可以分为两部分：分帧层，即 h2 多路复用能力的核心部分；数据或 http 层，其中包含传统上被认为是 HTTP 及其关联数据的部分。</p><p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/20200122145527.jpg alt></p><h4 id=帧结构>帧结构</h4><p>前 9 个字节对于每个帧是一致的。解析时只需要读取这些字节，就可以准确地知道在整个帧中期望的字节数。</p><ul><li><p>Type 字段
-代表帧类型。Type 字段为 HEADERS 代表首部信息帧；DATA 类型代表核心内容信息帧；SETTINGS 字段代表协商连接级参数信息帧。</p></li><li><p>Length 字段
-与 Http1 服务端无法获取首部信息大小情况不同，服务端根据 Length 字段可以得知帧信息中的内容的长度。这给服务端分配合理缓存空间读取首部信息的处理带来了便利。</p></li><li><p>Stream Identifier
-流 ID（帧首部的第 6~9 字节）用来标识帧所属的流。「HTTP/2 连接上独立的、双向的帧序列交换。」你可以将流看作在连接上的一系列帧，它们构成了单独的 HTTP 请求和响应</p></li></ul><h3 id=多路复用>多路复用</h3><p>因为有分帧和流 ID 的设计，H2 具备了多路复用的能力。现在浏览器可以针对复数个资源只开启一个连接，并且不用等待服务端响应，就批量将请求快速提交到服务端。多个请求和响应可以交错，而不会互相阻塞。</p><p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/20200122161547.png alt></p><h3 id=首部压缩>首部压缩　　</h3><p>仅仅使用二进制协议似乎还不够，h2 的首部还会被深度压缩。这将显著减少传输中的冗余字节。</p><h3 id=服务端推送>服务端推送</h3><p>提升单个对象性能的最佳方式，就是在它被用到之前就放到浏览器的缓存里面。拿一个简单的 HTML 页面来说，如果服务器接收到一个页面的请求，它需要决定是推送页面上的资源还是等客户端来请求。如果服务器选择正确，那就真的有助于提升页面的整体性能，反之则会损耗页面性能。</p><h2 id=最后>最后</h2><p>从 Http2 诞生距今，大量网站都完成了对它的支持工作。实践证明在某些网站上启用 Http2 的确可让性能提高 30%以上。但最好的办法是尽可能详细的测试启用 Http2 所带来的风险和收益之后，再做出决定。</p></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/http2/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/testphilosophy/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/spring_data_hadoop/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
+<!doctype html><html lang=zh-cn>
+<head>
+<meta charset=utf-8>
+<title>简述 Http/2 | ChuckLin's Blog</title>
+<meta name=description content="Love and Peace">
+<meta name=author content>
+<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
+<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
+<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
+<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
+<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
+<meta name=msapplication-TileColor content="#00aba9">
+<meta name=theme-color content="#ffffff">
+<link rel=me href=mailto:mikumiku.lch@hotmail.com>
+<link rel=me href=https://github.com/chuck1in>
+<link rel=authorization_endpoint href=https://indieauth.com/auth>
+<link rel=token_endpoint href=https://tokens.indieauth.com/token>
+<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
+<meta name=viewport content="width=device-width,initial-scale=1">
+</head>
+<body>
+<div id=sitelogo>
+<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
+</div>
+<header>
+<nav>
+<div id=page-nav>
+<div class=page-nav-item>
+<a href=https://www.chucklin.net/>Home</a>
+</div>
+<div class=page-nav-item>
+<a href=/about/me>
+<span>About</span>
+</a>
+</div>
+<div class=page-nav-item>
+<a href=/tags>
+<span>Tag</span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<div id=content>
+<article class=h-entry>
+<header>
+<h1 class="post-title p-name">简述 Http/2 </h1>
+<p class=post-date>Posted on
+<time class=dt-published datetime=2020-01-25T09:23:00+08:00>
+25 January, 2020 at 09:23 +0800
+</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
+</p>
+</header>
+<section class="content e-content">
+<h2 id=先谈谈-http09-http10>先谈谈 Http/0.9 Http/1.0</h2>
+<p>Http 最初来源于一个构想，即设计一个用于记录、查找和阅读 「由于大量的书面材料或图像材料以复杂的方式相互联系，因此不便在纸介质上呈现或展示」的信息的通用系统。 这个通用系统，由服务器和众多浏览器所组成。</p>
+<p>最初的 Http/0.9 基本上只有 Get 方法，没有首部，它只是被用来获取 HTML。经过几年的发展，Http/1.0 在 0.9 的基础上增加了首部、响应码、重定向等功能。</p>
+<h2 id=广泛使用的-http11>广泛使用的 Http/1.1</h2>
+<p>Http/1.0 有很多问题，如每次通信后关闭连接，缓存首部设计简陋等等。为了应对快速膨胀的互联网 ，Http/1.1 接踵而至。1.1 版本带来了连接复用与缓存首部的扩展等等改进，大大提升了 web 服务器的性能。</p>
+<h2 id=http11-的问题>Http/1.1 的问题</h2>
+<p>时至今日，基于 Http/1.1 的互联网相比之前已经发生了天翻地覆的变化， 网站从最开始的只有文字，进化到现在的社交、直播等等 web 应用的同时，提供支持的 Http/1.1 却没有发生任何改变。由于时代背景的局限性，曾经设计上的小缺陷在当前的互联网环境下，对性能的影响变得愈发严重。</p>
+<h3 id=队头阻塞>队头阻塞</h3>
+<p>现代 web 应用除了文字以外，还包含各种 css、js、图片、甚至视频信息。Http1 协议没有提供真正意义上的同时请求多个资源的功能。如果在接受某个请求的响应时发生了延迟，那其后的所有请求都会被阻塞。即使现代浏览器会针对同一个域名一次性建立 6 个连接，但每个链接中的请求与响应如果发生异常的话，依然会产生后续请求被阻塞的问题。</p>
+<h3 id=低效的-tcp-利用>低效的 TCP 利用</h3>
+<p>Tcp 的核心思想是保证统一网络中的不同应用占用流量的「公平性」以及连接的「可用性」。为了保证公平与与可用，Tcp 的核心要素除了三次握手以外，还设计了「慢启动」来尽可能减轻网络连接的负担。</p>
+<blockquote>
+<p>慢启动的设计目标是为了让新连接搞清楚当前网络状况，避免给已经拥堵的网络继续添乱。在给定的拥塞窗口下，它允许发送者在网络条件良好的情况下，每下一次发送的数据按照窗口大小为指数进行增加。传统 TCP 实现利用拥塞控制算法会根据数据包的丢失来反馈调整。如果数据包确认丢失了，算法就会缩小拥塞窗口。</p>
+</blockquote>
+<h3 id=首部信息臃肿>首部信息臃肿</h3>
+<p>据 HTTP 历史存档记录，2016 年末，请求首部一般集中在 460 字节左右。对于包含 140 个资源的普通 Web 页面，意味着它在发起的所有请求中大约占 63KB。想想之前关于 TCP 拥塞窗口管理的讨论，发送该页面相关的所有请求可能需要 3~4 轮往返，因此网络延迟的损耗会被迅速放大。此外，上行带宽通常会受到网络限制，尤其是在移动网络环境中，于是拥塞窗口机制根本来不及起作用，导致更多的请求和响应。</p>
+<h2 id=http2-协议的特点>Http2 协议的特点</h2>
+<p>现在来看看 Http2 如何解决上述问题。</p>
+<h3 id=二进制协议>二进制协议</h3>
+<p>HTTP/2 是基于二进制的协议。在设计上取消了类似 Http1 那样的通过分隔符来区分首部和消息体的做法。
+HTTP/2 大致可以分为两部分：分帧层，即 h2 多路复用能力的核心部分；数据或 http 层，其中包含传统上被认为是 HTTP 及其关联数据的部分。</p>
+<p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/20200122145527.jpg alt></p>
+<h4 id=帧结构>帧结构</h4>
+<p>前 9 个字节对于每个帧是一致的。解析时只需要读取这些字节，就可以准确地知道在整个帧中期望的字节数。</p>
+<ul>
+<li>
+<p>Type 字段
+代表帧类型。Type 字段为 HEADERS 代表首部信息帧；DATA 类型代表核心内容信息帧；SETTINGS 字段代表协商连接级参数信息帧。</p>
+</li>
+<li>
+<p>Length 字段
+与 Http1 服务端无法获取首部信息大小情况不同，服务端根据 Length 字段可以得知帧信息中的内容的长度。这给服务端分配合理缓存空间读取首部信息的处理带来了便利。</p>
+</li>
+<li>
+<p>Stream Identifier
+流 ID（帧首部的第 6~9 字节）用来标识帧所属的流。「HTTP/2 连接上独立的、双向的帧序列交换。」你可以将流看作在连接上的一系列帧，它们构成了单独的 HTTP 请求和响应</p>
+</li>
+</ul>
+<h3 id=多路复用>多路复用</h3>
+<p>因为有分帧和流 ID 的设计，H2 具备了多路复用的能力。现在浏览器可以针对复数个资源只开启一个连接，并且不用等待服务端响应，就批量将请求快速提交到服务端。多个请求和响应可以交错，而不会互相阻塞。</p>
+<p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/20200122161547.png alt></p>
+<h3 id=首部压缩>首部压缩　　</h3>
+<p>仅仅使用二进制协议似乎还不够，h2 的首部还会被深度压缩。这将显著减少传输中的冗余字节。</p>
+<h3 id=服务端推送>服务端推送</h3>
+<p>提升单个对象性能的最佳方式，就是在它被用到之前就放到浏览器的缓存里面。拿一个简单的 HTML 页面来说，如果服务器接收到一个页面的请求，它需要决定是推送页面上的资源还是等客户端来请求。如果服务器选择正确，那就真的有助于提升页面的整体性能，反之则会损耗页面性能。</p>
+<h2 id=最后>最后</h2>
+<p>从 Http2 诞生距今，大量网站都完成了对它的支持工作。实践证明在某些网站上启用 Http2 的确可让性能提高 30%以上。但最好的办法是尽可能详细的测试启用 Http2 所带来的风险和收益之后，再做出决定。</p>
+</section>
+<footer>
+<a class="permalink u-url" href=https://www.chucklin.net/post/http2/>🔗</a>
+<hr class=post-underline>
+<p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a>
+</p>
+</footer>
+</article>
+</div>
+<div class=h-card>
+<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
+<div class=card-content>
+<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
+<p class=card-subhead>
+<span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br>
+<a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a>
+</p>
+</div>
+<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
+</div>
+<div id=footer>
+<nav id=article-skip>
+<div class=next>
+<a alt="Newer article" href=https://www.chucklin.net/post/testphilosophy/>&larr; Newer</a>
+</div>
+<div class=top>
+<a alt="Top of page" href=#>Top</a>
+</div>
+<div class=prev>
+<a alt="Older article" href=https://www.chucklin.net/post/spring_data_hadoop/>Older &rarr;</a>
+</div>
+</nav>
+<aside id=social>
+<div id=social-icons>
+<div class=icon-24x24>
+<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
+</div>
+</div>
+</aside>
+<p class=copyright>
+Copyright © 2021 Chuck Lin. All rights reserved.
+</p>
+</div>
+</body>
+</html>

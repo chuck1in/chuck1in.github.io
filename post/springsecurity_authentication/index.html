@@ -1,7 +1,68 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>Spring security 如何进行身份认证 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">Spring security 如何进行身份认证</h1><p class=post-date>Posted on
-<time class=dt-published datetime=2021-04-02T10:52:00+08:00>2 April, 2021 at 10:52 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h2 id=filter>Filter</h2><p>Spring security 的运行依赖于一系列 filter chains ，其中每一组 filter chain 对应了一种类型的 request type。
-当引入 spring security 框架时，会将 security filter chains 注册到 servlet filter chain 上，维护这些 security filter chains 的类就是 FilterChainProxy。</p><p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/filter.png alt></p><h2 id=virtualfilterchain>VirtualFilterChain</h2><p>上图中展示了默认情况下 security 加载的 11 个过滤器。这些过滤器组成的 chains 被命名为 VirtualFilterChain，用以和原生的 servlet chain 做区分。</p><p>VirtualFilterChain 有一个 List additionalFilters 字段持有 security 加载的所有过滤器。只要通过遍历 additionalFilters 的每个元素并调用每个元素上的 doFilter 方法，就可以实现请求在链条上传播的功能。
-不过，调用每个元素的 doFilter 方法这个操作的实现方式有点特殊，就像下面这样：</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>currentPosition<span style=color:#f92672>++;</span>
+<!doctype html><html lang=zh-cn>
+<head>
+<meta charset=utf-8>
+<title>Spring security 如何进行身份认证 | ChuckLin's Blog</title>
+<meta name=description content="Love and Peace">
+<meta name=author content>
+<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
+<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
+<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
+<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
+<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
+<meta name=msapplication-TileColor content="#00aba9">
+<meta name=theme-color content="#ffffff">
+<link rel=me href=mailto:mikumiku.lch@hotmail.com>
+<link rel=me href=https://github.com/chuck1in>
+<link rel=authorization_endpoint href=https://indieauth.com/auth>
+<link rel=token_endpoint href=https://tokens.indieauth.com/token>
+<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
+<meta name=viewport content="width=device-width,initial-scale=1">
+</head>
+<body>
+<div id=sitelogo>
+<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
+</div>
+<header>
+<nav>
+<div id=page-nav>
+<div class=page-nav-item>
+<a href=https://www.chucklin.net/>Home</a>
+</div>
+<div class=page-nav-item>
+<a href=/about/me>
+<span>About</span>
+</a>
+</div>
+<div class=page-nav-item>
+<a href=/tags>
+<span>Tag</span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<div id=content>
+<article class=h-entry>
+<header>
+<h1 class="post-title p-name">Spring security 如何进行身份认证</h1>
+<p class=post-date>Posted on
+<time class=dt-published datetime=2021-04-02T10:52:00+08:00>
+2 April, 2021 at 10:52 +0800
+</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
+</p>
+</header>
+<section class="content e-content">
+<h2 id=filter>Filter</h2>
+<p>Spring security 的运行依赖于一系列 filter chains ，其中每一组 filter chain 对应了一种类型的 request type。
+当引入 spring security 框架时，会将 security filter chains 注册到 servlet filter chain 上，维护这些 security filter chains 的类就是 FilterChainProxy。</p>
+<p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/filter.png alt></p>
+<h2 id=virtualfilterchain>VirtualFilterChain</h2>
+<p>上图中展示了默认情况下 security 加载的 11 个过滤器。这些过滤器组成的 chains 被命名为 VirtualFilterChain，用以和原生的 servlet chain 做区分。</p>
+<p>VirtualFilterChain 有一个 List additionalFilters 字段持有 security 加载的所有过滤器。只要通过遍历 additionalFilters 的每个元素并调用每个元素上的 doFilter 方法，就可以实现请求在链条上传播的功能。
+不过，调用每个元素的 doFilter 方法这个操作的实现方式有点特殊，就像下面这样：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>currentPosition<span style=color:#f92672>++;</span>
 
 Filter nextFilter <span style=color:#f92672>=</span> additionalFilters<span style=color:#f92672>.</span><span style=color:#a6e22e>get</span><span style=color:#f92672>(</span>currentPosition <span style=color:#f92672>-</span> 1<span style=color:#f92672>);</span>
 
@@ -14,7 +75,13 @@ logger<span style=color:#f92672>.</span><span style=color:#a6e22e>debug</span><s
 
 nextFilter<span style=color:#f92672>.</span><span style=color:#a6e22e>doFilter</span><span style=color:#f92672>(</span>request<span style=color:#f92672>,</span> response<span style=color:#f92672>,</span> <span style=color:#66d9ef>this</span><span style=color:#f92672>);</span>
 
-</code></pre></div><ol><li>在调用过滤器的 doFilter 方法时， this 对象会被传递到被调用过滤器中。</li><li>在调用对象的方法中手动维护  过滤器迭代的索引。</li></ol><p>这是有点取巧的设计。采用将 this 传递到被调用过滤器中的方式，是为了在调用对象中使用回调——这里的回调就是指调用下一个过滤器的 doFilter 方法。通过手动维护过滤器迭代的索引，保证了在回调时准确的获取下一个迭代器。</p><p>这样的做法在避免了维护一套复杂数据结构的前提下，使这条过链上的所有迭代器都拥有了下一个迭代器元素的指针，从而间接实现了「责任链设计模式」。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><ol>
+<li>在调用过滤器的 doFilter 方法时， this 对象会被传递到被调用过滤器中。</li>
+<li>在调用对象的方法中手动维护  过滤器迭代的索引。</li>
+</ol>
+<p>这是有点取巧的设计。采用将 this 传递到被调用过滤器中的方式，是为了在调用对象中使用回调——这里的回调就是指调用下一个过滤器的 doFilter 方法。通过手动维护过滤器迭代的索引，保证了在回调时准确的获取下一个迭代器。</p>
+<p>这样的做法在避免了维护一套复杂数据结构的前提下，使这条过链上的所有迭代器都拥有了下一个迭代器元素的指针，从而间接实现了「责任链设计模式」。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>VirtualFilterChain</span> <span style=color:#66d9ef>implements</span> FilterChain <span style=color:#f92672>{</span>
 		<span style=color:#66d9ef>private</span> <span style=color:#66d9ef>final</span> FilterChain originalChain<span style=color:#f92672>;</span>
 		<span style=color:#66d9ef>private</span> <span style=color:#66d9ef>final</span> List<span style=color:#f92672>&lt;</span>Filter<span style=color:#f92672>&gt;</span> additionalFilters<span style=color:#f92672>;</span>
@@ -62,7 +129,10 @@ nextFilter<span style=color:#f92672>.</span><span style=color:#a6e22e>doFilter</
 	<span style=color:#f92672>}</span>
 
 
-</code></pre></div><h2 id=abstractauthenticationprocessingfilter-dofilter>AbstractAuthenticationProcessingFilter. doFilter()</h2><p>security 加载的每种过滤器都有自己的使命和职责。我们在本篇文章只关注和身份证验证相关的过滤器： JwtTokenFilter/UsernamePasswordAuthenticationFilter</p><p>大部分和身份认证相关的过滤器都继承自 AbstractAuthenticationProcessingFilter，UsernamePasswordAuthenticationFilter 也不例外。父类 AbstractAuthenticationProcessingFilter 是一个 Servlet Filter 接口的实现，定义了身份认证的核心处理逻辑。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>doFilter</span><span style=color:#f92672>(</span>ServletRequest req<span style=color:#f92672>,</span> ServletResponse res<span style=color:#f92672>,</span> FilterChain chain<span style=color:#f92672>)</span>
+</code></pre></div><h2 id=abstractauthenticationprocessingfilter-dofilter>AbstractAuthenticationProcessingFilter. doFilter()</h2>
+<p>security 加载的每种过滤器都有自己的使命和职责。我们在本篇文章只关注和身份证验证相关的过滤器： JwtTokenFilter/UsernamePasswordAuthenticationFilter</p>
+<p>大部分和身份认证相关的过滤器都继承自 AbstractAuthenticationProcessingFilter，UsernamePasswordAuthenticationFilter 也不例外。父类 AbstractAuthenticationProcessingFilter 是一个 Servlet Filter 接口的实现，定义了身份认证的核心处理逻辑。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>doFilter</span><span style=color:#f92672>(</span>ServletRequest req<span style=color:#f92672>,</span> ServletResponse res<span style=color:#f92672>,</span> FilterChain chain<span style=color:#f92672>)</span>
 			<span style=color:#66d9ef>throws</span> IOException<span style=color:#f92672>,</span> ServletException <span style=color:#f92672>{</span>
 
 		HttpServletRequest request <span style=color:#f92672>=</span> <span style=color:#f92672>(</span>HttpServletRequest<span style=color:#f92672>)</span> req<span style=color:#f92672>;</span>
@@ -114,7 +184,13 @@ nextFilter<span style=color:#f92672>.</span><span style=color:#a6e22e>doFilter</
 		successfulAuthentication<span style=color:#f92672>(</span>request<span style=color:#f92672>,</span> response<span style=color:#f92672>,</span> chain<span style=color:#f92672>,</span> authResult<span style=color:#f92672>);</span>
 	<span style=color:#f92672>}</span>
 
-</code></pre></div><p>如果当前请求还未认证，父类 AbstractAuthenticationProcessingFilter 会调用由子类 UsernamePasswordAuthenticationFilter 实现的 attemptAuthentication 进行身份认证</p><h2 id=usernamepasswordauthenticationfilter-attemptauthentication>UsernamePasswordAuthenticationFilter. attemptAuthentication()</h2><blockquote><p>在父类方法中定义共通处理内容，但将自定义部分留给子类来完成的设计方式，是模板方法设计模式的体现。</p></blockquote><p>attemptAuthentication 方法将用户名与密码封装为一个 UsernamePasswordAuthenticationToken 对象，再将此对象交由 AuthenticationManager 接口的实现类 ProviderManager 进行处理。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> Authentication <span style=color:#a6e22e>attemptAuthentication</span><span style=color:#f92672>(</span>HttpServletRequest request<span style=color:#f92672>,</span>
+</code></pre></div><p>如果当前请求还未认证，父类 AbstractAuthenticationProcessingFilter 会调用由子类 UsernamePasswordAuthenticationFilter 实现的 attemptAuthentication 进行身份认证</p>
+<h2 id=usernamepasswordauthenticationfilter-attemptauthentication>UsernamePasswordAuthenticationFilter. attemptAuthentication()</h2>
+<blockquote>
+<p>在父类方法中定义共通处理内容，但将自定义部分留给子类来完成的设计方式，是模板方法设计模式的体现。</p>
+</blockquote>
+<p>attemptAuthentication 方法将用户名与密码封装为一个 UsernamePasswordAuthenticationToken 对象，再将此对象交由 AuthenticationManager 接口的实现类 ProviderManager 进行处理。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> Authentication <span style=color:#a6e22e>attemptAuthentication</span><span style=color:#f92672>(</span>HttpServletRequest request<span style=color:#f92672>,</span>
 			HttpServletResponse response<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> AuthenticationException <span style=color:#f92672>{</span>
 		<span style=color:#66d9ef>if</span> <span style=color:#f92672>(</span>postOnly <span style=color:#f92672>&amp;&amp;</span> <span style=color:#f92672>!</span>request<span style=color:#f92672>.</span><span style=color:#a6e22e>getMethod</span><span style=color:#f92672>().</span><span style=color:#a6e22e>equals</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;POST&#34;</span><span style=color:#f92672>))</span> <span style=color:#f92672>{</span>
 			<span style=color:#66d9ef>throw</span> <span style=color:#66d9ef>new</span> AuthenticationServiceException<span style=color:#f92672>(</span>
@@ -144,11 +220,14 @@ nextFilter<span style=color:#f92672>.</span><span style=color:#a6e22e>doFilter</
 </span><span style=color:#75715e></span>		<span style=color:#66d9ef>return</span> <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>getAuthenticationManager</span><span style=color:#f92672>().</span><span style=color:#a6e22e>authenticate</span><span style=color:#f92672>(</span>authRequest<span style=color:#f92672>);</span>
 	<span style=color:#f92672>}</span>
 
-</code></pre></div><h2 id=providermanager-authenticate>ProviderManager. authenticate()</h2><p>ProviderManager 自己并不会执行身份认证。它会将请求委托给被他管理的一系列 AuthenticationProvider 集合。AuthenticationProvider 集合中包含一个名为 DaoAuthenticationProvider 的 Provider ，专门负责处理基于 UsernamePasswordAuthenticationToken 的认证请求。</p><h3 id=daoauthenticationprovidersupports>DaoAuthenticationProvider.supports()</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>	<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>boolean</span> <span style=color:#a6e22e>supports</span><span style=color:#f92672>(</span>Class<span style=color:#f92672>&lt;?&gt;</span> authentication<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</code></pre></div><h2 id=providermanager-authenticate>ProviderManager. authenticate()</h2>
+<p>ProviderManager 自己并不会执行身份认证。它会将请求委托给被他管理的一系列 AuthenticationProvider 集合。AuthenticationProvider 集合中包含一个名为 DaoAuthenticationProvider 的 Provider ，专门负责处理基于 UsernamePasswordAuthenticationToken 的认证请求。</p>
+<h3 id=daoauthenticationprovidersupports>DaoAuthenticationProvider.supports()</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>	<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>boolean</span> <span style=color:#a6e22e>supports</span><span style=color:#f92672>(</span>Class<span style=color:#f92672>&lt;?&gt;</span> authentication<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
 		<span style=color:#66d9ef>return</span> <span style=color:#f92672>(</span>UsernamePasswordAuthenticationToken<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
 				<span style=color:#f92672>.</span><span style=color:#a6e22e>isAssignableFrom</span><span style=color:#f92672>(</span>authentication<span style=color:#f92672>));</span>
 	<span style=color:#f92672>}</span>
-</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 <span style=color:#66d9ef>public</span> Authentication <span style=color:#a6e22e>authenticate</span><span style=color:#f92672>(</span>Authentication authentication<span style=color:#f92672>)</span>
 			<span style=color:#66d9ef>throws</span> AuthenticationException <span style=color:#f92672>{</span>
 		Class<span style=color:#f92672>&lt;?</span> <span style=color:#66d9ef>extends</span> Authentication<span style=color:#f92672>&gt;</span> toTest <span style=color:#f92672>=</span> authentication<span style=color:#f92672>.</span><span style=color:#a6e22e>getClass</span><span style=color:#f92672>();</span>
@@ -235,7 +314,9 @@ nextFilter<span style=color:#f92672>.</span><span style=color:#a6e22e>doFilter</
 
 		<span style=color:#66d9ef>throw</span> lastException<span style=color:#f92672>;</span>
 	<span style=color:#f92672>}</span>
-</code></pre></div><h2 id=abstractuserdetailsauthenticationproviderauthenticate>AbstractUserDetailsAuthenticationProvider.authenticate()</h2><p>DaoAuthenticationProvider 的设计也运用了模板方法设计模式——authenticate 模板方法定义在了父类 AbstractUserDetailsAuthenticationProvider ，而具体的认证逻辑细节都通过子类 DaoAuthenticationProvider 来实现。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><h2 id=abstractuserdetailsauthenticationproviderauthenticate>AbstractUserDetailsAuthenticationProvider.authenticate()</h2>
+<p>DaoAuthenticationProvider 的设计也运用了模板方法设计模式——authenticate 模板方法定义在了父类 AbstractUserDetailsAuthenticationProvider ，而具体的认证逻辑细节都通过子类 DaoAuthenticationProvider 来实现。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 <span style=color:#66d9ef>public</span> Authentication <span style=color:#a6e22e>authenticate</span><span style=color:#f92672>(</span>Authentication authentication<span style=color:#f92672>)</span>
 			<span style=color:#66d9ef>throws</span> AuthenticationException <span style=color:#f92672>{</span>
           <span style=color:#75715e>// 1 - A 检索用户
@@ -276,7 +357,9 @@ nextFilter<span style=color:#f92672>.</span><span style=color:#a6e22e>doFilter</
 
 		<span style=color:#66d9ef>return</span> createSuccessAuthentication<span style=color:#f92672>(</span>principalToReturn<span style=color:#f92672>,</span> authentication<span style=color:#f92672>,</span> user<span style=color:#f92672>);</span>
 	<span style=color:#f92672>}</span>
-</code></pre></div><h2 id=daoauthenticationprovider-retrieveuser>DaoAuthenticationProvider. retrieveUser()</h2><p>检索用户功能是通过返回一个 UserDetails 对象 loadUserByUsername 方法来完成的。UserDetails 是一个接口，其中规范了使用 spring security 时用户对象应该遵守的行为和至少应该具备的字段。这是通过 UserDetails 的一系列行为的返回值来决定的。这也意味着你可以自定义这些行为，来决定一个用户是否有效。这是面向接口而不是实现典型案例——言下之意你的用户实体需要实现 UserDetails 与 loadUserByUsername。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>// A
+</code></pre></div><h2 id=daoauthenticationprovider-retrieveuser>DaoAuthenticationProvider. retrieveUser()</h2>
+<p>检索用户功能是通过返回一个 UserDetails 对象 loadUserByUsername 方法来完成的。UserDetails 是一个接口，其中规范了使用 spring security 时用户对象应该遵守的行为和至少应该具备的字段。这是通过 UserDetails 的一系列行为的返回值来决定的。这也意味着你可以自定义这些行为，来决定一个用户是否有效。这是面向接口而不是实现典型案例——言下之意你的用户实体需要实现 UserDetails 与 loadUserByUsername。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>// A
 </span><span style=color:#75715e></span><span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>final</span> UserDetails <span style=color:#a6e22e>retrieveUser</span><span style=color:#f92672>(</span>String username<span style=color:#f92672>,</span>
 			UsernamePasswordAuthenticationToken authentication<span style=color:#f92672>)</span>
 			<span style=color:#66d9ef>throws</span> AuthenticationException <span style=color:#f92672>{</span>
@@ -300,7 +383,9 @@ nextFilter<span style=color:#f92672>.</span><span style=color:#a6e22e>doFilter</
 			<span style=color:#66d9ef>throw</span> <span style=color:#66d9ef>new</span> InternalAuthenticationServiceException<span style=color:#f92672>(</span>ex<span style=color:#f92672>.</span><span style=color:#a6e22e>getMessage</span><span style=color:#f92672>(),</span> ex<span style=color:#f92672>);</span>
 		<span style=color:#f92672>}</span>
 	<span style=color:#f92672>}</span>
-</code></pre></div><h2 id=accountstatususerdetailschecker-check>AccountStatusUserDetailsChecker. check()</h2><p>由于定义了用户对象的行为和字段标准，检查用户是否有效的功能自然也就可以提供了。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>AccountStatusUserDetailsChecker</span> <span style=color:#66d9ef>implements</span> UserDetailsChecker<span style=color:#f92672>,</span> MessageSourceAware <span style=color:#f92672>{</span>
+</code></pre></div><h2 id=accountstatususerdetailschecker-check>AccountStatusUserDetailsChecker. check()</h2>
+<p>由于定义了用户对象的行为和字段标准，检查用户是否有效的功能自然也就可以提供了。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>AccountStatusUserDetailsChecker</span> <span style=color:#66d9ef>implements</span> UserDetailsChecker<span style=color:#f92672>,</span> MessageSourceAware <span style=color:#f92672>{</span>
 
 	<span style=color:#66d9ef>protected</span> MessageSourceAccessor messages <span style=color:#f92672>=</span> SpringSecurityMessageSource
 			<span style=color:#f92672>.</span><span style=color:#a6e22e>getAccessor</span><span style=color:#f92672>();</span>
@@ -331,7 +416,9 @@ nextFilter<span style=color:#f92672>.</span><span style=color:#a6e22e>doFilter</
 
 
 
-</code></pre></div><h2 id=daoauthenticationprovideradditionalauthenticationchecks>DaoAuthenticationProvider.additionalAuthenticationChecks()</h2><p>additionalAuthenticationChecks 方法通过将 UsernamePasswordAuthenticationToken 封装的用户密码与检索出来的用户对象通过加密工具进行匹配来完成认证逻辑。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>additionalAuthenticationChecks</span><span style=color:#f92672>(</span>UserDetails userDetails<span style=color:#f92672>,</span>
+</code></pre></div><h2 id=daoauthenticationprovideradditionalauthenticationchecks>DaoAuthenticationProvider.additionalAuthenticationChecks()</h2>
+<p>additionalAuthenticationChecks 方法通过将 UsernamePasswordAuthenticationToken 封装的用户密码与检索出来的用户对象通过加密工具进行匹配来完成认证逻辑。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>additionalAuthenticationChecks</span><span style=color:#f92672>(</span>UserDetails userDetails<span style=color:#f92672>,</span>
 			UsernamePasswordAuthenticationToken authentication<span style=color:#f92672>)</span>
 			<span style=color:#66d9ef>throws</span> AuthenticationException <span style=color:#f92672>{</span>
 		<span style=color:#66d9ef>if</span> <span style=color:#f92672>(</span>authentication<span style=color:#f92672>.</span><span style=color:#a6e22e>getCredentials</span><span style=color:#f92672>()</span> <span style=color:#f92672>==</span> <span style=color:#66d9ef>null</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
@@ -352,7 +439,9 @@ nextFilter<span style=color:#f92672>.</span><span style=color:#a6e22e>doFilter</
 					<span style=color:#e6db74>&#34;Bad credentials&#34;</span><span style=color:#f92672>));</span>
 		<span style=color:#f92672>}</span>
 	<span style=color:#f92672>}</span>
-</code></pre></div><h2 id=abstractuserdetailsauthenticationprovidercreatesuccessauthentication>AbstractUserDetailsAuthenticationProvider.createSuccessAuthentication()</h2><p>认证成功后，调用 createSuccessAuthentication 方法，将 principal -> 用户身份，authentication -> 请求凭据，权限 -> user.getAuthorities() 组合成 Authentication 对象。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><h2 id=abstractuserdetailsauthenticationprovidercreatesuccessauthentication>AbstractUserDetailsAuthenticationProvider.createSuccessAuthentication()</h2>
+<p>认证成功后，调用 createSuccessAuthentication 方法，将 principal -> 用户身份，authentication -> 请求凭据，权限 -> user.getAuthorities() 组合成 Authentication 对象。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 <span style=color:#66d9ef>protected</span> Authentication <span style=color:#a6e22e>createSuccessAuthentication</span><span style=color:#f92672>(</span>Object principal<span style=color:#f92672>,</span>
 			Authentication authentication<span style=color:#f92672>,</span> UserDetails user<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
 		<span style=color:#75715e>// Ensure we return the original credentials the user supplied,
@@ -366,8 +455,10 @@ nextFilter<span style=color:#f92672>.</span><span style=color:#a6e22e>doFilter</
 
 		<span style=color:#66d9ef>return</span> result<span style=color:#f92672>;</span>
 	<span style=color:#f92672>}</span>
-</code></pre></div><h2 id=abstractauthenticationprocessingfiltersuccessfulauthentication>AbstractAuthenticationProcessingFilter.successfulAuthentication()</h2><p>最后再回到 AbstractAuthenticationProcessingFilter 的 successfulAuthentication 方法。
-由于将认证结果放入了 SecurityContextHolder.getContext().setAuthentication(authResult) 这个 ThreadLocal 对象，所以在每一个 requestScope 里你都可以通过 SecurityContextHolder.getContext 得到认证成功的 Authentication 对象，从而获取用户身份、请求凭据、与用户权限。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><h2 id=abstractauthenticationprocessingfiltersuccessfulauthentication>AbstractAuthenticationProcessingFilter.successfulAuthentication()</h2>
+<p>最后再回到 AbstractAuthenticationProcessingFilter 的 successfulAuthentication 方法。
+由于将认证结果放入了 SecurityContextHolder.getContext().setAuthentication(authResult) 这个 ThreadLocal 对象，所以在每一个 requestScope 里你都可以通过 SecurityContextHolder.getContext 得到认证成功的 Authentication 对象，从而获取用户身份、请求凭据、与用户权限。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 <span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>successfulAuthentication</span><span style=color:#f92672>(</span>HttpServletRequest request<span style=color:#f92672>,</span>
 			HttpServletResponse response<span style=color:#f92672>,</span> FilterChain chain<span style=color:#f92672>,</span> Authentication authResult<span style=color:#f92672>)</span>
 			<span style=color:#66d9ef>throws</span> IOException<span style=color:#f92672>,</span> ServletException <span style=color:#f92672>{</span>
@@ -389,14 +480,21 @@ nextFilter<span style=color:#f92672>.</span><span style=color:#a6e22e>doFilter</
 
 		successHandler<span style=color:#f92672>.</span><span style=color:#a6e22e>onAuthenticationSuccess</span><span style=color:#f92672>(</span>request<span style=color:#f92672>,</span> response<span style=color:#f92672>,</span> authResult<span style=color:#f92672>);</span>
 	<span style=color:#f92672>}</span>
-</code></pre></div><h2 id=abstractauthenticationprocessingfilter-unsuccessfulauthentication>AbstractAuthenticationProcessingFilter. unsuccessfulAuthentication()</h2><p>当用户提交了非法的凭据时，DaoAuthenticationProvider 会抛出一个 BadCredentialsException 异常，这个异常是 AuthenticationException 异常的子类；
-异常沿着调用链传递到 AbstractAuthenticationProcessingFilter 后会被捕获，捕获逻辑就定义在 unsuccessfulAuthentication 方法中。</p><ul><li>清空当前「用户空间」中的信息。</li><li>通过 AuthenticationEntryPointFailureHandler. onAuthenticationFailure 方法将请求和异常指派到身份认证端点：authenticationEntryPoint.commence 方法中进行处理。</li><li>spring security 提供了一系列的端点实现，根据项目需要你可以进行配置或者自定义任何你想要的认证端点处理逻辑。</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>	<span style=color:#66d9ef>private</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>unsuccessfulAuthentication</span><span style=color:#f92672>(</span>HttpServletRequest request<span style=color:#f92672>,</span> HttpServletResponse response<span style=color:#f92672>,</span>
+</code></pre></div><h2 id=abstractauthenticationprocessingfilter-unsuccessfulauthentication>AbstractAuthenticationProcessingFilter. unsuccessfulAuthentication()</h2>
+<p>当用户提交了非法的凭据时，DaoAuthenticationProvider 会抛出一个 BadCredentialsException 异常，这个异常是 AuthenticationException 异常的子类；
+异常沿着调用链传递到 AbstractAuthenticationProcessingFilter 后会被捕获，捕获逻辑就定义在 unsuccessfulAuthentication 方法中。</p>
+<ul>
+<li>清空当前「用户空间」中的信息。</li>
+<li>通过 AuthenticationEntryPointFailureHandler. onAuthenticationFailure 方法将请求和异常指派到身份认证端点：authenticationEntryPoint.commence 方法中进行处理。</li>
+<li>spring security 提供了一系列的端点实现，根据项目需要你可以进行配置或者自定义任何你想要的认证端点处理逻辑。</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>	<span style=color:#66d9ef>private</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>unsuccessfulAuthentication</span><span style=color:#f92672>(</span>HttpServletRequest request<span style=color:#f92672>,</span> HttpServletResponse response<span style=color:#f92672>,</span>
 			AuthenticationException failed<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> IOException<span style=color:#f92672>,</span> ServletException <span style=color:#f92672>{</span>
 		SecurityContextHolder<span style=color:#f92672>.</span><span style=color:#a6e22e>clearContext</span><span style=color:#f92672>();</span>
 		<span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>failureHandler</span><span style=color:#f92672>.</span><span style=color:#a6e22e>onAuthenticationFailure</span><span style=color:#f92672>(</span>request<span style=color:#f92672>,</span> response<span style=color:#f92672>,</span> failed<span style=color:#f92672>);</span>
 	<span style=color:#f92672>}</span>
 
-</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>AuthenticationEntryPointFailureHandler</span> <span style=color:#66d9ef>implements</span> AuthenticationFailureHandler <span style=color:#f92672>{</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>AuthenticationEntryPointFailureHandler</span> <span style=color:#66d9ef>implements</span> AuthenticationFailureHandler <span style=color:#f92672>{</span>
 
 	<span style=color:#66d9ef>private</span> <span style=color:#66d9ef>final</span> AuthenticationEntryPoint authenticationEntryPoint<span style=color:#f92672>;</span>
 
@@ -412,6 +510,61 @@ nextFilter<span style=color:#f92672>.</span><span style=color:#a6e22e>doFilter</
 	<span style=color:#f92672>}</span>
 
 
-</code></pre></div><h2 id=uml-diagram>UML Diagram</h2><p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/Xnip2021-04-19_12-18-22.jpg alt></p><h2 id=总结>总结</h2><ol><li>Spring security 首先由一系列 filter chians 构成。</li><li>每种 security filter 负责不同的职责与功能。其中主要负责用户认证的 filter 为继承了 AbstractAuthenticationProcessingFilter 的 UsernamePasswordAuthenticationFilter。</li><li>UsernamePasswordAuthenticationFilter 将用户认证委托给 ProviderManager 处理。</li><li>ProviderManager 负责将认证处理委托给一系列 Provider。其中 DaoAuthenticationProvider 专门处理针对 UsernamePasswordAuthenticationToken 的认证处理。</li><li>使用加密工具 PasswordEncoder ，匹配从数据库中查询出指定的用户的密码与用户请求凭据中的密码，完成认证逻辑。</li><li>处理完成后，认证对象会放入 requestScope 中方便后续取用。</li></ol></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/springsecurity_authentication/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/springsecurity_authentication2/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/oidc/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
+</code></pre></div><h2 id=uml-diagram>UML Diagram</h2>
+<p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/Xnip2021-04-19_12-18-22.jpg alt></p>
+<h2 id=总结>总结</h2>
+<ol>
+<li>Spring security 首先由一系列 filter chians 构成。</li>
+<li>每种 security filter 负责不同的职责与功能。其中主要负责用户认证的 filter 为继承了 AbstractAuthenticationProcessingFilter 的 UsernamePasswordAuthenticationFilter。</li>
+<li>UsernamePasswordAuthenticationFilter 将用户认证委托给 ProviderManager 处理。</li>
+<li>ProviderManager 负责将认证处理委托给一系列 Provider。其中 DaoAuthenticationProvider 专门处理针对 UsernamePasswordAuthenticationToken 的认证处理。</li>
+<li>使用加密工具 PasswordEncoder ，匹配从数据库中查询出指定的用户的密码与用户请求凭据中的密码，完成认证逻辑。</li>
+<li>处理完成后，认证对象会放入 requestScope 中方便后续取用。</li>
+</ol>
+</section>
+<footer>
+<a class="permalink u-url" href=https://www.chucklin.net/post/springsecurity_authentication/>🔗</a>
+<hr class=post-underline>
+<p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a>
+</p>
+</footer>
+</article>
+</div>
+<div class=h-card>
+<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
+<div class=card-content>
+<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
+<p class=card-subhead>
+<span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br>
+<a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a>
+</p>
+</div>
+<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
+</div>
+<div id=footer>
+<nav id=article-skip>
+<div class=next>
+<a alt="Newer article" href=https://www.chucklin.net/post/springsecurity_authentication2/>&larr; Newer</a>
+</div>
+<div class=top>
+<a alt="Top of page" href=#>Top</a>
+</div>
+<div class=prev>
+<a alt="Older article" href=https://www.chucklin.net/post/oidc/>Older &rarr;</a>
+</div>
+</nav>
+<aside id=social>
+<div id=social-icons>
+<div class=icon-24x24>
+<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
+</div>
+</div>
+</aside>
+<p class=copyright>
+Copyright © 2021 Chuck Lin. All rights reserved.
+</p>
+</div>
+</body>
+</html>

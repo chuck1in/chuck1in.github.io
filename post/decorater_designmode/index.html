@@ -1,16 +1,106 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>装饰器设计模式 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">装饰器设计模式</h1><p class=post-date>Posted on
-<time class=dt-published datetime=2018-01-05T14:01:23+08:00>5 January, 2018 at 14:01 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h2 id=什么是装饰器设计模式>什么是装饰器设计模式</h2><p>动态的将责任附加到对象身上。若要扩展功能，装饰着提供了比继承更有弹性的替代方案。</p><h2 id=为什么要用装饰器设计模式>为什么要用装饰器设计模式</h2><p>试想下面这样一种需求。你供职的咖啡店最近准备设计一套订单系统以满足日益膨胀的业务需要。最初的设计是这样的：
+<!doctype html><html lang=zh-cn>
+<head>
+<meta charset=utf-8>
+<title>装饰器设计模式 | ChuckLin's Blog</title>
+<meta name=description content="Love and Peace">
+<meta name=author content>
+<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
+<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
+<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
+<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
+<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
+<meta name=msapplication-TileColor content="#00aba9">
+<meta name=theme-color content="#ffffff">
+<link rel=me href=mailto:mikumiku.lch@hotmail.com>
+<link rel=me href=https://github.com/chuck1in>
+<link rel=authorization_endpoint href=https://indieauth.com/auth>
+<link rel=token_endpoint href=https://tokens.indieauth.com/token>
+<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
+<meta name=viewport content="width=device-width,initial-scale=1">
+</head>
+<body>
+<div id=sitelogo>
+<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
+</div>
+<header>
+<nav>
+<div id=page-nav>
+<div class=page-nav-item>
+<a href=https://www.chucklin.net/>Home</a>
+</div>
+<div class=page-nav-item>
+<a href=/about/me>
+<span>About</span>
+</a>
+</div>
+<div class=page-nav-item>
+<a href=/tags>
+<span>Tag</span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<div id=content>
+<article class=h-entry>
+<header>
+<h1 class="post-title p-name">装饰器设计模式</h1>
+<p class=post-date>Posted on
+<time class=dt-published datetime=2018-01-05T14:01:23+08:00>
+5 January, 2018 at 14:01 +0800
+</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
+</p>
+</header>
+<section class="content e-content">
+<h2 id=什么是装饰器设计模式>什么是装饰器设计模式</h2>
+<p>动态的将责任附加到对象身上。若要扩展功能，装饰着提供了比继承更有弹性的替代方案。</p>
+<h2 id=为什么要用装饰器设计模式>为什么要用装饰器设计模式</h2>
+<p>试想下面这样一种需求。你供职的咖啡店最近准备设计一套订单系统以满足日益膨胀的业务需要。最初的设计是这样的：
 <img src=http://static.zybuluo.com/mikumikulch/v9nlil6lw2kxaz6hb6t21uz5/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202016-11-24%20%E4%B8%8B%E5%8D%8810.43.48.png alt="屏幕快照 2016-11-24 下午10.43.48.png-32.4kB">
 Beverage 是一个抽象的饮料类。每种不同的咖啡，继承这个抽象类并提供不同的 cost 实现。也就是说，每种不同的类都有一个单独的实现，并且提供自己的 cost 方法。
-顾客在购买咖啡时往往需要加入一些自己的调料，于是，你不得不为每一种调料的每一种饮料提供一个单独的实现类。哇塞，这简直是类爆炸！</p><p>但是别担心，要知道我毕竟是一个面向对象程序员。</p><p>我想到了一个点子，通过把各种调料设置到超类中，并提供一个 cost 方法计算所有调料的价格。然后在子类的 cost 中首先调用超类的 cost，然后与子类的 cost 方法的值相加后就可以得到某种饮料的价格，而不用为加入了不同调料的饮料设计单独的类了。
+顾客在购买咖啡时往往需要加入一些自己的调料，于是，你不得不为每一种调料的每一种饮料提供一个单独的实现类。哇塞，这简直是类爆炸！</p>
+<p>但是别担心，要知道我毕竟是一个面向对象程序员。</p>
+<p>我想到了一个点子，通过把各种调料设置到超类中，并提供一个 cost 方法计算所有调料的价格。然后在子类的 cost 中首先调用超类的 cost，然后与子类的 cost 方法的值相加后就可以得到某种饮料的价格，而不用为加入了不同调料的饮料设计单独的类了。
 <img src=http://static.zybuluo.com/mikumikulch/qh39na0yy502gyzey0y4eiln/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202016-11-24%20%E4%B8%8B%E5%8D%8811.11.09.png alt="屏幕快照 2016-11-24 下午11.11.09.png-30.9kB">
-像上面这样，子类依然会覆盖父类的 cost，但是会调用 setMilk() 等方法设置调料信息，然后调动父类的 cost 计算出调料的总价，再与子类的 cost 相加。</p><p>遗憾的是，这样的设计依然不够好，它至少存在下面这些问题。</p><ul><li>如果调料的价格发生变动，我们需要修改超类中的代码。</li><li>如果将来加入新的调料，我们需要修改超类中的代码。</li><li>如果顾客需要双倍摩卡的咖啡我们应该怎么办？</li><li>超类中包含的调料似乎并不能和所有饮料所吻合。</li></ul><h2 id=装饰器设计模式怎么用>装饰器设计模式怎么用？</h2><p>正当我一筹莫展的时候，有一个设计原则能够为我们提供一些思路</p><blockquote><p>类应该对扩展开放，对修改关闭。
+像上面这样，子类依然会覆盖父类的 cost，但是会调用 setMilk() 等方法设置调料信息，然后调动父类的 cost 计算出调料的总价，再与子类的 cost 相加。</p>
+<p>遗憾的是，这样的设计依然不够好，它至少存在下面这些问题。</p>
+<ul>
+<li>如果调料的价格发生变动，我们需要修改超类中的代码。</li>
+<li>如果将来加入新的调料，我们需要修改超类中的代码。</li>
+<li>如果顾客需要双倍摩卡的咖啡我们应该怎么办？</li>
+<li>超类中包含的调料似乎并不能和所有饮料所吻合。</li>
+</ul>
+<h2 id=装饰器设计模式怎么用>装饰器设计模式怎么用？</h2>
+<p>正当我一筹莫展的时候，有一个设计原则能够为我们提供一些思路</p>
+<blockquote>
+<p>类应该对扩展开放，对修改关闭。
 现在，让我们改变一种思路，尝试以饮料为主题然后使用调料对象来装饰饮料，然后最终计算出价格的做法。
-也就是利用装饰器设计模式来帮我们解决问题。</p></blockquote><p>在正式开始之前，你需要知道一些装饰器设计模式的特点。</p><blockquote><ol><li>装饰器和被装饰对象具有相同的超类型。</li></ol></blockquote><ol><li>你可以用一个或多个装饰器包装一个被装饰对象。</li><li>装饰器和被装饰对象都用有同样的超类型。对于客户端来说，使用装饰器和被装饰对象，都应该拥有一样的体验。</li><li>装饰者可以在所委托被装饰者的行为之前、或之后，加上自己的行为。</li><li>对象可以动态的，任何时候被你的装饰器所装饰。</li></ol><p><img src=http://static.zybuluo.com/mikumikulch/8inqari6f767suub69t23y66/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202016-11-24%20%E4%B8%8B%E5%8D%8811.53.32.png alt="屏幕快照 2016-11-24 下午11.53.32.png-38.8kB"></p><p>了解了装饰器设计模式的要点后，尝试在本次的咖啡订单系统上运用装饰器设计模式吧。</p><p>整体设计：
-<img src=http://static.zybuluo.com/mikumikulch/ur3dmjlt9lsxde1tmrhc6w1h/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202016-11-25%20%E4%B8%8A%E5%8D%8812.06.23.png alt="屏幕快照 2016-11-25 上午12.06.23.png-41.9kB"></p><p>饮料的抽象类中拥有抽象的 cost() 方法，与被实现了的 getDescription 方法。
+也就是利用装饰器设计模式来帮我们解决问题。</p>
+</blockquote>
+<p>在正式开始之前，你需要知道一些装饰器设计模式的特点。</p>
+<blockquote>
+<ol>
+<li>装饰器和被装饰对象具有相同的超类型。</li>
+</ol>
+</blockquote>
+<ol>
+<li>你可以用一个或多个装饰器包装一个被装饰对象。</li>
+<li>装饰器和被装饰对象都用有同样的超类型。对于客户端来说，使用装饰器和被装饰对象，都应该拥有一样的体验。</li>
+<li>装饰者可以在所委托被装饰者的行为之前、或之后，加上自己的行为。</li>
+<li>对象可以动态的，任何时候被你的装饰器所装饰。</li>
+</ol>
+<p><img src=http://static.zybuluo.com/mikumikulch/8inqari6f767suub69t23y66/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202016-11-24%20%E4%B8%8B%E5%8D%8811.53.32.png alt="屏幕快照 2016-11-24 下午11.53.32.png-38.8kB"></p>
+<p>了解了装饰器设计模式的要点后，尝试在本次的咖啡订单系统上运用装饰器设计模式吧。</p>
+<p>整体设计：
+<img src=http://static.zybuluo.com/mikumikulch/ur3dmjlt9lsxde1tmrhc6w1h/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202016-11-25%20%E4%B8%8A%E5%8D%8812.06.23.png alt="屏幕快照 2016-11-25 上午12.06.23.png-41.9kB"></p>
+<p>饮料的抽象类中拥有抽象的 cost() 方法，与被实现了的 getDescription 方法。
 HouseBlend 与 Decaf 对象分别是抽象的饮料的实现，并且覆盖了 cost() 方法，实现了自己的逻辑。
 Decorator 是一个装饰器抽象类（或接口）。按照上述装饰器的定义，为了让客户端的使用体验一致，Decorator 必须具有与被装饰对象同样的类型。装饰器可以选择实现被装饰对象的方法，也可以选择不实现。并且，每个装饰器都应该包含一个被装饰对象的实例，以便于在装饰器中调用被装饰对象的方法。
-最后，每种不同的调料都是一个具体的装饰器实现。除了继承了装饰器对象以外还需要覆盖你想要装饰的被装饰方法。</p><h3 id=被装饰对象>被装饰对象</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+最后，每种不同的调料都是一个具体的装饰器实现。除了继承了装饰器对象以外还需要覆盖你想要装饰的被装饰方法。</p>
+<h3 id=被装饰对象>被装饰对象</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
 </span><span style=color:#75715e> * 装饰器设计模式
 </span><span style=color:#75715e> * 被装饰饮料抽象类
 </span><span style=color:#75715e> */</span>
@@ -76,7 +166,8 @@ Decorator 是一个装饰器抽象类（或接口）。按照上述装饰器的�
 <span style=color:#f92672>}</span>
 
 
-</code></pre></div><h3 id=装饰器类>装饰器类</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre></div><h3 id=装饰器类>装饰器类</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 <span style=color:#75715e>/**
 </span><span style=color:#75715e> * 装饰器设计模式
 </span><span style=color:#75715e> * 装饰器抽象类
@@ -164,7 +255,8 @@ Decorator 是一个装饰器抽象类（或接口）。按照上述装饰器的�
     <span style=color:#f92672>}</span>
 <span style=color:#f92672>}</span>
 
-</code></pre></div><h3 id=测试>测试</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+</code></pre></div><h3 id=测试>测试</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
 </span><span style=color:#75715e> * 装饰器设计模式
 </span><span style=color:#75715e> * 测试类
 </span><span style=color:#75715e> */</span>
@@ -188,7 +280,7 @@ Decorator 是一个装饰器抽象类（或接口）。按照上述装饰器的�
 
 <span style=color:#f92672>}</span>
 
-</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=color:#ae81ff>30</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=color:#ae81ff>30</span>
 decaf
 <span style=color:#ae81ff>35</span>
 牛奶decaf
@@ -196,10 +288,70 @@ decaf
 抹茶牛奶decaf
 
 </code></pre></div><p>通过装饰器模式，动态的给被装饰对象加上了不同的行为。
-现在，让我们来回想一下将来可能出现的业务变动</p><ul><li>如果调料的价格发生变动。
-不需要修改超类的代码。我们唯一需要做的就是重新创建一个新的调料类，然后在装饰对象时使用它就可以了。</li><li>如果将来加入新的调料。
-同上。你只需要创建新的调料对象。</li><li>如果顾客需要双倍摩卡的咖啡我们应该怎么办？
-太容易了，包装两次！</li><li>超类中包含的调料似乎并不能和所有饮料所吻合。
-不吻合的情况下则不包装即可！例如你不可能拥有奶泡碧螺春。</li></ul><h2 id=总结>总结</h2><p>本篇文章的总结很简单，你需要做的就是回顾一下上面所提到过的装饰器设计模式的特性，并尝试理解它。</p><ol><li>装饰器和被装饰对象具有相同的超类型。装饰器并非一定要是抽象类，也可以是一个接口。</li><li>你可以用一个或多个装饰器包装一个被装饰对象。</li><li>装饰器和被装饰对象都用有同样的超类型。对于客户端来说，使用装饰器和被装饰对象，都应该拥有一样的体验。</li><li>装饰者可以在所委托被装饰者的行为之前、或之后，加上自己的行为。</li><li>对象可以动态的，任何时候被你的装饰器所装饰。</li></ol></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/decorater_designmode/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/builder_designmode/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/adpater_designmode/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
+现在，让我们来回想一下将来可能出现的业务变动</p>
+<ul>
+<li>如果调料的价格发生变动。
+不需要修改超类的代码。我们唯一需要做的就是重新创建一个新的调料类，然后在装饰对象时使用它就可以了。</li>
+<li>如果将来加入新的调料。
+同上。你只需要创建新的调料对象。</li>
+<li>如果顾客需要双倍摩卡的咖啡我们应该怎么办？
+太容易了，包装两次！</li>
+<li>超类中包含的调料似乎并不能和所有饮料所吻合。
+不吻合的情况下则不包装即可！例如你不可能拥有奶泡碧螺春。</li>
+</ul>
+<h2 id=总结>总结</h2>
+<p>本篇文章的总结很简单，你需要做的就是回顾一下上面所提到过的装饰器设计模式的特性，并尝试理解它。</p>
+<ol>
+<li>装饰器和被装饰对象具有相同的超类型。装饰器并非一定要是抽象类，也可以是一个接口。</li>
+<li>你可以用一个或多个装饰器包装一个被装饰对象。</li>
+<li>装饰器和被装饰对象都用有同样的超类型。对于客户端来说，使用装饰器和被装饰对象，都应该拥有一样的体验。</li>
+<li>装饰者可以在所委托被装饰者的行为之前、或之后，加上自己的行为。</li>
+<li>对象可以动态的，任何时候被你的装饰器所装饰。</li>
+</ol>
+</section>
+<footer>
+<a class="permalink u-url" href=https://www.chucklin.net/post/decorater_designmode/>🔗</a>
+<hr class=post-underline>
+<p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a>
+</p>
+</footer>
+</article>
+</div>
+<div class=h-card>
+<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
+<div class=card-content>
+<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
+<p class=card-subhead>
+<span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br>
+<a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a>
+</p>
+</div>
+<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
+</div>
+<div id=footer>
+<nav id=article-skip>
+<div class=next>
+<a alt="Newer article" href=https://www.chucklin.net/post/builder_designmode/>&larr; Newer</a>
+</div>
+<div class=top>
+<a alt="Top of page" href=#>Top</a>
+</div>
+<div class=prev>
+<a alt="Older article" href=https://www.chucklin.net/post/adpater_designmode/>Older &rarr;</a>
+</div>
+</nav>
+<aside id=social>
+<div id=social-icons>
+<div class=icon-24x24>
+<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
+</div>
+</div>
+</aside>
+<p class=copyright>
+Copyright © 2021 Chuck Lin. All rights reserved.
+</p>
+</div>
+</body>
+</html>

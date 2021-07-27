@@ -1,6 +1,67 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>状态设计模式 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">状态设计模式</h1><p class=post-date>Posted on
-<time class=dt-published datetime=2018-01-02T09:48:23+08:00>2 January, 2018 at 09:48 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h2 id=什么是状态设计模式>什么是状态设计模式？</h2><p>状态设计模式允许对象在内部状态改变时改变它的行为，对象看起来好像修改了它的类。</p><h2 id=为什么要使用状态设计模式>为什么要使用状态设计模式？</h2><p>状态设计模式可将对象的状态行为封装到单独的状态对象中，并将对象的动作委托到当前状态的对象。通过这样的方式实现封装变化、对扩展开放、对修改关闭以增强代码可读性、扩展性、维护性的目的。</p><h2 id=状态设计模式怎么用>状态设计模式怎么用？</h2><p>试想下面这样一种需求。
-万能糖果机公司委托我们通过 java 语言设计一种糖果机的控制程序，以实现类似如下的状态控制流程功能。</p><pre><code class=language-flow data-lang=flow>st=&gt;start: 开始使用糖果机
+<!doctype html><html lang=zh-cn>
+<head>
+<meta charset=utf-8>
+<title>状态设计模式 | ChuckLin's Blog</title>
+<meta name=description content="Love and Peace">
+<meta name=author content>
+<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
+<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
+<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
+<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
+<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
+<meta name=msapplication-TileColor content="#00aba9">
+<meta name=theme-color content="#ffffff">
+<link rel=me href=mailto:mikumiku.lch@hotmail.com>
+<link rel=me href=https://github.com/chuck1in>
+<link rel=authorization_endpoint href=https://indieauth.com/auth>
+<link rel=token_endpoint href=https://tokens.indieauth.com/token>
+<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
+<meta name=viewport content="width=device-width,initial-scale=1">
+</head>
+<body>
+<div id=sitelogo>
+<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
+</div>
+<header>
+<nav>
+<div id=page-nav>
+<div class=page-nav-item>
+<a href=https://www.chucklin.net/>Home</a>
+</div>
+<div class=page-nav-item>
+<a href=/about/me>
+<span>About</span>
+</a>
+</div>
+<div class=page-nav-item>
+<a href=/tags>
+<span>Tag</span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<div id=content>
+<article class=h-entry>
+<header>
+<h1 class="post-title p-name">状态设计模式</h1>
+<p class=post-date>Posted on
+<time class=dt-published datetime=2018-01-02T09:48:23+08:00>
+2 January, 2018 at 09:48 +0800
+</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
+</p>
+</header>
+<section class="content e-content">
+<h2 id=什么是状态设计模式>什么是状态设计模式？</h2>
+<p>状态设计模式允许对象在内部状态改变时改变它的行为，对象看起来好像修改了它的类。</p>
+<h2 id=为什么要使用状态设计模式>为什么要使用状态设计模式？</h2>
+<p>状态设计模式可将对象的状态行为封装到单独的状态对象中，并将对象的动作委托到当前状态的对象。通过这样的方式实现封装变化、对扩展开放、对修改关闭以增强代码可读性、扩展性、维护性的目的。</p>
+<h2 id=状态设计模式怎么用>状态设计模式怎么用？</h2>
+<p>试想下面这样一种需求。
+万能糖果机公司委托我们通过 java 语言设计一种糖果机的控制程序，以实现类似如下的状态控制流程功能。</p>
+<pre><code class=language-flow data-lang=flow>st=&gt;start: 开始使用糖果机
 op=&gt;operation: 投入硬币
 cond=&gt;condition: coins &gt; 25？
 op2=&gt;operation: 转动曲柄
@@ -12,7 +73,9 @@ st-&gt;op-&gt;cond
 cond(yes)-&gt;op2
 cond(no)-&gt;op4
 op2-&gt;op3-&gt;e
-</code></pre><p>业务流程拥有至少 3-4 种可执行的动作分别是：投入硬币、退回硬币、转动曲柄、售出糖果。另外还具备 3 种（或者更多）状态对应可执行动作，它们分别是：等待投币、已投币、售罄状态。</p><p>糖果机的业务表面上看起来挺简单的。唯一需要注意的是每次执行某种动作之前，你必须对当前所处的状态进行检查。比如用户在投入硬币且消费硬币之前，无法再次投入硬币。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+</code></pre><p>业务流程拥有至少 3-4 种可执行的动作分别是：投入硬币、退回硬币、转动曲柄、售出糖果。另外还具备 3 种（或者更多）状态对应可执行动作，它们分别是：等待投币、已投币、售罄状态。</p>
+<p>糖果机的业务表面上看起来挺简单的。唯一需要注意的是每次执行某种动作之前，你必须对当前所处的状态进行检查。比如用户在投入硬币且消费硬币之前，无法再次投入硬币。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 <span style=color:#f92672>package</span> designpattern.State<span style=color:#f92672>;</span>
 
 <span style=color:#75715e>/**
@@ -76,9 +139,26 @@ op2-&gt;op3-&gt;e
 
 <span style=color:#f92672>}</span>
 
-</code></pre></div><p>这不是一个完整的工业级的糖果机实现。不过在本篇文章中为了简略期间，这样一个简化版的糖果机就足够说明问题了。</p><p>现在你认为代码已经可以交付了。可惜该来的总会来。
-万能糖果机公司的产品经理们十分满意我们的工作成果，并希望在糖果机中的流程中增加一个功能。他们希望糖果机在投币后有几率「中奖」，在稍后转动曲柄发放糖果时有几率发放出双倍的糖果以加强糖果机的娱乐性，继而提升销售量。</p><p>现在回过头来看看刚才的代码，并考虑如何对应这个变化。。。。</p><ul><li>首先，需要增加一种状态叫做中奖。</li><li>需要在每个动作函数中增加中奖状态的 check。</li><li>在 turnCrank 函数中需要判断当前是否是中奖状态，若是则要发放两倍糖果。并且在最后都需要把状态极的状态还原到最初的状态。</li></ul><p>随着业务复杂度的增加，所对应的状态和动作函数的增多，这样的变更简直是噩梦。而对于产品经理们来说这样的变更和其他千千万万个变更一样属于：「这个需求很简单，怎么实现我不管，明天上线。」的范畴。</p><h3 id=新的设计>新的设计</h3><p>显然又到了设计模式的救场的时候了。
-于是新的设计思路如下：</p><ul><li>封装变化。</li><li>将状态的行为封装到状态对象中。</li><li>利用组合行为将状态变化委托到每个状态行为对象中去执行。</li></ul><p>依照这样的思路，我们先将状态等易变化的部分封装起来。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+</code></pre></div><p>这不是一个完整的工业级的糖果机实现。不过在本篇文章中为了简略期间，这样一个简化版的糖果机就足够说明问题了。</p>
+<p>现在你认为代码已经可以交付了。可惜该来的总会来。
+万能糖果机公司的产品经理们十分满意我们的工作成果，并希望在糖果机中的流程中增加一个功能。他们希望糖果机在投币后有几率「中奖」，在稍后转动曲柄发放糖果时有几率发放出双倍的糖果以加强糖果机的娱乐性，继而提升销售量。</p>
+<p>现在回过头来看看刚才的代码，并考虑如何对应这个变化。。。。</p>
+<ul>
+<li>首先，需要增加一种状态叫做中奖。</li>
+<li>需要在每个动作函数中增加中奖状态的 check。</li>
+<li>在 turnCrank 函数中需要判断当前是否是中奖状态，若是则要发放两倍糖果。并且在最后都需要把状态极的状态还原到最初的状态。</li>
+</ul>
+<p>随着业务复杂度的增加，所对应的状态和动作函数的增多，这样的变更简直是噩梦。而对于产品经理们来说这样的变更和其他千千万万个变更一样属于：「这个需求很简单，怎么实现我不管，明天上线。」的范畴。</p>
+<h3 id=新的设计>新的设计</h3>
+<p>显然又到了设计模式的救场的时候了。
+于是新的设计思路如下：</p>
+<ul>
+<li>封装变化。</li>
+<li>将状态的行为封装到状态对象中。</li>
+<li>利用组合行为将状态变化委托到每个状态行为对象中去执行。</li>
+</ul>
+<p>依照这样的思路，我们先将状态等易变化的部分封装起来。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
 </span><span style=color:#75715e> * 状态设计模式
 </span><span style=color:#75715e> * 状态接口
 </span><span style=color:#75715e> */</span>
@@ -194,7 +274,8 @@ op2-&gt;op3-&gt;e
     <span style=color:#f92672>}</span>
 <span style=color:#f92672>}</span>
 
-</code></pre></div><p>然后利用委托方式将糖果机的任务委托给状态对象使用。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+</code></pre></div><p>然后利用委托方式将糖果机的任务委托给状态对象使用。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
 </span><span style=color:#75715e> * 状态设计模式
 </span><span style=color:#75715e> * 糖果机
 </span><span style=color:#75715e> */</span>
@@ -287,8 +368,55 @@ HasQuarterState
 发放糖果。。。
 糖果发放完毕
 </code></pre><p>大功告成。现在的设计不仅能帮你快速解决频繁变更的需求还能减少你和产品经理对话的时间。
-这样的代码面向的是接口，而非具体类型编程。它们对扩展开放，对修改关闭。若发生需求变更，你仅仅需要的是增加一个状态对象，在状态对象处理好逻辑，而其他地方的代码你完全不需要改动。</p><h2 id=总结>总结</h2><p>通过上面的示例，我们可以发现这又是一个利用组合来解决问题的设计模式。很显然组合要比继承更适合于扩展与维护。
+这样的代码面向的是接口，而非具体类型编程。它们对扩展开放，对修改关闭。若发生需求变更，你仅仅需要的是增加一个状态对象，在状态对象处理好逻辑，而其他地方的代码你完全不需要改动。</p>
+<h2 id=总结>总结</h2>
+<p>通过上面的示例，我们可以发现这又是一个利用组合来解决问题的设计模式。很显然组合要比继承更适合于扩展与维护。
 在之前的文章中，策略设计模式和状态设计模式非常相似，甚至他们的 uml 图都是一样的。那么为何状态设计模式要单独拿出来讲呢？
-这是因为策略设计模式的使用目的在于对象主动地去控制算法或者行为，而状态设计模式更倾向于定义好一组在客户端对象里可以互相转换的状态。</p></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/status_designmode/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/strategy_designmode/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/factory_designmode/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
+这是因为策略设计模式的使用目的在于对象主动地去控制算法或者行为，而状态设计模式更倾向于定义好一组在客户端对象里可以互相转换的状态。</p>
+</section>
+<footer>
+<a class="permalink u-url" href=https://www.chucklin.net/post/status_designmode/>🔗</a>
+<hr class=post-underline>
+<p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a>
+</p>
+</footer>
+</article>
+</div>
+<div class=h-card>
+<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
+<div class=card-content>
+<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
+<p class=card-subhead>
+<span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br>
+<a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a>
+</p>
+</div>
+<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
+</div>
+<div id=footer>
+<nav id=article-skip>
+<div class=next>
+<a alt="Newer article" href=https://www.chucklin.net/post/strategy_designmode/>&larr; Newer</a>
+</div>
+<div class=top>
+<a alt="Top of page" href=#>Top</a>
+</div>
+<div class=prev>
+<a alt="Older article" href=https://www.chucklin.net/post/factory_designmode/>Older &rarr;</a>
+</div>
+</nav>
+<aside id=social>
+<div id=social-icons>
+<div class=icon-24x24>
+<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
+</div>
+</div>
+</aside>
+<p class=copyright>
+Copyright © 2021 Chuck Lin. All rights reserved.
+</p>
+</div>
+</body>
+</html>

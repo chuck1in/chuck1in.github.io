@@ -1,6 +1,66 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>泛型实战 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">泛型实战</h1><p class=post-date>Posted on
-<time class=dt-published datetime=2020-01-15T09:23:00+08:00>15 January, 2020 at 09:23 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><p>泛型是一种将运行时异常转化为编译时异常的一种技术，在与集合有关的应用中，我们经常使用泛型来对集合元素的类型做出约束以让代码更加健壮。</p><p>使用泛型是一件非常容易的事情。但是将泛型的理念带入带我们的模块设计中就不是那么容易的事情了。如果你对通配符，类型推导，有限制通配符等等名词还不是很了解，那么本篇文章应该能够帮到你。</p><h2 id=类型推导>类型推导</h2><h3 id=泛型类泛型方法>泛型类/泛型方法</h3><p>类型推导是指，编译器通过检查方法参数的类型来计算类型参数的值，这样的过程称为类型推导。
-类型推导的代表性用法为泛型类和泛型方法，比如下面这个 Stack。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+<!doctype html><html lang=zh-cn>
+<head>
+<meta charset=utf-8>
+<title>泛型实战 | ChuckLin's Blog</title>
+<meta name=description content="Love and Peace">
+<meta name=author content>
+<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
+<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
+<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
+<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
+<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
+<meta name=msapplication-TileColor content="#00aba9">
+<meta name=theme-color content="#ffffff">
+<link rel=me href=mailto:mikumiku.lch@hotmail.com>
+<link rel=me href=https://github.com/chuck1in>
+<link rel=authorization_endpoint href=https://indieauth.com/auth>
+<link rel=token_endpoint href=https://tokens.indieauth.com/token>
+<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
+<meta name=viewport content="width=device-width,initial-scale=1">
+</head>
+<body>
+<div id=sitelogo>
+<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
+</div>
+<header>
+<nav>
+<div id=page-nav>
+<div class=page-nav-item>
+<a href=https://www.chucklin.net/>Home</a>
+</div>
+<div class=page-nav-item>
+<a href=/about/me>
+<span>About</span>
+</a>
+</div>
+<div class=page-nav-item>
+<a href=/tags>
+<span>Tag</span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<div id=content>
+<article class=h-entry>
+<header>
+<h1 class="post-title p-name">泛型实战</h1>
+<p class=post-date>Posted on
+<time class=dt-published datetime=2020-01-15T09:23:00+08:00>
+15 January, 2020 at 09:23 +0800
+</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
+</p>
+</header>
+<section class="content e-content">
+<p>泛型是一种将运行时异常转化为编译时异常的一种技术，在与集合有关的应用中，我们经常使用泛型来对集合元素的类型做出约束以让代码更加健壮。</p>
+<p>使用泛型是一件非常容易的事情。但是将泛型的理念带入带我们的模块设计中就不是那么容易的事情了。如果你对通配符，类型推导，有限制通配符等等名词还不是很了解，那么本篇文章应该能够帮到你。</p>
+<h2 id=类型推导>类型推导</h2>
+<h3 id=泛型类泛型方法>泛型类/泛型方法</h3>
+<p>类型推导是指，编译器通过检查方法参数的类型来计算类型参数的值，这样的过程称为类型推导。
+类型推导的代表性用法为泛型类和泛型方法，比如下面这个 Stack。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
 </span><span style=color:#75715e> * 泛型测试
 </span><span style=color:#75715e> * 泛型方法,泛型集合
 </span><span style=color:#75715e> */</span>
@@ -79,8 +139,13 @@
 
 </code></pre></div><p>通过泛型类 GenericApplication 可以创建出支持任意类型，并且受到泛型条件约束的集合对象。
 通过泛型方法 unionWithGeneric 可以根据参数的类型返回相应类型的集合对象。
-可见，通过类型推导进一步增强了模块的健壮性，使你的 API 运行更加可靠。</p><h2 id=通配符>通配符</h2><h3 id=无限制通配符>无限制通配符</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>Set<span style=color:#f92672>&lt;?&gt;</span> set <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> HashSet<span style=color:#f92672>();</span>
-</code></pre></div><p>无限制的通配符**?**代表任何可能的类型。在上面的代码中，它和 Set 一起代表了一个未知类型元素的 Set 集合，并且用户无法向**?**修饰的集合中 add 任何元素。</p><h3 id=无限制通配符怎么用>无限制通配符怎么用</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>    <span style=color:#75715e>/**
+可见，通过类型推导进一步增强了模块的健壮性，使你的 API 运行更加可靠。</p>
+<h2 id=通配符>通配符</h2>
+<h3 id=无限制通配符>无限制通配符</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>Set<span style=color:#f92672>&lt;?&gt;</span> set <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> HashSet<span style=color:#f92672>();</span>
+</code></pre></div><p>无限制的通配符**?**代表任何可能的类型。在上面的代码中，它和 Set 一起代表了一个未知类型元素的 Set 集合，并且用户无法向**?**修饰的集合中 add 任何元素。</p>
+<h3 id=无限制通配符怎么用>无限制通配符怎么用</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>    <span style=color:#75715e>/**
 </span><span style=color:#75715e>     * 返回两个集合中相同元素的个数
 </span><span style=color:#75715e>     *
 </span><span style=color:#75715e>     * @param s1 集合1
@@ -102,8 +167,13 @@
 
 </code></pre></div><p>无限制通配符存在的意义在于：加强集合的约束条件，减少元素类型约束被破坏的可能性。
 换句话说，如果将 s1、s2 改为源生集合对象，则可能在下面的逻辑中被 add、addAll 等 api 破坏掉元素的类型一致性，引起安全隐患。
-如果你不关心集合对象的具体类型，使用无限制的通配符是你最好的选择。因为他可以通过禁止增加元素的手段，帮你避开运行时异常，让你的代码变得更加健壮。</p><h2 id=有限制的通配符>有限制的通配符</h2><p>有限制的通配符是用来解决 api 灵活性的。要理解这句话，首先需要明确参数化类型具有不可变性。</p><h2 id=有限制的通配符怎么用>有限制的通配符怎么用</h2><p>什么叫不可变性？
-我们尝试往本章的例子中增加上面两个方法。一个是集体压栈方法、一个是集体弹栈，并且将元素插入到另外一个集合中的方法。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>  <span style=color:#75715e>/**
+如果你不关心集合对象的具体类型，使用无限制的通配符是你最好的选择。因为他可以通过禁止增加元素的手段，帮你避开运行时异常，让你的代码变得更加健壮。</p>
+<h2 id=有限制的通配符>有限制的通配符</h2>
+<p>有限制的通配符是用来解决 api 灵活性的。要理解这句话，首先需要明确参数化类型具有不可变性。</p>
+<h2 id=有限制的通配符怎么用>有限制的通配符怎么用</h2>
+<p>什么叫不可变性？
+我们尝试往本章的例子中增加上面两个方法。一个是集体压栈方法、一个是集体弹栈，并且将元素插入到另外一个集合中的方法。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>  <span style=color:#75715e>/**
 </span><span style=color:#75715e>     * 将集合中所有的元素全部压栈
 </span><span style=color:#75715e>     *
 </span><span style=color:#75715e>     * @param iterable 集合对象
@@ -126,7 +196,8 @@
         <span style=color:#f92672>}</span>
     <span style=color:#f92672>}</span>
 
-</code></pre></div><p>使用下面的代码进行测试。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java> <span style=color:#75715e>/**
+</code></pre></div><p>使用下面的代码进行测试。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java> <span style=color:#75715e>/**
 </span><span style=color:#75715e>     * 泛型方法测试函数。
 </span><span style=color:#75715e>     *
 </span><span style=color:#75715e>     * @param args
@@ -144,10 +215,13 @@
     <span style=color:#f92672>}</span>
 
 
-</code></pre></div><p>现在你将得到一个编译时异常。原因就在于，类型推导、参数化类型具有不可变性。无论 Type1 与 Type2 是否是继承关系，都有</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>List<span style=color:#f92672>&lt;</span>Type1<span style=color:#f92672>&gt;</span> <span style=color:#f92672>!=</span> List<span style=color:#f92672>&lt;</span>Type2<span style=color:#f92672>&gt;</span>
+</code></pre></div><p>现在你将得到一个编译时异常。原因就在于，类型推导、参数化类型具有不可变性。无论 Type1 与 Type2 是否是继承关系，都有</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>List<span style=color:#f92672>&lt;</span>Type1<span style=color:#f92672>&gt;</span> <span style=color:#f92672>!=</span> List<span style=color:#f92672>&lt;</span>Type2<span style=color:#f92672>&gt;</span>
 </code></pre></div><p>但是，根据面向对象的思想，子类对象又是能够放进父类对象的集合里的。如果你不适用参数化类型(类型推导)，这么做也完全可以。
 那么，是否能够在使用参数化类型的同时又能够将子类对象放入父类对象的集合呢？
-这就是有限制通配符的用法。</p><h3 id=-extends-e>? extends E</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+这就是有限制通配符的用法。</p>
+<h3 id=-extends-e>? extends E</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
 </span><span style=color:#75715e>     * 将集合中所有的元素全部压栈
 </span><span style=color:#75715e>     * 通过使用有限制的通配符类型来提升api的灵活性。集合对象的元素必须是E的子类。
 </span><span style=color:#75715e>     *
@@ -158,7 +232,8 @@
             list<span style=color:#f92672>.</span><span style=color:#a6e22e>addLast</span><span style=color:#f92672>(</span>e<span style=color:#f92672>);</span>
         <span style=color:#f92672>}</span>
     <span style=color:#f92672>}</span>
-</code></pre></div><h3 id=-super-e>? super E</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>    <span style=color:#75715e>/**
+</code></pre></div><h3 id=-super-e>? super E</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>    <span style=color:#75715e>/**
 </span><span style=color:#75715e>     * 将所有元素弹栈,并追加到参数集合中.
 </span><span style=color:#75715e>     *
 </span><span style=color:#75715e>     * @param collection 集合对象,必须是泛型参数的父类
@@ -168,7 +243,7 @@
             collection<span style=color:#f92672>.</span><span style=color:#a6e22e>add</span><span style=color:#f92672>(</span>pop<span style=color:#f92672>());</span>
         <span style=color:#f92672>}</span>
     <span style=color:#f92672>}</span>
-</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java> <span style=color:#75715e>/**
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java> <span style=color:#75715e>/**
 </span><span style=color:#75715e>     * 泛型方法测试函数。
 </span><span style=color:#75715e>     *
 </span><span style=color:#75715e>     * @param args
@@ -185,6 +260,56 @@
         ga<span style=color:#f92672>.</span><span style=color:#a6e22e>popAll</span><span style=color:#f92672>(</span>objects<span style=color:#f92672>);</span>
         <span style=color:#75715e>//ga.popAllIntoEs(objects);
 </span><span style=color:#75715e></span>    <span style=color:#f92672>}</span>
-</code></pre></div><h2 id=总结>总结</h2><ol><li>使用基于类型推导的泛型类，泛型方法以使代码变得更加健壮。</li><li>避免使用源生类型，对于未知类型的集合请使用通配符，以加强代码的约束性。</li><li>合理使用有限制的通配符，提升你的 API 灵活性。</li></ol></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/genericity/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/coroutine/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/innerclass/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
+</code></pre></div><h2 id=总结>总结</h2>
+<ol>
+<li>使用基于类型推导的泛型类，泛型方法以使代码变得更加健壮。</li>
+<li>避免使用源生类型，对于未知类型的集合请使用通配符，以加强代码的约束性。</li>
+<li>合理使用有限制的通配符，提升你的 API 灵活性。</li>
+</ol>
+</section>
+<footer>
+<a class="permalink u-url" href=https://www.chucklin.net/post/genericity/>🔗</a>
+<hr class=post-underline>
+<p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a>
+</p>
+</footer>
+</article>
+</div>
+<div class=h-card>
+<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
+<div class=card-content>
+<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
+<p class=card-subhead>
+<span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br>
+<a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a>
+</p>
+</div>
+<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
+</div>
+<div id=footer>
+<nav id=article-skip>
+<div class=next>
+<a alt="Newer article" href=https://www.chucklin.net/post/coroutine/>&larr; Newer</a>
+</div>
+<div class=top>
+<a alt="Top of page" href=#>Top</a>
+</div>
+<div class=prev>
+<a alt="Older article" href=https://www.chucklin.net/post/innerclass/>Older &rarr;</a>
+</div>
+</nav>
+<aside id=social>
+<div id=social-icons>
+<div class=icon-24x24>
+<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
+</div>
+</div>
+</aside>
+<p class=copyright>
+Copyright © 2021 Chuck Lin. All rights reserved.
+</p>
+</div>
+</body>
+</html>

@@ -1,10 +1,70 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>命令设计模式 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:mikumiku.lch@hotmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">命令设计模式</h1><p class=post-date>Posted on
-<time class=dt-published datetime=2018-01-19T09:23:00+08:00>19 January, 2018 at 09:23 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h2 id=什么是命令设计模式>什么是命令设计模式</h2><p>通过将“请求”封装成命令对象，来将操作的请求者与操作的执行者解耦，以便使用不同的请求队列或者日志来参数化其他对象，命令模式也支持可撤销的操作。</p><h2 id=为什么要使用命令设计模式>为什么要使用命令设计模式</h2><p>试想下面一种业务场景。
+<!doctype html><html lang=zh-cn>
+<head>
+<meta charset=utf-8>
+<title>命令设计模式 | ChuckLin's Blog</title>
+<meta name=description content="Love and Peace">
+<meta name=author content>
+<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
+<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
+<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
+<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
+<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
+<meta name=msapplication-TileColor content="#00aba9">
+<meta name=theme-color content="#ffffff">
+<link rel=me href=mailto:mikumiku.lch@hotmail.com>
+<link rel=me href=https://github.com/chuck1in>
+<link rel=authorization_endpoint href=https://indieauth.com/auth>
+<link rel=token_endpoint href=https://tokens.indieauth.com/token>
+<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
+<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
+<meta name=viewport content="width=device-width,initial-scale=1">
+</head>
+<body>
+<div id=sitelogo>
+<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
+</div>
+<header>
+<nav>
+<div id=page-nav>
+<div class=page-nav-item>
+<a href=https://www.chucklin.net/>Home</a>
+</div>
+<div class=page-nav-item>
+<a href=/about/me>
+<span>About</span>
+</a>
+</div>
+<div class=page-nav-item>
+<a href=/tags>
+<span>Tag</span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<div id=content>
+<article class=h-entry>
+<header>
+<h1 class="post-title p-name">命令设计模式</h1>
+<p class=post-date>Posted on
+<time class=dt-published datetime=2018-01-19T09:23:00+08:00>
+19 January, 2018 at 09:23 +0800
+</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
+</p>
+</header>
+<section class="content e-content">
+<h2 id=什么是命令设计模式>什么是命令设计模式</h2>
+<p>通过将“请求”封装成命令对象，来将操作的请求者与操作的执行者解耦，以便使用不同的请求队列或者日志来参数化其他对象，命令模式也支持可撤销的操作。</p>
+<h2 id=为什么要使用命令设计模式>为什么要使用命令设计模式</h2>
+<p>试想下面一种业务场景。
 现在拥有一个中间件，名称为 cache。这个 cache 承担了异步向用户外发送邮件与短信的功能。
 系统中已经有设计好的独立的邮件与短信对象，如下：
 <img src=http://static.zybuluo.com/mikumikulch/y9nrghiqrr04y4wrnvkog542/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202016-12-27%20%E4%B8%8B%E5%8D%882.33.36.png alt="屏幕快照 2016-12-27 下午2.33.36.png-16.4kB">
-发送一封邮件要比发送短信复杂的多。所以，MAIL 对象相对于 SMS 对象要复杂不少。除了 title 与 body 以外，还可以设置邮件的附件。</p><p>现在让我们开始设计中间件的具体逻辑。我的思路很清晰：首先设计一个中间件。为了能够快速的从容器中获取和添加对象，我们采用 LinkedList 对象。
-然后将发邮件与发短信的任务逐个添加进 cache 中，最后循环 cache，做出相应处理。</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
+发送一封邮件要比发送短信复杂的多。所以，MAIL 对象相对于 SMS 对象要复杂不少。除了 title 与 body 以外，还可以设置邮件的附件。</p>
+<p>现在让我们开始设计中间件的具体逻辑。我的思路很清晰：首先设计一个中间件。为了能够快速的从容器中获取和添加对象，我们采用 LinkedList 对象。
+然后将发邮件与发短信的任务逐个添加进 cache 中，最后循环 cache，做出相应处理。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
 </span><span style=color:#75715e> * 发送邮件
 </span><span style=color:#75715e> */</span>
 <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MAIL</span> <span style=color:#f92672>{</span>
@@ -77,18 +137,32 @@
     <span style=color:#f92672>}</span>
 <span style=color:#f92672>}</span>
 </code></pre></div><p>为了简明扼要的说明设计模式，我们省略了各种线程任务的创建执行代码。
-任务已经顺利完成了，中间件能够根据任务类型自动判断不同的业务，并顺利完成需求。</p><p>遗憾的是，这样的设计拥有一些“重大缺陷”。</p><blockquote><ol><li>请求与执行的耦合度很高。假设需要再增加一个推送 app 消息的业务，那么你的代码很快就会陷入 if else 的海洋。</li><li>类没有对扩展开发，对修改关闭。当需求变化时我们仅仅能够通过修改代码来应对。</li><li>executeJobs() 是一个典型的依赖具体对象，而不是接口或抽象的失败案例。</li><li>如果我们想要将发送给某 1 个用户的消息一起执行，应该怎么办？</li></ol></blockquote><p>好消息是，命令设计模式能够帮助我们解决上面的所有问题。
+任务已经顺利完成了，中间件能够根据任务类型自动判断不同的业务，并顺利完成需求。</p>
+<p>遗憾的是，这样的设计拥有一些“重大缺陷”。</p>
+<blockquote>
+<ol>
+<li>请求与执行的耦合度很高。假设需要再增加一个推送 app 消息的业务，那么你的代码很快就会陷入 if else 的海洋。</li>
+<li>类没有对扩展开发，对修改关闭。当需求变化时我们仅仅能够通过修改代码来应对。</li>
+<li>executeJobs() 是一个典型的依赖具体对象，而不是接口或抽象的失败案例。</li>
+<li>如果我们想要将发送给某 1 个用户的消息一起执行，应该怎么办？</li>
+</ol>
+</blockquote>
+<p>好消息是，命令设计模式能够帮助我们解决上面的所有问题。
 在学习命令设计模式之前，我们先试着用餐厅就餐这个日常生活中的行为，来接近命令设计模式。
-当我们在餐厅就餐时，我们往往会先向服务员点餐，然后通过服务员把点好的餐点送往后厨，并通知后厨根据新订单准备餐点。</p><pre><code class=language-flow data-lang=flow>client=&gt;start: 客户
+当我们在餐厅就餐时，我们往往会先向服务员点餐，然后通过服务员把点好的餐点送往后厨，并通知后厨根据新订单准备餐点。</p>
+<pre><code class=language-flow data-lang=flow>client=&gt;start: 客户
 waiter=&gt;operation: 服务员
 createOrders=&gt;operation: 点餐（createOrders）
 notifyChef=&gt;operation: 通知后厨
 chef=&gt;end: 准备餐点
 
 client-&gt;createOrders-&gt;waiter-&gt;notifyChef-&gt;chef
-</code></pre><p>通过点餐创建的订单，屏蔽了不同的客户的不同需求。对于 waiter 来说，不需要知道订单的具体内容。只需要将客户的点餐订单传递给后厨，并通知后厨任务就算完成了。后厨通过订单内容，着手准备工作。</p><h4 id=从餐厅到命令设计模式>从餐厅到命令设计模式</h4><p>将餐厅想象成 OO 设计模式的一种模型。客户就相当于 client、点餐的动作就相当于创建请求、服务员就相当于异步中间件、后厨则是真正 action 的执行者。
+</code></pre><p>通过点餐创建的订单，屏蔽了不同的客户的不同需求。对于 waiter 来说，不需要知道订单的具体内容。只需要将客户的点餐订单传递给后厨，并通知后厨任务就算完成了。后厨通过订单内容，着手准备工作。</p>
+<h4 id=从餐厅到命令设计模式>从餐厅到命令设计模式</h4>
+<p>将餐厅想象成 OO 设计模式的一种模型。客户就相当于 client、点餐的动作就相当于创建请求、服务员就相当于异步中间件、后厨则是真正 action 的执行者。
 好了，让我们根据这样的思路重新设计之前的需求。
-<img src=http://static.zybuluo.com/mikumikulch/hgbkpn28eidao2l9kwh3bl89/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202016-12-27%20%E4%B8%8B%E5%8D%884.37.55.png alt="屏幕快照 2016-12-27 下午4.37.55.png-44.8kB"></p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
+<img src=http://static.zybuluo.com/mikumikulch/hgbkpn28eidao2l9kwh3bl89/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202016-12-27%20%E4%B8%8B%E5%8D%884.37.55.png alt="屏幕快照 2016-12-27 下午4.37.55.png-44.8kB"></p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
 <span style=color:#75715e>/**
 </span><span style=color:#75715e> * 命令设计模式
 </span><span style=color:#75715e> */</span>
@@ -197,14 +271,80 @@ client-&gt;createOrders-&gt;waiter-&gt;notifyChef-&gt;chef
     <span style=color:#f92672>}</span>
 <span style=color:#f92672>}</span>
 
-</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>设置邮件附件
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>设置邮件附件
 设置邮件内容
 设置邮件标题
 发送邮件
 设置短信内容
 发送短信
-</code></pre></div><h4 id=问题回顾>问题回顾</h4><p>总算完成了。最后再回顾一下之前出现的重大问题，看看是否这些问题都通过命令设计模式都得到了解决</p><blockquote><p>请求与执行的耦合度很高。假设需要再增加一个推送 app
-消息的业务，那么你的代码很快就会陷入 if else 的海洋。</p></blockquote><p>通过将请求封装为命令，解耦了请求者与执行者。当有新需求时，新的请求只需要实现命令接口，就能被我们的代码所复用。</p><blockquote><p>类没有对扩展开发，对修改关闭。当需求变化时我们仅仅能够通过修改代码来应对。</p></blockquote><p>需求有变化时，通过 setCommand() / addCommand() 方法实现了对扩展开放，对修改关闭。</p><blockquote><ol start=3><li>executeJobs() 是一个典型的依赖具体对象，而不是接口或抽象的失败案例。</li></ol></blockquote><p>现在依赖的是 Command 接口对象。</p><blockquote><p>如果我们想要将发送给某 1 个用户的消息一起执行，应该怎么办？</p></blockquote><p>将所需要的任务组合成为一个新的 commandMacro 宏对象。宏对象持有一个 command 对象的数组。并在 execute 中调用数组中所有对象的 execute 方法，就能实现这样的需求。</p><h2 id=总结>总结</h2><p>命令设计模式通过一个中间人/件将请求封装为统一的命令，达到了与命令的执行者之间实现解耦的目的。这样的设计使得中间人的代码尽可能的简单，并且能够与任意的对象组合。完整的命令设计模式还拥有 undo，撤销上一次命令的功能。
-你可以试着自己来实现这个功能来加深对命令设计模式的理解。</p></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/command_designmode/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br><a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/sign_designmode/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/builder_designmode/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
+</code></pre></div><h4 id=问题回顾>问题回顾</h4>
+<p>总算完成了。最后再回顾一下之前出现的重大问题，看看是否这些问题都通过命令设计模式都得到了解决</p>
+<blockquote>
+<p>请求与执行的耦合度很高。假设需要再增加一个推送 app
+消息的业务，那么你的代码很快就会陷入 if else 的海洋。</p>
+</blockquote>
+<p>通过将请求封装为命令，解耦了请求者与执行者。当有新需求时，新的请求只需要实现命令接口，就能被我们的代码所复用。</p>
+<blockquote>
+<p>类没有对扩展开发，对修改关闭。当需求变化时我们仅仅能够通过修改代码来应对。</p>
+</blockquote>
+<p>需求有变化时，通过 setCommand() / addCommand() 方法实现了对扩展开放，对修改关闭。</p>
+<blockquote>
+<ol start=3>
+<li>executeJobs() 是一个典型的依赖具体对象，而不是接口或抽象的失败案例。</li>
+</ol>
+</blockquote>
+<p>现在依赖的是 Command 接口对象。</p>
+<blockquote>
+<p>如果我们想要将发送给某 1 个用户的消息一起执行，应该怎么办？</p>
+</blockquote>
+<p>将所需要的任务组合成为一个新的 commandMacro 宏对象。宏对象持有一个 command 对象的数组。并在 execute 中调用数组中所有对象的 execute 方法，就能实现这样的需求。</p>
+<h2 id=总结>总结</h2>
+<p>命令设计模式通过一个中间人/件将请求封装为统一的命令，达到了与命令的执行者之间实现解耦的目的。这样的设计使得中间人的代码尽可能的简单，并且能够与任意的对象组合。完整的命令设计模式还拥有 undo，撤销上一次命令的功能。
+你可以试着自己来实现这个功能来加深对命令设计模式的理解。</p>
+</section>
+<footer>
+<a class="permalink u-url" href=https://www.chucklin.net/post/command_designmode/>🔗</a>
+<hr class=post-underline>
+<p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a>
+</p>
+</footer>
+</article>
+</div>
+<div class=h-card>
+<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
+<div class=card-content>
+<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
+<p class=card-subhead>
+<span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br>
+<a class=u-email href=mailto:mikumiku.lch@hotmail.com>Email me</a>
+</p>
+</div>
+<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
+</div>
+<div id=footer>
+<nav id=article-skip>
+<div class=next>
+<a alt="Newer article" href=https://www.chucklin.net/post/sign_designmode/>&larr; Newer</a>
+</div>
+<div class=top>
+<a alt="Top of page" href=#>Top</a>
+</div>
+<div class=prev>
+<a alt="Older article" href=https://www.chucklin.net/post/builder_designmode/>Older &rarr;</a>
+</div>
+</nav>
+<aside id=social>
+<div id=social-icons>
+<div class=icon-24x24>
+<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
+</div>
+</div>
+</aside>
+<p class=copyright>
+Copyright © 2021 Chuck Lin. All rights reserved.
+</p>
+</div>
+</body>
+</html>
