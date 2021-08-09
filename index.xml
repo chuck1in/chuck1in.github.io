@@ -634,8 +634,9 @@ UsernamePasswordAuthenticationFilter&lt;span style="color:#f92672">.&lt;/span>&l
 &lt;p>上图中展示了默认情况下 security 加载的 11 个过滤器。这些过滤器组成的 chains 被命名为 VirtualFilterChain，用以和原生的 servlet chain 做区分。&lt;/p>
 &lt;p>VirtualFilterChain 有一个 List&lt;!-- raw HTML omitted --> additionalFilters 字段持有 security 加载的所有过滤器。只要通过遍历 additionalFilters 的每个元素并调用每个元素上的 doFilter 方法，就可以实现请求在链条上传播的功能。
 不过，调用每个元素的 doFilter 方法这个操作的实现方式有点特殊，就像下面这样：&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">currentPosition&lt;span style="color:#f92672">++;&lt;/span>
-Filter nextFilter &lt;span style="color:#f92672">=&lt;/span> additionalFilters&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">get&lt;/span>&lt;span style="color:#f92672">(&lt;/span>currentPosition &lt;span style="color:#f92672">-&lt;/span> 1&lt;span style="color:#f92672">);&lt;/span>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">
+currentPosition&lt;span style="color:#f92672">++;&lt;/span>
+Filter nextFilter &lt;span style="color:#f92672">=&lt;/span> additionalFilters&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">g&lt;/span>&lt;span style="color:#f92672">(&lt;/span>currentPosition &lt;span style="color:#f92672">-&lt;/span> 1&lt;span style="color:#f92672">);&lt;/span>
 &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#f92672">(&lt;/span>logger&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">isDebugEnabled&lt;/span>&lt;span style="color:#f92672">())&lt;/span> &lt;span style="color:#f92672">{&lt;/span>
 logger&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">debug&lt;/span>&lt;span style="color:#f92672">(&lt;/span>UrlUtils&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">buildRequestUrl&lt;/span>&lt;span style="color:#f92672">(&lt;/span>firewalledRequest&lt;span style="color:#f92672">)&lt;/span>
 &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#e6db74">&amp;#34; at position &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> currentPosition &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#e6db74">&amp;#34; of &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> size
@@ -647,7 +648,7 @@ nextFilter&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22
 &lt;li>在调用过滤器的 doFilter 方法时， this 对象会被传递到被调用过滤器中。&lt;/li>
 &lt;li>在调用对象的方法中手动维护  过滤器迭代的索引。&lt;/li>
 &lt;/ol>
-&lt;p>这是有点取巧的设计。采用将 this 传递到被调用过滤器中的方式，是为了在调用对象中使用回调——这里的回调就是指调用下一个过滤器的 doFilter 方法。通过手动维护过滤器迭代的索引，保证了在回调时准确的获取下一个迭代器。&lt;/p>
+&lt;p>这是有点取巧的设计：采用将 this 传递到被调用过滤器中的方式，是为了在调用对象中使用回调——这里的回调就是指调用下一个过滤器的 doFilter 方法；通过手动维护过滤器迭代的索引，保证了在回调时准确的获取下一个迭代器。&lt;/p>
 &lt;p>这样的做法在避免了维护一套复杂数据结构的前提下，使这条过链上的所有迭代器都拥有了下一个迭代器元素的指针，从而间接实现了「责任链设计模式」。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">
 &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">VirtualFilterChain&lt;/span> &lt;span style="color:#66d9ef">implements&lt;/span> FilterChain &lt;span style="color:#f92672">{&lt;/span>
@@ -689,8 +690,8 @@ nextFilter&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22
 &lt;span style="color:#f92672">}&lt;/span>
 &lt;span style="color:#f92672">}&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="abstractauthenticationprocessingfilter-dofilter">AbstractAuthenticationProcessingFilter. doFilter()&lt;/h2>
-&lt;p>security 加载的每种过滤器都有自己的使命和职责。我们在本篇文章只关注和身份证验证相关的过滤器： JwtTokenFilter/UsernamePasswordAuthenticationFilter&lt;/p>
-&lt;p>大部分和身份认证相关的过滤器都继承自 AbstractAuthenticationProcessingFilter，UsernamePasswordAuthenticationFilter 也不例外。父类 AbstractAuthenticationProcessingFilter 是一个 Servlet Filter 接口的实现，定义了身份认证的核心处理逻辑。&lt;/p>
+&lt;p>security 加载的每种过滤器都有自己的使命和职责，但是这次只关注和身份证验证相关的过滤器： JwtTokenFilter/UsernamePasswordAuthenticationFilter&lt;/p>
+&lt;p>security 中大部分和身份认证相关的过滤器都继承自 AbstractAuthenticationProcessingFilter，UsernamePasswordAuthenticationFilter 也不例外。父类 AbstractAuthenticationProcessingFilter 是一个 Servlet Filter 接口的实现，定义了身份认证的核心处理逻辑。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">doFilter&lt;/span>&lt;span style="color:#f92672">(&lt;/span>ServletRequest req&lt;span style="color:#f92672">,&lt;/span> ServletResponse res&lt;span style="color:#f92672">,&lt;/span> FilterChain chain&lt;span style="color:#f92672">)&lt;/span>
 &lt;span style="color:#66d9ef">throws&lt;/span> IOException&lt;span style="color:#f92672">,&lt;/span> ServletException &lt;span style="color:#f92672">{&lt;/span>
 HttpServletRequest request &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">(&lt;/span>HttpServletRequest&lt;span style="color:#f92672">)&lt;/span> req&lt;span style="color:#f92672">;&lt;/span>
@@ -732,7 +733,7 @@ chain&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">do
 &lt;span style="color:#f92672">}&lt;/span>
 successfulAuthentication&lt;span style="color:#f92672">(&lt;/span>request&lt;span style="color:#f92672">,&lt;/span> response&lt;span style="color:#f92672">,&lt;/span> chain&lt;span style="color:#f92672">,&lt;/span> authResult&lt;span style="color:#f92672">);&lt;/span>
 &lt;span style="color:#f92672">}&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>如果当前请求还未认证，父类 AbstractAuthenticationProcessingFilter 会调用由子类 UsernamePasswordAuthenticationFilter 实现的 attemptAuthentication 进行身份认证&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>如果当前请求还未认证，父类 AbstractAuthenticationProcessingFilter 会调用由子类 UsernamePasswordAuthenticationFilter 实现的 attemptAuthentication 进行身份认证。&lt;/p>
 &lt;h2 id="usernamepasswordauthenticationfilter-attemptauthentication">UsernamePasswordAuthenticationFilter. attemptAuthentication()&lt;/h2>
 &lt;blockquote>
 &lt;p>在父类方法中定义共通处理内容，但将自定义部分留给子类来完成的设计方式，是模板方法设计模式的体现。&lt;/p>
@@ -883,7 +884,7 @@ principalToReturn &lt;span style="color:#f92672">=&lt;/span> user&lt;span style=
 &lt;span style="color:#66d9ef">return&lt;/span> createSuccessAuthentication&lt;span style="color:#f92672">(&lt;/span>principalToReturn&lt;span style="color:#f92672">,&lt;/span> authentication&lt;span style="color:#f92672">,&lt;/span> user&lt;span style="color:#f92672">);&lt;/span>
 &lt;span style="color:#f92672">}&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="daoauthenticationprovider-retrieveuser">DaoAuthenticationProvider. retrieveUser()&lt;/h2>
-&lt;p>检索用户功能是通过返回一个 UserDetails 对象 loadUserByUsername 方法来完成的。UserDetails 是一个接口，其中规范了使用 spring security 时用户对象应该遵守的行为和至少应该具备的字段。这是通过 UserDetails 的一系列行为的返回值来决定的。这也意味着你可以自定义这些行为，来决定一个用户是否有效。这是面向接口而不是实现典型案例——言下之意你的用户实体需要实现 UserDetails 与 loadUserByUsername。&lt;/p>
+&lt;p>检索用户功能是通过返回一个 UserDetails 对象 loadUserByUsername 方法来完成的。UserDetails 是一个接口，其中规范了使用 spring security 时用户对象应该遵守的行为和至少应该具备的字段。这是通过 UserDetails 的一系列行为的返回值来决定的。这也意味着你可以自定义这些行为，来决定一个用户是否有效——这是面向接口而不是面向实现的典型案例，言下之意你的用户实体需要实现 UserDetails 与 loadUserByUsername。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">&lt;span style="color:#75715e">// A
 &lt;/span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">protected&lt;/span> &lt;span style="color:#66d9ef">final&lt;/span> UserDetails &lt;span style="color:#a6e22e">retrieveUser&lt;/span>&lt;span style="color:#f92672">(&lt;/span>String username&lt;span style="color:#f92672">,&lt;/span>
 UsernamePasswordAuthenticationToken authentication&lt;span style="color:#f92672">)&lt;/span>
