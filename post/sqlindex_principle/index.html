@@ -56,13 +56,13 @@
 <section class="content e-content">
 <h2 id=行的格式>行的格式</h2>
 <p>在 innodb 存储引擎中，一个表中的记录（records）会按照固定的行格式根据字符集的比较规则，按照主键顺序存储到硬盘上。</p>
-<p><img src=/images/row.png alt=row></p>
+<p><img src=/images/mysql/row.jpg alt=row></p>
 <p>上图中的行格式就规定：除了保存记录的列信息以外，还需要在行中保存额外的信息，如：变长字段的占为长度、空值的列、行的头（head）信息等。
 行的头信息中有一个名为 next_record 的指向下一条记录在磁盘上的偏移量的指针，使表中的行构成一个链表，链表的各个节点通过指向磁盘偏移量的指针进行连接。</p>
 <h2 id=页>页</h2>
 <p>innodb 规定，每次从磁盘检索加载数据都以页（16KB/页）为单位。再进一步讲，页就是 innodb 管理存储空间的基本单位。
 页有不同的类型，用来保存用户数据的页称为索引页/数据页。一个简化的数据页结构如下所示：</p>
-<p><img src=/images/row.png alt=row></p>
+<p><img src=/images/mysql/page.jpg alt=page></p>
 <p>可见，一个数据页除了保存 user records 以外，还保存了页的元数据（meta data）。</p>
 <h3 id=页目录>页目录</h3>
 <p>由于数据表中的 record 使用 next_record 指针构成一个链表，所以下面查找某一行数据的查询语句</p>
@@ -70,12 +70,12 @@
 </code></pre></div><p>在物理上就是已知一个链表的地址，查找链表中某节点的问题。而查找链表中的节点通常可以采用线性查找法来实现。但是线性查找法的时间复杂度是 $O(n$)，如果数据量较大这个时间复杂度是难以接受的。</p>
 <p>为了降低查询的时间复杂度， innodb 采取了类似文件目录的方案。
 首先将用户数据进行逻辑分组，再将每组中最大的记录的地址偏移量集中存储到一起的。当查询某条记录时，先查询记录所在的分组（文件目录），再进入组内（目录内）查找，这样就缩小了线性查找的范围。</p>
-<p><img src=/images/row.png alt=row></p>
+<p><img src=/images/mysql/page-directory.jpg alt=directory></p>
 <p>像这样对数据进行逻辑分组，然后再选取记录分组地址偏移量进行集中存储的空间，我们称为页目录（Page Directory）。</p>
 <p>前面提到过 records 是按照主键顺序排列的，所以在页目录中还可以利用二分查找提升页目录的搜索效率，将时间复杂度降低为 $O(\log n$)</p>
 <h2 id=聚簇索引>聚簇索引</h2>
 <p>页的大小是有限的（16KB）。如果表中的记录超出了这个容量，那就得使用多个关联页来存储。这些关联页之间通过指针连接形成一个双向链表。</p>
-<p><img src=/images/row.png alt=row></p>
+<p><img src=/images/mysql/page-dirs.jpg alt=dirs></p>
 <p>所以当使用多个页存储数据时，查询用户记录的工作就变为了两步：</p>
 <ol>
 <li>确定记录所在的页的地址。</li>
@@ -83,7 +83,7 @@
 </ol>
 <p>因为关联的数据页是一个链表结构，所以通过线性查找法肯定可以找到被查找记录所在的页，但是在数据量较大时也存在一样的性能问题。</p>
 <p>那么，是否可以参考页目录的设计将页进行分组呢？先按照页号分组，并保证分组按照数据页中的用户记录的主键顺序进行排序，最后再用一个数据页作为分组后的目录，保存各组中数据页内最小的主键值。</p>
-<p><img src=/images/row.png alt=row></p>
+<p><img src=/images/mysql/index.jpg alt=index></p>
 <p>经过这样的构建，复数个关联页形成了一颗 B 树。树根所在的节点就是根页(root page)；存储页号的数据页被称为目录项页；整棵树就是聚簇索引。</p>
 <p>假设我们使用指定值的主键（或者唯一二级索引）为条件，对这个聚簇索引进行查询的话，这个查询的速度会像火箭一样快。</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#f92672>//</span> A
@@ -93,7 +93,7 @@
 <p>这种像火箭一样快的查询方法，我们称为常数方法（const）——因为他的效率就和$O(1$)一样好。</p>
 <h2 id=二级索引>二级索引</h2>
 <p>针对非主键建立的索引就是二级索引。相比聚簇索引，二级索引的叶节点只存储了两类信息：索引项与索引项对应的主键。</p>
-<p><img src=/images/row.png alt=row></p>
+<p><img src=/images/mysql/ref.jpg alt=ref></p>
 <p>由于二级索引没有存储用户记录的所有列信息，所以针对二级索引的查询工作就变成了三步：</p>
 <ol>
 <li>确定记录所在的页。</li>
@@ -110,7 +110,7 @@
 <span style=color:#f92672>//</span> <span style=color:#66d9ef>output</span>: id:<span style=color:#ae81ff>1</span>
 </code></pre></div><h2 id=联合索引>联合索引</h2>
 <p>联合索引就是由多个字段组合，并按照联合字段的顺序对用户记录进行排序的二级索引。</p>
-<p><img src=/images/row.png alt=row></p>
+<p><img src=/images/mysql/union-index.jpg alt=union></p>
 <p>针对联合索引进行查询时，要注意查询条件需遵守「左前缀原则」，这是由联合索引的底层构造所决定的。不然就无法利用联合索引进行查询。</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#f92672>//</span> A
 <span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;a&#39;</span> <span style=color:#66d9ef>and</span> code2 <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;b&#39;</span>;
