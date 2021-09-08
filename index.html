@@ -1,6 +1,6 @@
 <!doctype html><html lang=zh-cn>
 <head>
-<meta name=generator content="Hugo 0.87.0">
+<meta name=generator content="Hugo 0.88.1">
 <meta charset=utf-8>
 <title>ChuckLin's Blog | ChuckLin's Blog</title>
 <meta name=description content="Love and Peace">
@@ -51,6 +51,20 @@ Love and Peace 🐷
 </div>
 </header>
 <div id=content>
+<article>
+<header>
+<h2 class=list-title><a href=https://www.chucklin.net/post/sqlindex_principle/>索引的物理结构</a></h2>
+<p class=list-post-date>
+<time datetime=2021-09-08T14:28:26+08:00>
+8 September, 2021 at 14:28 +0800
+</time>
+</p>
+</header>
+<div>
+行的格式 在 innodb 存储引擎中，一个表中的记录（records）会按照固定的行格式根据字符集的比较规则，按照主键顺序存储到硬盘上。
+</div>
+<p><a class=read-more href=https://www.chucklin.net/post/sqlindex_principle/>Read more &rarr;</a></p>
+</article>
 <article>
 <header>
 <h2 class=list-title><a href=https://www.chucklin.net/post/ts_enum/>Enum in Typescript</a></h2>
@@ -176,20 +190,6 @@ Filter Spring security 的运行依赖于一系列 filter chains ，其中每一
 优化 Order by 语句 众所周知，针对大量数据进行排序费时费力。了解 Mysql 的排序方式是优化数据库排序性能的充分条件。
 </div>
 <p><a class=read-more href=https://www.chucklin.net/post/sqlindex_tips/>Read more &rarr;</a></p>
-</article>
-<article>
-<header>
-<h2 class=list-title><a href=https://www.chucklin.net/post/sqlindex_badusage/>索引的使用误区</a></h2>
-<p class=list-post-date>
-<time datetime=2020-02-23T09:52:00+08:00>
-23 February, 2020 at 09:52 +0800
-</time>
-</p>
-</header>
-<div>
-回顾上一章的内容，除了介绍了基本的使用索引优化 sql 语句的基本手法以外，还提到了滥用索引会引起性能恶化的问题。本章节的内容将会举例说明
-</div>
-<p><a class=read-more href=https://www.chucklin.net/post/sqlindex_badusage/>Read more &rarr;</a></p>
 </article>
 <nav>
 <div id=pagination>

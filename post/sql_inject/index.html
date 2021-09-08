@@ -61,25 +61,25 @@
 <p>很多 Web 开发者没有意识到 SQL 查询是可以被篡改的，从而把 SQL 查询当作可信任的命令。殊不知，SQL 查询是可以绕开访问控制，从而绕过身份验证和权限检查的。更有甚者，有可能通过 SQL 查询去运行主机系统级的命令。</p>
 <p>下面将通过一些真实的例子来详细讲解 SQL 注入的方式。</p>
 <p>考虑以下简单的登录表单：</p>
-<pre><code>&lt;form action=&quot;/login&quot; method=&quot;POST&quot;&gt;
+<pre tabindex=0><code>&lt;form action=&quot;/login&quot; method=&quot;POST&quot;&gt;
 &lt;p&gt;Username: &lt;input type=&quot;text&quot; name=&quot;username&quot; /&gt;&lt;/p&gt;
 &lt;p&gt;Password: &lt;input type=&quot;password&quot; name=&quot;password&quot; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;input type=&quot;submit&quot; value=&quot;登陆&quot; /&gt;&lt;/p&gt;
 &lt;/form&gt;
 </code></pre><p>我们的处理里面的 SQL 可能是这样的：</p>
-<pre><code>username:=r.Form.Get(&quot;username&quot;)
+<pre tabindex=0><code>username:=r.Form.Get(&quot;username&quot;)
 password:=r.Form.Get(&quot;password&quot;)
 sql:=&quot;SELECT * FROM user WHERE username='&quot;+username+&quot;' AND password='&quot;+password+&quot;'&quot;
 </code></pre><p>如果用户的输入的用户名如下，密码任意</p>
-<pre><code>myuser' or 'foo' = 'foo' --
+<pre tabindex=0><code>myuser' or 'foo' = 'foo' --
 </code></pre><p>那么我们的 SQL 变成了如下所示：</p>
-<pre><code>SELECT * FROM user WHERE username='myuser' or 'foo' = 'foo' --'' AND password='xxx'
+<pre tabindex=0><code>SELECT * FROM user WHERE username='myuser' or 'foo' = 'foo' --'' AND password='xxx'
 </code></pre><p>在 SQL 里面&ndash;是注释标记，所以查询语句会在此中断。这就让攻击者在不知道任何合法用户名和密码的情况下成功登录了。</p>
 <p>对于 MSSQL 还有更加危险的一种 SQL 注入，就是控制系统，下面这个可怕的例子将演示如何在某些版本的 MSSQL 数据库上执行系统命令。</p>
-<pre><code>sql:=&quot;SELECT * FROM products WHERE name LIKE '%&quot;+prod+&quot;%'&quot;
+<pre tabindex=0><code>sql:=&quot;SELECT * FROM products WHERE name LIKE '%&quot;+prod+&quot;%'&quot;
 Db.Exec(sql)
 </code></pre><p>如果攻击提交「a%' exec master..xp_cmdshell &lsquo;net user test testpass /ADD&rsquo; &ndash;」作为变量 prod 的值，那么 sql 将会变成</p>
-<pre><code>sql:=&quot;SELECT * FROM products WHERE name LIKE '%a%' exec master..xp_cmdshell 'net user test testpass /ADD'--%'&quot;
+<pre tabindex=0><code>sql:=&quot;SELECT * FROM products WHERE name LIKE '%a%' exec master..xp_cmdshell 'net user test testpass /ADD'--%'&quot;
 </code></pre><p>MSSQL 服务器会执行这条 SQL 语句，包括它后面那个用于向系统添加新用户的命令。如果这个程序是以 sa 运行而 MSSQLSERVER 服务又有足够的权限的话，攻击者就可以获得一个系统帐号来访问主机了。</p>
 <p>虽然以上的例子是针对某一特定的数据库系统的，但是这并不代表不能对其它数据库系统实施类似的攻击。针对这种安全漏洞，只要使用不同方法，各种数据库都有可能遭殃。</p>
 <h2 id=如何预防-sql-注入>如何预防 SQL 注入</h2>

@@ -74,7 +74,7 @@
 <p>id_token 是一个内容基于 jwt 格式的身份令牌（结构如下）。客户端通过解析这个令牌获取用户的登录认证数据以后，就可以为用户提供基于认证中心的第三方登录功能了。</p>
 <p><img src=https://raw.githubusercontent.com/mikumikulch/pictures/master/jwtoidc.png alt></p>
 <p>当然偶尔这个 jwt 的有效载荷会更加充实一点：</p>
-<pre><code>{
+<pre tabindex=0><code>{
   &quot;iss&quot;: &quot;http://server.example.com&quot;,
   &quot;sub&quot;: &quot;248289761001&quot;,
   &quot;aud&quot;: &quot;s6BhdRkqt3&quot;,
@@ -90,7 +90,7 @@
   &quot;picture&quot;: &quot;http://example.com/janedoe/me.jpg&quot;
 }
 </code></pre><p>至于 UserInfo 端点，由于 jwt 格式的 id_token 并不包含过多的用户业务信息，而在用户体验上客户端又需要向用户展示头像、昵称等内容，所以 OIDC 定义了客户端可以使用 access_token 访问 UserInfo 端点获取用户详情的标准化接口。</p>
-<pre><code>HTTP/1.1 200 OK
+<pre tabindex=0><code>HTTP/1.1 200 OK
 Content-Type: application/json
 
   {

@@ -76,7 +76,7 @@
 <h2 id=如何防御-csrf>如何防御 CSRF</h2>
 <p><strong>referer 验证解决方案</strong>
 最简单的方法依赖于浏览器引用页头部。大多数浏览器会告诉 Web 服务器，哪个页面发送了请求。如：</p>
-<pre><code>POST /bank/transfer.aspx HTTP/1.1
+<pre tabindex=0><code>POST /bank/transfer.aspx HTTP/1.1
 Referer: http://evilsite.com/myevilblog
 User-Agent: Mozilla/4....
 Host: www.altoromutual.com
@@ -86,7 +86,7 @@ Cookie: SessionId=x3q2v0qpjc0n1c55mf35fxid;
 不过由于 http 头在某些版本的浏览器上存在可被篡改的可能性，所以这个解决方案并不完善。</p>
 <p><strong>Token 解决方案</strong>
 令牌解决方案向表单添加一个参数，让表单在用户注销时或一个超时期限结束后过期</p>
-<pre><code>&lt;form id=&quot;transferForm&quot; action=&quot;https://www.altoromutual.com/bank/transfer.aspx&quot; method=&quot;post&quot;&gt;
+<pre tabindex=0><code>&lt;form id=&quot;transferForm&quot; action=&quot;https://www.altoromutual.com/bank/transfer.aspx&quot; method=&quot;post&quot;&gt;
 
 Enter the credit account:
 &lt;input type=&quot;text&quot; name=&quot;creditAccount&quot; value=&quot;&quot;&gt;
@@ -99,7 +99,7 @@ Enter the transfer amount:
 
 &lt;/form&gt;
 </code></pre><p>或者将服务端动态生成的 Token 加入到 自定义 http 请求头参数中</p>
-<pre><code>POST /bank/transfer.aspx HTTP/1.1
+<pre tabindex=0><code>POST /bank/transfer.aspx HTTP/1.1
 Referer: https://www.altoromutual.com/bank
 xsrftoken: JKBS38633jjhg0987PPll
 User-Agent: Mozilla/4....

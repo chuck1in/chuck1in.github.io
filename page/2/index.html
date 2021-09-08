@@ -1,6 +1,6 @@
 <!doctype html><html lang=zh-cn>
 <head>
-<meta name=generator content="Hugo 0.87.0">
+<meta name=generator content="Hugo 0.88.1">
 <meta charset=utf-8>
 <title>ChuckLin's Blog | ChuckLin's Blog</title>
 <meta name=description content="Love and Peace">
@@ -53,6 +53,20 @@ Love and Peace 🐷
 <div id=content>
 <article>
 <header>
+<h2 class=list-title><a href=https://www.chucklin.net/post/sqlindex_badusage/>索引的使用误区</a></h2>
+<p class=list-post-date>
+<time datetime=2020-02-23T09:52:00+08:00>
+23 February, 2020 at 09:52 +0800
+</time>
+</p>
+</header>
+<div>
+回顾上一章的内容，除了介绍了基本的使用索引优化 sql 语句的基本手法以外，还提到了滥用索引会引起性能恶化的问题。本章节的内容将会举例说明
+</div>
+<p><a class=read-more href=https://www.chucklin.net/post/sqlindex_badusage/>Read more &rarr;</a></p>
+</article>
+<article>
+<header>
 <h2 class=list-title><a href=https://www.chucklin.net/post/sqlindex/>索引的应用</a></h2>
 <p class=list-post-date>
 <time datetime=2020-02-22T09:52:00+08:00>
@@ -61,7 +75,7 @@ Love and Peace 🐷
 </p>
 </header>
 <div>
-经过上一章艰苦卓绝的训练与尝试，我们成功分析出了有问题的 sql 语句。接下来该针对问题语句进行更进一步的优化了。索引往往在这个时候被引入来解决 sql 的运行效率的问题。
+接上一章，我们成功分析出了有问题的 sql 语句。接下来该针对问题语句进行更进一步的优化了。索引往往在这个时候被引入来解决 sql 的运行效率的问题。
 </div>
 <p><a class=read-more href=https://www.chucklin.net/post/sqlindex/>Read more &rarr;</a></p>
 </article>
@@ -178,21 +192,6 @@ CSRF（Cross Site Request Forgery, 跨站域请求伪造）也称 XSRF， 是一
 最初的 Http/0.9 基本上只有 Get 方法，没有首部，它只是被用来获取 HTML。经过几年的发展，Http/1.0 在 0.9 的基础上增加了首部、响应码、重定向等功能。
 </div>
 <p><a class=read-more href=https://www.chucklin.net/post/http2/>Read more &rarr;</a></p>
-</article>
-<article>
-<header>
-<h2 class=list-title><a href=https://www.chucklin.net/post/spring_data_hadoop/>为什么选择 Spring data hadoop</a></h2>
-<p class=list-post-date>
-<time datetime=2020-01-20T09:23:00+08:00>
-20 January, 2020 at 09:23 +0800
-</time>
-</p>
-</header>
-<div>
-hbase 常见的操作方式有以下三种：
-Native Api 原生 api 操作繁琐，就像用 JDBC 操作关系型数据库一样，类似 flush、submit、close 的使用让人眼花缭乱。如果碰巧你的应用程序使用 java 开发，那就又多了一条不使用 Native Api 的理由 —— 在问题周围兜一个圈子再解决才是真正的 java 式设计。
-</div>
-<p><a class=read-more href=https://www.chucklin.net/post/spring_data_hadoop/>Read more &rarr;</a></p>
 </article>
 <nav>
 <div id=pagination>

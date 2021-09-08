@@ -69,18 +69,18 @@
 <li>由于授权服务器需要提前准备客户端元数据（先不要问为什么），所以使用 OAuth 的第一步是将客户端注册到授权服务器中。</li>
 <li>浏览器请求客户端（照片打印服务）打印谷歌照片中存储的用户隐私照片。很显然，谷歌照片服务中的数据不允许客户端随意访问，这时候就需要找谷歌授权服务器对客户端进行授权，这一步是客户通过 302 重定向来实现的。以下示例中的 state 是一串随机生成的参数，就像随机生成一串订单号一样。</li>
 </ul>
-<pre><code>HTTP/1.1 302 Moved Temp
+<pre tabindex=0><code>HTTP/1.1 302 Moved Temp
 Location: http://google.auth.com/authorize?response_type=code&amp;scope=foo&amp;client_id=mrpicture&amp;redirect_url=http://mrpicture.com/callback&amp;state=Lwt50024XyzHW1
 </code></pre><ul>
 <li>上一步通过 302 使浏览器向授权服务器发送了一个 Http 请求。因为我们在第 0 步提前进行了合法客户端的元数据配置，所以这里可以通过校验 client_id 与 redirect_url 来过滤无效和伪造的客户端请求。接着授权服务器会渲染授权页面要求用户登录并授权对应权限给客户端。</li>
 <li>当用户授权完毕后，授权服务器保存权限范围（scope）并创建授权码。由于授权是用户浏览器直接和授权服务器进行的，所以需要使用 302 + redirect_url 回调客户端并告知用户授权成功并回传授权码与 state 参数。</li>
 </ul>
-<pre><code>HTTP 302 Found
+<pre tabindex=0><code>HTTP 302 Found
 Location: http://mrpicture.com/callback&amp;state=Lwt50024XyzHW1&amp;code=8V1qosiJswxv&amp;response_type=code&amp;scope=foo&amp;client_id=mrpicture
 </code></pre><ul>
 <li>客户端收到回调后，验证 state 等参数是否与自己前面步骤发送的参数一致，这可以防止攻击者随意编造请求访问客户端回调地址引发后续流程，浪费客户端和授权服务器资源。然后使用 HTTP 基本认证，将在元数据注册步骤中获取到的 client_id 与 client_secret 与授权码一起发送到授权服务器，获取访问 token。最后记得不要忘了 grant_type 字段。授权码许可类型的 grant_type 总是固定为 authorization_code。</li>
 </ul>
-<pre><code>POST /token
+<pre tabindex=0><code>POST /token
 Host: http://google.auth.com/
 Content-type: application/x-www-form-encoded
 Authorization: Basic b2F1dGgt2xpZW50LTE6BeFFJIWxxyliit220xCssXPsiwn5Bcod2a（base64(urlEncode(account+&quot;:&quot;+password))）
@@ -89,7 +89,7 @@ grant_type=authorization_code&amp;redirect_uri=http://mrpicture.com/callback&amp
 </code></pre><blockquote>
 <p>为什么这里还要发送 redirect_url 呢？根据 OAuth 规范，如果你在授权请求重定向中指定了 URI，那你在令牌请求中也必须指定。如果一切顺利的话，客户端就可以获得一个 Bearer 令牌。Bearer 令牌中还可以包含刷新令牌和令牌的权限范围以及过期时间等等。</p>
 </blockquote>
-<pre><code>&quot;access_token&quot;: &quot;2983Exodengdisowagds2q2345dfsoiwg&quot;,
+<pre tabindex=0><code>&quot;access_token&quot;: &quot;2983Exodengdisowagds2q2345dfsoiwg&quot;,
 &quot;token_type&quot;: &quot;Baerer&quot;
 </code></pre><ul>
 <li>既然获取到了令牌，客户端就可以使用令牌请求相关资源并返回到浏览器，或者保存令牌在客户端供今后使用。</li>

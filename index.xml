@@ -1,4 +1,95 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ChuckLin's Blog</title><link>https://www.chucklin.net/</link><description>Recent content on ChuckLin's Blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>Copyright © 2021 Chuck Lin. All rights reserved.</copyright><lastBuildDate>Mon, 26 Jul 2021 22:16:36 +0800</lastBuildDate><atom:link href="https://www.chucklin.net/index.xml" rel="self" type="application/rss+xml"/><item><title>Enum in Typescript</title><link>https://www.chucklin.net/post/ts_enum/</link><pubDate>Mon, 26 Jul 2021 22:16:36 +0800</pubDate><guid>https://www.chucklin.net/post/ts_enum/</guid><description>&lt;h2 id="枚举">枚举&lt;/h2>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ChuckLin's Blog</title><link>https://www.chucklin.net/</link><description>Recent content on ChuckLin's Blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>Copyright © 2021 Chuck Lin. All rights reserved.</copyright><lastBuildDate>Wed, 08 Sep 2021 14:28:26 +0800</lastBuildDate><atom:link href="https://www.chucklin.net/index.xml" rel="self" type="application/rss+xml"/><item><title>索引的物理结构</title><link>https://www.chucklin.net/post/sqlindex_principle/</link><pubDate>Wed, 08 Sep 2021 14:28:26 +0800</pubDate><guid>https://www.chucklin.net/post/sqlindex_principle/</guid><description>&lt;h2 id="行的格式">行的格式&lt;/h2>
+&lt;p>在 innodb 存储引擎中，一个表中的记录（records）会按照固定的行格式根据字符集的比较规则，按照主键顺序存储到硬盘上。&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/row.png" alt="row">&lt;/p>
+&lt;p>上图中的行格式就规定：除了保存记录的列信息以外，还需要在行中保存额外的信息，如：变长字段的占为长度、空值的列、行的头（head）信息等。
+行的头信息中有一个名为 next_record 的指向下一条记录在磁盘上的偏移量的指针，使表中的行构成一个链表，链表的各个节点通过指向磁盘偏移量的指针进行连接。&lt;/p>
+&lt;h2 id="页">页&lt;/h2>
+&lt;p>innodb 规定，每次从磁盘检索加载数据都以页（16KB/页）为单位。再进一步讲，页就是 innodb 管理存储空间的基本单位。
+页有不同的类型，用来保存用户数据的页称为索引页/数据页。一个简化的数据页结构如下所示：&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/row.png" alt="row">&lt;/p>
+&lt;p>可见，一个数据页除了保存 user records 以外，还保存了页的元数据（meta data）。&lt;/p>
+&lt;h3 id="页目录">页目录&lt;/h3>
+&lt;p>由于数据表中的 record 使用 next_record 指针构成一个链表，所以下面查找某一行数据的查询语句&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sql" data-lang="sql">&lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> id &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span>;
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>在物理上就是已知一个链表的地址，查找链表中某节点的问题。而查找链表中的节点通常可以采用线性查找法来实现。但是线性查找法的时间复杂度是 $O(n$)，如果数据量较大这个时间复杂度是难以接受的。&lt;/p>
+&lt;p>为了降低查询的时间复杂度， innodb 采取了类似文件目录的方案。
+首先将用户数据进行逻辑分组，再将每组中最大的记录的地址偏移量集中存储到一起的。当查询某条记录时，先查询记录所在的分组（文件目录），再进入组内（目录内）查找，这样就缩小了线性查找的范围。&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/row.png" alt="row">&lt;/p>
+&lt;p>像这样对数据进行逻辑分组，然后再选取记录分组地址偏移量进行集中存储的空间，我们称为页目录（Page Directory）。&lt;/p>
+&lt;p>前面提到过 records 是按照主键顺序排列的，所以在页目录中还可以利用二分查找提升页目录的搜索效率，将时间复杂度降低为 $O(\log n$)&lt;/p>
+&lt;h2 id="聚簇索引">聚簇索引&lt;/h2>
+&lt;p>页的大小是有限的（16KB）。如果表中的记录超出了这个容量，那就得使用多个关联页来存储。这些关联页之间通过指针连接形成一个双向链表。&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/row.png" alt="row">&lt;/p>
+&lt;p>所以当使用多个页存储数据时，查询用户记录的工作就变为了两步：&lt;/p>
+&lt;ol>
+&lt;li>确定记录所在的页的地址。&lt;/li>
+&lt;li>在页中通过页目录查找记录在页中的偏移量。&lt;/li>
+&lt;/ol>
+&lt;p>因为关联的数据页是一个链表结构，所以通过线性查找法肯定可以找到被查找记录所在的页，但是在数据量较大时也存在一样的性能问题。&lt;/p>
+&lt;p>那么，是否可以参考页目录的设计将页进行分组呢？先按照页号分组，并保证分组按照数据页中的用户记录的主键顺序进行排序，最后再用一个数据页作为分组后的目录，保存各组中数据页内最小的主键值。&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/row.png" alt="row">&lt;/p>
+&lt;p>经过这样的构建，复数个关联页形成了一颗 B 树。树根所在的节点就是根页(root page)；存储页号的数据页被称为目录项页；整棵树就是聚簇索引。&lt;/p>
+&lt;p>假设我们使用指定值的主键（或者唯一二级索引）为条件，对这个聚簇索引进行查询的话，这个查询的速度会像火箭一样快。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sql" data-lang="sql">&lt;span style="color:#f92672">//&lt;/span> A
+&lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> id &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">5&lt;/span>;
+&lt;span style="color:#f92672">//&lt;/span> &lt;span style="color:#66d9ef">output&lt;/span>: id:&lt;span style="color:#ae81ff">5&lt;/span> code:b
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>先通过聚簇索引的目录页利用二分查找定位到 id=5 的记录应该在页号为 2 的页中，然后在页目录（Page directory）中再使用二分查找定位到 id=5 的记录在页中的偏移量就能获取到记录内容。&lt;/p>
+&lt;p>这种像火箭一样快的查询方法，我们称为常数方法（const）——因为他的效率就和$O(1$)一样好。&lt;/p>
+&lt;h2 id="二级索引">二级索引&lt;/h2>
+&lt;p>针对非主键建立的索引就是二级索引。相比聚簇索引，二级索引的叶节点只存储了两类信息：索引项与索引项对应的主键。&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/row.png" alt="row">&lt;/p>
+&lt;p>由于二级索引没有存储用户记录的所有列信息，所以针对二级索引的查询工作就变成了三步：&lt;/p>
+&lt;ol>
+&lt;li>确定记录所在的页。&lt;/li>
+&lt;li>在页中通过页目录查找。&lt;/li>
+&lt;li>查找到二级索引对应的主键后，回聚簇索引查找完整的内容。&lt;/li>
+&lt;/ol>
+&lt;p>这种回聚簇索引查询用户记录的情况，我们称为回表扫描。通过二级索引进行查询的方法称为 ref 查询方法，它的性能相比 const 方法要低一些。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sql" data-lang="sql">&lt;span style="color:#f92672">//&lt;/span> A
+&lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> code &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#39;a&amp;#39;&lt;/span>;
+&lt;span style="color:#f92672">//&lt;/span> &lt;span style="color:#66d9ef">output&lt;/span>: code:a id:&lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>如果我们只需要根据二级索引查询 id（主键）的信息，那么就不需要回表扫描了，通过二级索引就可以直接返回结果。这种查询方法称为索引覆盖（index）查询方法。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sql" data-lang="sql">&lt;span style="color:#f92672">//&lt;/span> B
+&lt;span style="color:#66d9ef">select&lt;/span> id &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> code &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#39;a&amp;#39;&lt;/span>;
+&lt;span style="color:#f92672">//&lt;/span> &lt;span style="color:#66d9ef">output&lt;/span>: id:&lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="联合索引">联合索引&lt;/h2>
+&lt;p>联合索引就是由多个字段组合，并按照联合字段的顺序对用户记录进行排序的二级索引。&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/row.png" alt="row">&lt;/p>
+&lt;p>针对联合索引进行查询时，要注意查询条件需遵守「左前缀原则」，这是由联合索引的底层构造所决定的。不然就无法利用联合索引进行查询。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sql" data-lang="sql">&lt;span style="color:#f92672">//&lt;/span> A
+&lt;span style="color:#66d9ef">select&lt;/span> id &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> code &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#39;a&amp;#39;&lt;/span> &lt;span style="color:#66d9ef">and&lt;/span> code2 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#39;b&amp;#39;&lt;/span>;
+&lt;span style="color:#f92672">//&lt;/span> &lt;span style="color:#66d9ef">output&lt;/span>: id:&lt;span style="color:#ae81ff">1&lt;/span>
+&lt;span style="color:#f92672">//&lt;/span> B
+&lt;span style="color:#66d9ef">select&lt;/span> id &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> code &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#39;a&amp;#39;&lt;/span>
+&lt;span style="color:#f92672">//&lt;/span> &lt;span style="color:#66d9ef">output&lt;/span>: id:&lt;span style="color:#ae81ff">1&lt;/span>
+&lt;span style="color:#f92672">//&lt;/span> &lt;span style="color:#66d9ef">C&lt;/span>
+&lt;span style="color:#66d9ef">select&lt;/span> id &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> code2 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#39;b&amp;#39;&lt;/span> &lt;span style="color:#66d9ef">and&lt;/span> code &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#39;a&amp;#39;&lt;/span>;
+&lt;span style="color:#f92672">//&lt;/span> &lt;span style="color:#66d9ef">output&lt;/span>: id:&lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>上面的语句中，A 语句和 B 语句的查询条件（code &amp;amp;&amp;amp; code2）、（code）和联合索引（code,code2）的索引字段顺序一致，所以可以通过索引树提高查找效率。
+B 语句的查询条件不符合索引字段的顺序，所以无法利用索引树查询提高效率，存储引擎在执行时会使用全表扫描查询方法（all）。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sql" data-lang="sql">&lt;span style="color:#f92672">//&lt;/span> D
+&lt;span style="color:#66d9ef">select&lt;/span> id &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> code &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#e6db74">&amp;#39;a&amp;#39;&lt;/span> &lt;span style="color:#66d9ef">and&lt;/span> code2 &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#39;g&amp;#39;&lt;/span>
+&lt;span style="color:#f92672">//&lt;/span> E
+&lt;span style="color:#66d9ef">select&lt;/span> id &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> code &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#e6db74">&amp;#39;a&amp;#39;&lt;/span> &lt;span style="color:#66d9ef">and&lt;/span> code2 &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#39;g&amp;#39;&lt;/span> &lt;span style="color:#66d9ef">and&lt;/span> id &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">6&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>查询语句 D 是一个针对联合索引的范围查询(Range)。因为联合索引按照 (code,code2) 排序，所以 (code,code2) 的范围条件可以形成一个有效的扫描区间$[(a,\forall),(a,g)]$ 。&lt;/p>
+&lt;p>查询语句 E 中增加了一个 &lt;code>id=6&lt;/code> 的条件，这个条件并不是联合索引的排序字段，所以它不能提供有效的扫描区间，可以直接将 &lt;code>id=6&lt;/code> 被替换为 TRUE 。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sql" data-lang="sql">&lt;span style="color:#f92672">//&lt;/span> E
+&lt;span style="color:#66d9ef">select&lt;/span> id &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> code &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#e6db74">&amp;#39;a&amp;#39;&lt;/span> &lt;span style="color:#66d9ef">and&lt;/span> code2 &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#39;g&amp;#39;&lt;/span> &lt;span style="color:#66d9ef">and&lt;/span> &lt;span style="color:#66d9ef">TRUE&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>TRUE 和前两个条件 (code,code2) 使用 and 进行连接。从扫描区间上来说，就是对 $(-\infty,+\infty)$和$[(a,\forall),(a,g)]$ 取并集。于是整个查询语句的扫描区间就是 $[(a,\forall),(a,g)]$。&lt;/p>
+&lt;h2 id="使用索引排序和分组">使用索引排序和分组&lt;/h2>
+&lt;h4 id="排序">排序&lt;/h4>
+&lt;p>对于大数据量进行排序是比较耗时的。这不仅仅是在内存中运行排序算法的 CPU 成本，还有将排序的中间结果保存到磁盘造成的 IO 成本。
+但是若利用索引的物理结构本身有序的这个特性，就可以省去额外的排序工作。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sql" data-lang="sql">&lt;span style="color:#f92672">//&lt;/span> F
+&lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> code &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#e6db74">&amp;#39;a&amp;#39;&lt;/span> &lt;span style="color:#66d9ef">and&lt;/span> code2 &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#39;g&amp;#39;&lt;/span> &lt;span style="color:#66d9ef">order&lt;/span> &lt;span style="color:#66d9ef">by&lt;/span> code;
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>上面已经提到过，F 这个查询语句会根据扫描区间扫描二级索引并回表查询记录。当完成扫描区间的二级索引回表查询的工作，并整合结果集后，由于查询语句的排序条件，就是联合索引的排序条件，所以省去了额外的排序的步骤，innodb 可以直接将结果集返回给客户端。&lt;/p>
+&lt;h4 id="分组">分组&lt;/h4>
+&lt;p>分组操作如果缺少索引，innodb 会在扫描聚簇索引的记录时，新建一个临时表来存储分组的统计结果。统计完成后，将临时表的内容发送给客户端。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sql" data-lang="sql">&lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#66d9ef">count&lt;/span>(&lt;span style="color:#f92672">*&lt;/span>) &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">group&lt;/span> &lt;span style="color:#66d9ef">by&lt;/span> code, code2
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>如果分组的字段有索引，并且顺序和索引顺序相同，那就没有必
+要建立中间表进行统计了，直接使用索引项就即可完成分组了。&lt;/p>
+&lt;h2 id="表连接中的索引">表连接中的索引&lt;/h2>
+&lt;p>表的连接其实就是索引的连接。 TODO&lt;/p></description></item><item><title>Enum in Typescript</title><link>https://www.chucklin.net/post/ts_enum/</link><pubDate>Mon, 26 Jul 2021 22:16:36 +0800</pubDate><guid>https://www.chucklin.net/post/ts_enum/</guid><description>&lt;h2 id="枚举">枚举&lt;/h2>
 &lt;p>枚举是对客观事物的归纳与自然语言的抽象。这听起来似乎容易和类混淆，这是正常的。因为在大部分面向对象的语言里，枚举就是类。&lt;/p>
 &lt;p>我们知道一周有七天 —— &lt;code>Week={monday,Tuesday,...., Sunday}&lt;/code>。假设用枚举来描述这个概念的话就是下面这样：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-typescript" data-lang="typescript">&lt;span style="color:#66d9ef">enum&lt;/span> &lt;span style="color:#a6e22e">Week&lt;/span> {
@@ -1043,7 +1134,7 @@ AuthenticationException exception&lt;span style="color:#f92672">)&lt;/span> &lt;
 &lt;p>id_token 是一个内容基于 jwt 格式的身份令牌（结构如下）。客户端通过解析这个令牌获取用户的登录认证数据以后，就可以为用户提供基于认证中心的第三方登录功能了。&lt;/p>
 &lt;p>&lt;img src="https://raw.githubusercontent.com/mikumikulch/pictures/master/jwtoidc.png" alt="">&lt;/p>
 &lt;p>当然偶尔这个 jwt 的有效载荷会更加充实一点：&lt;/p>
-&lt;pre>&lt;code>{
+&lt;pre tabindex="0">&lt;code>{
 &amp;quot;iss&amp;quot;: &amp;quot;http://server.example.com&amp;quot;,
 &amp;quot;sub&amp;quot;: &amp;quot;248289761001&amp;quot;,
 &amp;quot;aud&amp;quot;: &amp;quot;s6BhdRkqt3&amp;quot;,
@@ -1059,7 +1150,7 @@ AuthenticationException exception&lt;span style="color:#f92672">)&lt;/span> &lt;
 &amp;quot;picture&amp;quot;: &amp;quot;http://example.com/janedoe/me.jpg&amp;quot;
 }
 &lt;/code>&lt;/pre>&lt;p>至于 UserInfo 端点，由于 jwt 格式的 id_token 并不包含过多的用户业务信息，而在用户体验上客户端又需要向用户展示头像、昵称等内容，所以 OIDC 定义了客户端可以使用 access_token 访问 UserInfo 端点获取用户详情的标准化接口。&lt;/p>
-&lt;pre>&lt;code>HTTP/1.1 200 OK
+&lt;pre tabindex="0">&lt;code>HTTP/1.1 200 OK
 Content-Type: application/json
 {
 &amp;quot;sub&amp;quot;: &amp;quot;ChuckLin@hotmail.com&amp;quot;,
@@ -1093,18 +1184,18 @@ Content-Type: application/json
 &lt;li>由于授权服务器需要提前准备客户端元数据（先不要问为什么），所以使用 OAuth 的第一步是将客户端注册到授权服务器中。&lt;/li>
 &lt;li>浏览器请求客户端（照片打印服务）打印谷歌照片中存储的用户隐私照片。很显然，谷歌照片服务中的数据不允许客户端随意访问，这时候就需要找谷歌授权服务器对客户端进行授权，这一步是客户通过 302 重定向来实现的。以下示例中的 state 是一串随机生成的参数，就像随机生成一串订单号一样。&lt;/li>
 &lt;/ul>
-&lt;pre>&lt;code>HTTP/1.1 302 Moved Temp
+&lt;pre tabindex="0">&lt;code>HTTP/1.1 302 Moved Temp
 Location: http://google.auth.com/authorize?response_type=code&amp;amp;scope=foo&amp;amp;client_id=mrpicture&amp;amp;redirect_url=http://mrpicture.com/callback&amp;amp;state=Lwt50024XyzHW1
 &lt;/code>&lt;/pre>&lt;ul>
 &lt;li>上一步通过 302 使浏览器向授权服务器发送了一个 Http 请求。因为我们在第 0 步提前进行了合法客户端的元数据配置，所以这里可以通过校验 client_id 与 redirect_url 来过滤无效和伪造的客户端请求。接着授权服务器会渲染授权页面要求用户登录并授权对应权限给客户端。&lt;/li>
 &lt;li>当用户授权完毕后，授权服务器保存权限范围（scope）并创建授权码。由于授权是用户浏览器直接和授权服务器进行的，所以需要使用 302 + redirect_url 回调客户端并告知用户授权成功并回传授权码与 state 参数。&lt;/li>
 &lt;/ul>
-&lt;pre>&lt;code>HTTP 302 Found
+&lt;pre tabindex="0">&lt;code>HTTP 302 Found
 Location: http://mrpicture.com/callback&amp;amp;state=Lwt50024XyzHW1&amp;amp;code=8V1qosiJswxv&amp;amp;response_type=code&amp;amp;scope=foo&amp;amp;client_id=mrpicture
 &lt;/code>&lt;/pre>&lt;ul>
 &lt;li>客户端收到回调后，验证 state 等参数是否与自己前面步骤发送的参数一致，这可以防止攻击者随意编造请求访问客户端回调地址引发后续流程，浪费客户端和授权服务器资源。然后使用 HTTP 基本认证，将在元数据注册步骤中获取到的 client_id 与 client_secret 与授权码一起发送到授权服务器，获取访问 token。最后记得不要忘了 grant_type 字段。授权码许可类型的 grant_type 总是固定为 authorization_code。&lt;/li>
 &lt;/ul>
-&lt;pre>&lt;code>POST /token
+&lt;pre tabindex="0">&lt;code>POST /token
 Host: http://google.auth.com/
 Content-type: application/x-www-form-encoded
 Authorization: Basic b2F1dGgt2xpZW50LTE6BeFFJIWxxyliit220xCssXPsiwn5Bcod2a（base64(urlEncode(account+&amp;quot;:&amp;quot;+password))）
@@ -1112,7 +1203,7 @@ grant_type=authorization_code&amp;amp;redirect_uri=http://mrpicture.com/callback
 &lt;/code>&lt;/pre>&lt;blockquote>
 &lt;p>为什么这里还要发送 redirect_url 呢？根据 OAuth 规范，如果你在授权请求重定向中指定了 URI，那你在令牌请求中也必须指定。如果一切顺利的话，客户端就可以获得一个 Bearer 令牌。Bearer 令牌中还可以包含刷新令牌和令牌的权限范围以及过期时间等等。&lt;/p>
 &lt;/blockquote>
-&lt;pre>&lt;code>&amp;quot;access_token&amp;quot;: &amp;quot;2983Exodengdisowagds2q2345dfsoiwg&amp;quot;,
+&lt;pre tabindex="0">&lt;code>&amp;quot;access_token&amp;quot;: &amp;quot;2983Exodengdisowagds2q2345dfsoiwg&amp;quot;,
 &amp;quot;token_type&amp;quot;: &amp;quot;Baerer&amp;quot;
 &lt;/code>&lt;/pre>&lt;ul>
 &lt;li>既然获取到了令牌，客户端就可以使用令牌请求相关资源并返回到浏览器，或者保存令牌在客户端供今后使用。&lt;/li>
@@ -1411,7 +1502,7 @@ grant_type=authorization_code&amp;amp;redirect_uri=http://mrpicture.com/callback
 &lt;p>最后，索引在精不在多。对于某些经常被访问的查询我们可以尝试使用索引来优化执行效率。而对于某个速度很慢但是为系统管理员设计的查询，是否需要加上索引就需要结合实际情况判断了！&lt;/p>
 &lt;hr>
 &lt;p>&lt;em>参考书籍：&lt;/em>
-&lt;em>《深入浅出 Mysql》&lt;/em>&lt;/p></description></item><item><title>索引的应用</title><link>https://www.chucklin.net/post/sqlindex/</link><pubDate>Sat, 22 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/sqlindex/</guid><description>&lt;p>经过上一章艰苦卓绝的训练与尝试，我们成功分析出了有问题的 sql 语句。接下来该针对问题语句进行更进一步的优化了。索引往往在这个时候被引入来解决 sql 的运行效率的问题。&lt;/p>
+&lt;em>《深入浅出 Mysql》&lt;/em>&lt;/p></description></item><item><title>索引的应用</title><link>https://www.chucklin.net/post/sqlindex/</link><pubDate>Sat, 22 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/sqlindex/</guid><description>&lt;p>接上一章，我们成功分析出了有问题的 sql 语句。接下来该针对问题语句进行更进一步的优化了。索引往往在这个时候被引入来解决 sql 的运行效率的问题。&lt;/p>
 &lt;p>虽然索引的使用十分广泛，但是部分开发人员对索引的知识没有成体系的了解，造成了误用索引。误用索引不仅不能解决问题，还会进一步恶化性能。&lt;/p>
 &lt;p>好消息是，过阅读索引相关的章节的内容你将掌握以下几个知识点，从而建立起正确运用索引的基本知识。&lt;/p>
 &lt;ul>
@@ -1677,7 +1768,7 @@ explain select 语句所返回的结果包含了该查询语句的执行细节�
 &lt;h2 id="如何防御-csrf">如何防御 CSRF&lt;/h2>
 &lt;p>&lt;strong>referer 验证解决方案&lt;/strong>
 最简单的方法依赖于浏览器引用页头部。大多数浏览器会告诉 Web 服务器，哪个页面发送了请求。如：&lt;/p>
-&lt;pre>&lt;code>POST /bank/transfer.aspx HTTP/1.1
+&lt;pre tabindex="0">&lt;code>POST /bank/transfer.aspx HTTP/1.1
 Referer: http://evilsite.com/myevilblog
 User-Agent: Mozilla/4....
 Host: www.altoromutual.com
@@ -1687,7 +1778,7 @@ Cookie: SessionId=x3q2v0qpjc0n1c55mf35fxid;
 不过由于 http 头在某些版本的浏览器上存在可被篡改的可能性，所以这个解决方案并不完善。&lt;/p>
 &lt;p>&lt;strong>Token 解决方案&lt;/strong>
 令牌解决方案向表单添加一个参数，让表单在用户注销时或一个超时期限结束后过期&lt;/p>
-&lt;pre>&lt;code>&amp;lt;form id=&amp;quot;transferForm&amp;quot; action=&amp;quot;https://www.altoromutual.com/bank/transfer.aspx&amp;quot; method=&amp;quot;post&amp;quot;&amp;gt;
+&lt;pre tabindex="0">&lt;code>&amp;lt;form id=&amp;quot;transferForm&amp;quot; action=&amp;quot;https://www.altoromutual.com/bank/transfer.aspx&amp;quot; method=&amp;quot;post&amp;quot;&amp;gt;
 Enter the credit account:
 &amp;lt;input type=&amp;quot;text&amp;quot; name=&amp;quot;creditAccount&amp;quot; value=&amp;quot;&amp;quot;&amp;gt;
 Enter the transfer amount:
@@ -1696,7 +1787,7 @@ Enter the transfer amount:
 &amp;lt;input type=&amp;quot;submit&amp;quot; value=&amp;quot;Submit&amp;quot;&amp;gt;
 &amp;lt;/form&amp;gt;
 &lt;/code>&lt;/pre>&lt;p>或者将服务端动态生成的 Token 加入到 自定义 http 请求头参数中&lt;/p>
-&lt;pre>&lt;code>POST /bank/transfer.aspx HTTP/1.1
+&lt;pre tabindex="0">&lt;code>POST /bank/transfer.aspx HTTP/1.1
 Referer: https://www.altoromutual.com/bank
 xsrftoken: JKBS38633jjhg0987PPll
 User-Agent: Mozilla/4....
@@ -1827,7 +1918,7 @@ $name &lt;span style="color:#f92672">=&lt;/span> $_GET[&lt;span style="color:#e6
 &lt;strong>通过 HTML 的 META 标签&lt;/strong>
 &lt;code>&amp;lt;meta http-equiv=”Content-Security-Policy” content=”script-src ‘self'”&amp;gt;&lt;/code>
 &lt;strong>CSP 策略常用限制功能&lt;/strong>&lt;/p>
-&lt;pre>&lt;code>base-uri : 限制这篇文档的uri
+&lt;pre tabindex="0">&lt;code>base-uri : 限制这篇文档的uri
 child-src ：限制子窗口的源(iframe,弹窗等),取代frame-src
 connect-src ：限制脚本可以访问的源
 font-src : 限制字体的源
@@ -1865,25 +1956,25 @@ CSP 目前有两版，CSP1 和 CSP2， 两版的支持状态可以在 &lt;a href
 &lt;p>很多 Web 开发者没有意识到 SQL 查询是可以被篡改的，从而把 SQL 查询当作可信任的命令。殊不知，SQL 查询是可以绕开访问控制，从而绕过身份验证和权限检查的。更有甚者，有可能通过 SQL 查询去运行主机系统级的命令。&lt;/p>
 &lt;p>下面将通过一些真实的例子来详细讲解 SQL 注入的方式。&lt;/p>
 &lt;p>考虑以下简单的登录表单：&lt;/p>
-&lt;pre>&lt;code>&amp;lt;form action=&amp;quot;/login&amp;quot; method=&amp;quot;POST&amp;quot;&amp;gt;
+&lt;pre tabindex="0">&lt;code>&amp;lt;form action=&amp;quot;/login&amp;quot; method=&amp;quot;POST&amp;quot;&amp;gt;
 &amp;lt;p&amp;gt;Username: &amp;lt;input type=&amp;quot;text&amp;quot; name=&amp;quot;username&amp;quot; /&amp;gt;&amp;lt;/p&amp;gt;
 &amp;lt;p&amp;gt;Password: &amp;lt;input type=&amp;quot;password&amp;quot; name=&amp;quot;password&amp;quot; /&amp;gt;&amp;lt;/p&amp;gt;
 &amp;lt;p&amp;gt;&amp;lt;input type=&amp;quot;submit&amp;quot; value=&amp;quot;登陆&amp;quot; /&amp;gt;&amp;lt;/p&amp;gt;
 &amp;lt;/form&amp;gt;
 &lt;/code>&lt;/pre>&lt;p>我们的处理里面的 SQL 可能是这样的：&lt;/p>
-&lt;pre>&lt;code>username:=r.Form.Get(&amp;quot;username&amp;quot;)
+&lt;pre tabindex="0">&lt;code>username:=r.Form.Get(&amp;quot;username&amp;quot;)
 password:=r.Form.Get(&amp;quot;password&amp;quot;)
 sql:=&amp;quot;SELECT * FROM user WHERE username='&amp;quot;+username+&amp;quot;' AND password='&amp;quot;+password+&amp;quot;'&amp;quot;
 &lt;/code>&lt;/pre>&lt;p>如果用户的输入的用户名如下，密码任意&lt;/p>
-&lt;pre>&lt;code>myuser' or 'foo' = 'foo' --
+&lt;pre tabindex="0">&lt;code>myuser' or 'foo' = 'foo' --
 &lt;/code>&lt;/pre>&lt;p>那么我们的 SQL 变成了如下所示：&lt;/p>
-&lt;pre>&lt;code>SELECT * FROM user WHERE username='myuser' or 'foo' = 'foo' --'' AND password='xxx'
+&lt;pre tabindex="0">&lt;code>SELECT * FROM user WHERE username='myuser' or 'foo' = 'foo' --'' AND password='xxx'
 &lt;/code>&lt;/pre>&lt;p>在 SQL 里面&amp;ndash;是注释标记，所以查询语句会在此中断。这就让攻击者在不知道任何合法用户名和密码的情况下成功登录了。&lt;/p>
 &lt;p>对于 MSSQL 还有更加危险的一种 SQL 注入，就是控制系统，下面这个可怕的例子将演示如何在某些版本的 MSSQL 数据库上执行系统命令。&lt;/p>
-&lt;pre>&lt;code>sql:=&amp;quot;SELECT * FROM products WHERE name LIKE '%&amp;quot;+prod+&amp;quot;%'&amp;quot;
+&lt;pre tabindex="0">&lt;code>sql:=&amp;quot;SELECT * FROM products WHERE name LIKE '%&amp;quot;+prod+&amp;quot;%'&amp;quot;
 Db.Exec(sql)
 &lt;/code>&lt;/pre>&lt;p>如果攻击提交「a%' exec master..xp_cmdshell &amp;lsquo;net user test testpass /ADD&amp;rsquo; &amp;ndash;」作为变量 prod 的值，那么 sql 将会变成&lt;/p>
-&lt;pre>&lt;code>sql:=&amp;quot;SELECT * FROM products WHERE name LIKE '%a%' exec master..xp_cmdshell 'net user test testpass /ADD'--%'&amp;quot;
+&lt;pre tabindex="0">&lt;code>sql:=&amp;quot;SELECT * FROM products WHERE name LIKE '%a%' exec master..xp_cmdshell 'net user test testpass /ADD'--%'&amp;quot;
 &lt;/code>&lt;/pre>&lt;p>MSSQL 服务器会执行这条 SQL 语句，包括它后面那个用于向系统添加新用户的命令。如果这个程序是以 sa 运行而 MSSQLSERVER 服务又有足够的权限的话，攻击者就可以获得一个系统帐号来访问主机了。&lt;/p>
 &lt;p>虽然以上的例子是针对某一特定的数据库系统的，但是这并不代表不能对其它数据库系统实施类似的攻击。针对这种安全漏洞，只要使用不同方法，各种数据库都有可能遭殃。&lt;/p>
 &lt;h2 id="如何预防-sql-注入">如何预防 SQL 注入&lt;/h2>
@@ -1994,7 +2085,7 @@ TestEngine engine &lt;span style="color:#f92672">=&lt;/span> &lt;span style="col
 &lt;p>替身拥有多种类型。不同的测试场景选择合理的测试替身是优秀测试的必要条件之一。测试替身的类型也决定了测试类的命名方法，尤其特别注意。&lt;/p>
 &lt;h4 id="桩stub">桩（stub）&lt;/h4>
 &lt;p>用最简单的可能实现来代替真实实现。桩总是短小的。最好的例子就是一个对象的所有方法都只有一行，并且返回一个默认值。&lt;/p>
-&lt;pre>&lt;code>public class LoggerStub implements Logger {
+&lt;pre tabindex="0">&lt;code>public class LoggerStub implements Logger {
 @Override
 public void log() {
 // Nope
@@ -2476,9 +2567,9 @@ sout:
 &lt;h3 id="分页查询">分页查询&lt;/h3>
 &lt;h4 id="相对位置分页">相对位置分页&lt;/h4>
 &lt;p>分页查询的要点在于如何设计分页参数。通常来说基于和数据库类似的 limit 与 offset 的组合相对更通俗易懂。&lt;/p>
-&lt;pre>&lt;code>limit=50&amp;amp;offset=100
+&lt;pre tabindex="0">&lt;code>limit=50&amp;amp;offset=100
 &lt;/code>&lt;/pre>&lt;p>但是由于查询往往会涉及到数据库的读操作，而在数据量很大的情况下基于 limit 与 offset 的相对位置的查询组合的缺陷会逐渐暴露出来。试想下面这样的查询参数。&lt;/p>
-&lt;pre>&lt;code>limit=50000&amp;amp;offset=10000
+&lt;pre tabindex="0">&lt;code>limit=50000&amp;amp;offset=10000
 &lt;/code>&lt;/pre>&lt;p>这十分可怕，类似于这样的查询请求对服务器和客户端都是灾难。&lt;/p>
 &lt;h4 id="绝对位置分页">绝对位置分页&lt;/h4>
 &lt;p>有一种绝对位置分页的方法可作为你的备选项。它没有使用“从头开始第几条”的描述方法，而是指定了某个 ID 之前，或者日期之前的条件。这样我们查询数据库时可以使用范围匹配来查询出数据返回到客户端，避免了使用数据库的分页功能从而造成性能隐患。&lt;/p>
@@ -2495,7 +2586,7 @@ sout:
 &lt;/tbody>
 &lt;/table>
 &lt;p>客户端请求查询 17 年 8 月 15 日之前注册的所有用户的信息列表。服务器端对于这样的请求使用&lt;/p>
-&lt;pre>&lt;code>select * from user where time &amp;lt; 2017-08-15T00:00:00
+&lt;pre tabindex="0">&lt;code>select * from user where time &amp;lt; 2017-08-15T00:00:00
 &lt;/code>&lt;/pre>&lt;p>即可轻松解决问题。从而避免了从 1 开始计数的扫表操作。&lt;/p>
 &lt;h3 id="查询参数与-uri-如何取舍">查询参数与 URI 如何取舍&lt;/h3>
 &lt;p>下面这两个示例，你觉得哪个更好？嘘，先别说话。用心去感受。&lt;/p>
@@ -2536,7 +2627,7 @@ sout:
 &lt;p>实际上无论使用哪种都是可以接受的。但是！你需要知道 14 年 facebook 上线的新系统里性别的可选项目增加到了 50 种以上。假如你负责设计的接口是供一个 SNS 系统而使用的话，则需要考虑保证社交系统中关于性别的多元化的可能性。所以使用 2，比 1 的可扩展性更强一些。&lt;/p>
 &lt;h3 id="日期的格式">日期的格式&lt;/h3>
 &lt;p>在 Http 协议的定义中，http header 中通常会使用 UTC 来标识 Http 的时间。因此在设计 api 时，也推荐使用时区“+00:00”。相对于 epochtime 我更喜欢 RFC 3339 的日期格式，他更易读并且能够体现出时区的概念。而若要使用 UTC 时间的话，则在后面加上 Z 标识即可。&lt;/p>
-&lt;pre>&lt;code>2017-11-11T13:00:12+00:00
+&lt;pre tabindex="0">&lt;code>2017-11-11T13:00:12+00:00
 2017-11-11T13:00:12Z
 2017-11-11T10:00:00-00:00
 &lt;/code>&lt;/pre>&lt;p>-00:00 时区标识时区不明。虽然这种表示很少见，但是正因为少见所以需要重点掌握。&lt;/p>
@@ -2804,7 +2895,7 @@ c&lt;span style="color:#f92672">.&lt;/span>close()
 c &lt;span style="color:#f92672">=&lt;/span> consumer()
 produce(c)
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>执行结果&lt;/p>
-&lt;pre>&lt;code>
+&lt;pre tabindex="0">&lt;code>
 [PRODUCER] Producing 1...
 [CONSUMER] Consuming 1...
 [PRODUCER] Consumer return: 200 OK
@@ -3362,7 +3453,7 @@ base_sum()函数中定义了一个指向 sum()函数的指针，并且这个指�
 &lt;h5 id="git-的完整性校验">Git 的完整性校验&lt;/h5>
 &lt;p>在计算机中，哈希算法经常用来做签名校验，以保证内容的完整性，Git 也一样。
 在 Git 中所有数据在存储前都计算校验和，然后以校验和来引用。Git 用来计算校验和的机制叫做 SHA-1 散列（hash，哈希）。 基于 Git 中文件的内容或目录结构计算出来。 SHA-1 哈希看起来是这样&lt;/p>
-&lt;pre>&lt;code>24b9da6552252987aa493b52f8696cd6d3b00373
+&lt;pre tabindex="0">&lt;code>24b9da6552252987aa493b52f8696cd6d3b00373
 &lt;/code>&lt;/pre>&lt;p>Git 数据库中保存的信息都是以文件内容的哈希值来索引，而不是文件名。&lt;/p>
 &lt;h2 id="结语">结语&lt;/h2>
 &lt;p>简单总结一下本章的内容：&lt;/p>
@@ -3554,7 +3645,7 @@ executeJobs&lt;span style="color:#f92672">();&lt;/span>
 &lt;p>好消息是，命令设计模式能够帮助我们解决上面的所有问题。
 在学习命令设计模式之前，我们先试着用餐厅就餐这个日常生活中的行为，来接近命令设计模式。
 当我们在餐厅就餐时，我们往往会先向服务员点餐，然后通过服务员把点好的餐点送往后厨，并通知后厨根据新订单准备餐点。&lt;/p>
-&lt;pre>&lt;code class="language-flow" data-lang="flow">client=&amp;gt;start: 客户
+&lt;pre tabindex="0">&lt;code class="language-flow" data-lang="flow">client=&amp;gt;start: 客户
 waiter=&amp;gt;operation: 服务员
 createOrders=&amp;gt;operation: 点餐（createOrders）
 notifyChef=&amp;gt;operation: 通知后厨
@@ -4233,7 +4324,7 @@ duck&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">fly
 duck&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">quack&lt;/span>&lt;span style="color:#f92672">();&lt;/span>
 &lt;span style="color:#f92672">}&lt;/span>
 &lt;span style="color:#f92672">}&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>let me fly
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre tabindex="0">&lt;code>let me fly
 gua gua
 let me fly
 gobble obble
@@ -4635,7 +4726,7 @@ rubberDuck&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22
 &lt;h2 id="状态设计模式怎么用">状态设计模式怎么用？&lt;/h2>
 &lt;p>试想下面这样一种需求。
 万能糖果机公司委托我们通过 java 语言设计一种糖果机的控制程序，以实现类似如下的状态控制流程功能。&lt;/p>
-&lt;pre>&lt;code class="language-flow" data-lang="flow">st=&amp;gt;start: 开始使用糖果机
+&lt;pre tabindex="0">&lt;code class="language-flow" data-lang="flow">st=&amp;gt;start: 开始使用糖果机
 op=&amp;gt;operation: 投入硬币
 cond=&amp;gt;condition: coins &amp;gt; 25？
 op2=&amp;gt;operation: 转动曲柄
@@ -4881,7 +4972,7 @@ System&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">o
 gumballMachine&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">turnCrank&lt;/span>&lt;span style="color:#f92672">();&lt;/span>
 &lt;span style="color:#f92672">}&lt;/span>
 &lt;span style="color:#f92672">}&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>请投入硬币
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre tabindex="0">&lt;code>请投入硬币
 NoQuarterState
 投入硬币成功
 HasQuarterState
