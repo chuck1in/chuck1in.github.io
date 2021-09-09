@@ -70,12 +70,12 @@
 <h3 id=页目录>页目录</h3>
 <p>由于数据表中的 record 使用 next_record 指针构成一个链表，所以下面查找某一行数据的查询语句</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>select</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;
-</code></pre></div><p>在物理上就是已知一个链表的地址，查找链表中某节点的问题。而查找链表中的节点通常可以采用线性查找法来实现。但是线性查找法的时间复杂度是$O(n$)，如果数据量较大这个时间复杂度是难以接受的。</p>
+</code></pre></div><p>在物理上就是已知一个链表的地址，查找链表中某节点的问题。而查找链表中的节点通常可以采用线性查找法来实现。但是线性查找法的时间复杂度是 $O(n$)，如果数据量较大这个时间复杂度是难以接受的。</p>
 <p>为了降低查询的时间复杂度， innodb 采取了类似文件目录的方案。
 首先将用户数据进行逻辑分组，再将每组中最大的记录的地址偏移量集中存储到一起的。当查询某条记录时，先查询记录所在的分组（文件目录），再进入组内（目录内）查找，这样就缩小了线性查找的范围。</p>
 <p><img src=/images/mysql/page-directory.jpg alt=directory></p>
 <p>像这样对数据进行逻辑分组，然后再选取记录分组地址偏移量进行集中存储的空间，我们称为页目录（Page Directory）。</p>
-<p>前面提到过 records 是按照主键顺序排列的，所以在页目录中还可以利用二分查找提升页目录的搜索效率，将时间复杂度降低为$O(\log n)$</p>
+<p>前面提到过 records 是按照主键顺序排列的，所以在页目录中还可以利用二分查找提升页目录的搜索效率，将时间复杂度降低为 $O(\log n)$</p>
 <h2 id=聚簇索引>聚簇索引</h2>
 <p>页的大小是有限的（16KB）。如果表中的记录超出了这个容量，那就得使用多个关联页来存储。这些关联页之间通过指针连接形成一个双向链表。</p>
 <p><img src=/images/mysql/page-dirs.jpg alt=dirs></p>
@@ -93,7 +93,7 @@
 <span style=color:#66d9ef>select</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>5</span>;
 <span style=color:#f92672>//</span> <span style=color:#66d9ef>output</span>: id:<span style=color:#ae81ff>5</span> code:b
 </code></pre></div><p>先通过聚簇索引的目录页利用二分查找定位到 id=5 的记录应该在页号为 2 的页中，然后在页目录（Page directory）中再使用二分查找定位到 id=5 的记录在页中的偏移量就能获取到记录内容。</p>
-<p>这种像火箭一样快的查询方法，我们称为常数方法（const）——因为他的效率就和$O(1$)一样好。</p>
+<p>这种像火箭一样快的查询方法，我们称为常数方法（const）——因为他的效率就和 $O(1$) 一样好。</p>
 <h2 id=二级索引>二级索引</h2>
 <p>针对非主键建立的索引就是二级索引。相比聚簇索引，二级索引的叶节点只存储了两类信息：索引项与索引项对应的主键。</p>
 <p><img src=/images/mysql/ref.jpg alt=ref></p>
@@ -139,7 +139,7 @@ B 语句的查询条件不符合索引字段的顺序，所以无法利用索引
 <p>查询语句 E 中增加了一个 <code>id=6</code> 的条件，这个条件并不是联合索引的排序字段，所以它不能提供有效的扫描区间，可以直接将 <code>id=6</code> 被替换为 TRUE 。</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#f92672>//</span> E
 <span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>&gt;</span> <span style=color:#e6db74>&#39;a&#39;</span> <span style=color:#66d9ef>and</span> code2 <span style=color:#f92672>&lt;</span> <span style=color:#e6db74>&#39;g&#39;</span> <span style=color:#66d9ef>and</span> <span style=color:#66d9ef>TRUE</span>
-</code></pre></div><p>TRUE 和前两个条件 (code,code2) 使用 and 进行连接。从扫描区间上来说，就是对 $(-\infty,+\infty)$和$[(a,\forall),(a,g)]$ 取并集。于是整个查询语句的扫描区间就是 $[(a,\forall),(a,g)]$。</p>
+</code></pre></div><p>TRUE 和前两个条件 (code,code2) 使用 and 进行连接。从扫描区间上来说，就是对 $(-\infty,+\infty)$ 和 $[(a,\forall),(a,g)]$ 取并集。于是整个查询语句的扫描区间就是 $[(a,\forall),(a,g)]$ 。</p>
 <h2 id=使用索引排序和分组>使用索引排序和分组</h2>
 <h4 id=排序>排序</h4>
 <p>对于大数据量进行排序是比较耗时的。这不仅仅是在内存中运行排序算法的 CPU 成本，还有将排序的中间结果保存到磁盘造成的 IO 成本。
