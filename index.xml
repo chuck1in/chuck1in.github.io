@@ -1,12 +1,12 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ChuckLin's Blog</title><link>https://www.chucklin.net/</link><description>Recent content on ChuckLin's Blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>Copyright © 2021 Chuck Lin. All rights reserved.</copyright><lastBuildDate>Wed, 08 Sep 2021 14:28:26 +0800</lastBuildDate><atom:link href="https://www.chucklin.net/index.xml" rel="self" type="application/rss+xml"/><item><title>索引的物理结构</title><link>https://www.chucklin.net/post/sqlindex_principle/</link><pubDate>Wed, 08 Sep 2021 14:28:26 +0800</pubDate><guid>https://www.chucklin.net/post/sqlindex_principle/</guid><description>&lt;h2 id="行的格式">行的格式&lt;/h2>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ChuckLin's Blog</title><link>https://www.chucklin.net/</link><description>Recent content on ChuckLin's Blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>Copyright © 2021 Chuck Lin. All rights reserved.</copyright><lastBuildDate>Wed, 08 Sep 2021 14:28:26 +0800</lastBuildDate><atom:link href="https://www.chucklin.net/index.xml" rel="self" type="application/rss+xml"/><item><title>索引的物理结构</title><link>https://www.chucklin.net/post/index_principle/</link><pubDate>Wed, 08 Sep 2021 14:28:26 +0800</pubDate><guid>https://www.chucklin.net/post/index_principle/</guid><description>&lt;h2 id="行的格式">行的格式&lt;/h2>
 &lt;p>在 innodb 存储引擎中，一个表中的记录（records）会按照固定的行格式根据字符集的比较规则，按照主键顺序存储到硬盘上。&lt;/p>
-&lt;p>&lt;img src="https://www.chucklin.net/images/mysql/row.jpg" alt="row">&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/index-principal/row.jpg" alt="row">&lt;/p>
 &lt;p>上图中的行格式就规定：除了保存记录的列信息以外，还需要在行中保存额外的信息，如：变长字段的占为长度、空值的列、行的头（head）信息等。
 行的头信息中有一个名为 next_record 的指向下一条记录在磁盘上的偏移量的指针，使表中的行构成一个链表，链表的各个节点通过指向磁盘偏移量的指针进行连接。&lt;/p>
 &lt;h2 id="页">页&lt;/h2>
 &lt;p>是 innodb 管理存储空间的基本单位。 innodb 每次从磁盘检索并加载数据都以页（16KB/页）为单位。
 页有不同的类型，用来保存用户数据的页称为索引页/数据页。一个简化的数据页结构如下所示：&lt;/p>
-&lt;p>&lt;img src="https://www.chucklin.net/images/mysql/page.jpg" alt="page">&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/index-principal/page.jpg" alt="page">&lt;/p>
 &lt;p>可见，一个数据页除了保存 user records 以外，还保存了页的元数据（meta data）。&lt;/p>
 &lt;h3 id="页目录">页目录&lt;/h3>
 &lt;p>上文中提到，表中的 record 使用 next_record 指针构成一个链表，所以查找某一行数据在物理上就是已知一个链表的地址，查找链表中某节点的问题。&lt;/p>
@@ -15,11 +15,11 @@
 &lt;p>为了降低查询的时间复杂度， innodb 采取了类似文件目录的方案。
 首先将用户数据进行逻辑分组，再将每组中最大的记录的地址偏移量集中存储到一起的。当查询某条记录时，先查询记录所在的分组（文件目录），再进入组内（目录内）查找，这样就缩小了线性查找的范围。
 像这样对数据进行逻辑分组，然后再选取记录分组地址偏移量进行集中存储的空间，我们称为页目录（Page Directory）。&lt;/p>
-&lt;p>&lt;img src="https://www.chucklin.net/images/mysql/page-dir.jpg" alt="directory">&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/index-principal/page-dir.jpg" alt="directory">&lt;/p>
 &lt;p>由于 record 是按照主键顺序排列存储在数据页中的，所以还可以利用二分查找提升页目录的搜索效率，将时间复杂度降低为 $O(\log n)$&lt;/p>
 &lt;h2 id="聚簇索引">聚簇索引&lt;/h2>
 &lt;p>页的大小是有限的（16KB）。如果表中的记录超出了这个容量，那就得使用多个页来存储 records。然后通过指针将页关联起来，形成一个页的双向链表。&lt;/p>
-&lt;p>&lt;img src="https://www.chucklin.net/images/mysql/page-dirs.jpg" alt="dirs">&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/index-principal/page-dirs.jpg" alt="dirs">&lt;/p>
 &lt;p>所以当使用多个页存储数据时，查询 record 的工作就变为了两步：&lt;/p>
 &lt;ol>
 &lt;li>确定记录所在的页的地址（页号）。&lt;/li>
@@ -27,7 +27,7 @@
 &lt;/ol>
 &lt;p>因为数据页是链表的结构，所以通过线性查找法肯定可以找到被查找记录所在的页。但是在数据量较大时线性查找法的性能依然存在问题。&lt;/p>
 &lt;p>那么，是否可以参考页目录的设计将页进行分组呢？先按照页号分组，并保证分组按照数据页中用户记录的主键进行排序，最后再用一个数据页作为分组后的目录，保存各组中数据页内最小的主键值。&lt;/p>
-&lt;p>&lt;img src="https://www.chucklin.net/images/mysql/index.jpg" alt="index">&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/index-principal/index.jpg" alt="index">&lt;/p>
 &lt;p>经过对页进行分组与抽象，使的页从链表转化为一颗 树。树根所在的节点就是根页(root page)；树的内节点是目录项页，用来存储主键与页号的映射；树的叶节点存储完整的记录；整颗 B+ 树就叫做聚簇索引。&lt;/p>
 &lt;p>假设我们使用主键（或者唯一二级索引）的等值为条件对这个聚簇索引进行查询的话，这个查询的速度会像火箭一样快。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sql" data-lang="sql">&lt;span style="color:#f92672">//&lt;/span> A
@@ -37,7 +37,7 @@
 &lt;p>这种像火箭一样快的查询方法，我们称为常数方法（const）—— 因为他的效率就和 $O(1$) 一样好。&lt;/p>
 &lt;h2 id="二级索引">二级索引&lt;/h2>
 &lt;p>针对非主键建立的索引就是二级索引。相比聚簇索引，二级索引的叶节点只存储了两类信息：索引项与索引项对应的主键。&lt;/p>
-&lt;p>&lt;img src="https://www.chucklin.net/images/mysql/ref.jpg" alt="ref">&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/index-principal/ref.jpg" alt="ref">&lt;/p>
 &lt;p>由于二级索引没有存储 record 的完整信息，所以针对二级索引的查询工作就变成了三步：&lt;/p>
 &lt;ol>
 &lt;li>确定记录所在的页。&lt;/li>
@@ -56,7 +56,7 @@
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>查询二级索引可以直接获取到结果的查询方法称为索引覆盖（index）查询方法。&lt;/p>
 &lt;h2 id="联合索引">联合索引&lt;/h2>
 &lt;p>假如一个二级索引由多个字段组成，那这个二级索引就是一个联合索引。&lt;/p>
-&lt;p>&lt;img src="https://www.chucklin.net/images/mysql/union-index.jpg" alt="union">&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/index-principal/union-index.jpg" alt="union">&lt;/p>
 &lt;p>针对联合索引进行查询要注意查询条件需遵守「左前缀原则」——这是由联合索引的底层构造所决定的。不然就无法利用联合索引进行查询。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sql" data-lang="sql">&lt;span style="color:#f92672">//&lt;/span> A
 &lt;span style="color:#66d9ef">select&lt;/span> id &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> code &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#39;a&amp;#39;&lt;/span> &lt;span style="color:#66d9ef">and&lt;/span> code2 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#39;b&amp;#39;&lt;/span>;
@@ -91,7 +91,21 @@
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>如果分组的字段有索引，并且顺序和索引顺序相同，那就没有必
 要建立中间表进行统计了，直接使用索引项就即可完成分组了。&lt;/p>
 &lt;h2 id="表连接中的索引">表连接中的索引&lt;/h2>
-&lt;p>表的连接其实就是索引的连接。 TODO&lt;/p></description></item><item><title>Enum in Typescript</title><link>https://www.chucklin.net/post/ts_enum/</link><pubDate>Mon, 26 Jul 2021 22:16:36 +0800</pubDate><guid>https://www.chucklin.net/post/ts_enum/</guid><description>&lt;h2 id="枚举">枚举&lt;/h2>
+&lt;p>表连接的执行方式是嵌套循环链接(Nested-Loop Join)——根据连接的方式(内外)和方向(左右)针对驱动表和被驱动表分别做单表查询。驱动表查询出的记录数量，就是被驱动表的查询次数。
+所以表连接的索引问题就是单表索引的问题。而这部分的知识已经在上面的内容介绍过了。&lt;/p>
+&lt;h2 id="结语">结语&lt;/h2>
+&lt;ol>
+&lt;li>记录按照行格式存储在磁盘，并根据头指针构成链表。&lt;/li>
+&lt;li>记录按照逻辑分组被存储在页中，分组信息保存在页目录中。&lt;/li>
+&lt;li>关联页使用构成链表。&lt;/li>
+&lt;li>对页的目录抽象又把链表升级为树。&lt;/li>
+&lt;li>排序、分组、目录结构抽象是索引能够加速查询的重要物理特性。&lt;/li>
+&lt;li>聚簇索引是主键索引。&lt;/li>
+&lt;li>聚簇索引体现了索引即数据——索引树的页节点保存了索引项与记录项。&lt;/li>
+&lt;li>二级索引是非主键索引——索引树页结点只保存索引项与主键。&lt;/li>
+&lt;li>表链接的索引问题就是多个单表的索引问题。&lt;/li>
+&lt;li>索引能否生效的关键，在于查询条件是否能够减少聚簇索引的扫描范围。&lt;/li>
+&lt;/ol></description></item><item><title>Enum in Typescript</title><link>https://www.chucklin.net/post/ts_enum/</link><pubDate>Mon, 26 Jul 2021 22:16:36 +0800</pubDate><guid>https://www.chucklin.net/post/ts_enum/</guid><description>&lt;h2 id="枚举">枚举&lt;/h2>
 &lt;p>枚举是对客观事物的归纳与自然语言的抽象。这听起来似乎容易和类混淆，这是正常的。因为在大部分面向对象的语言里，枚举就是类。&lt;/p>
 &lt;p>我们知道一周有七天 —— &lt;code>Week={monday,Tuesday,...., Sunday}&lt;/code>。假设用枚举来描述这个概念的话就是下面这样：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-typescript" data-lang="typescript">&lt;span style="color:#66d9ef">enum&lt;/span> &lt;span style="color:#a6e22e">Week&lt;/span> {
@@ -1393,7 +1407,7 @@ grant_type=authorization_code&amp;amp;redirect_uri=http://mrpicture.com/callback
 &lt;p>大型 web 应用通常都离不开数据库，而现代工程的性能瓶颈往往都在 IO 处理上。若想在面临 IO 处理时作出最佳实践，就应该建立全面的数据库应用知识体系。&lt;/p>
 &lt;hr>
 &lt;p>&lt;em>参考书籍&lt;/em>
-&lt;em>《深入浅出 mysql》&lt;/em>&lt;/p></description></item><item><title>索引的优化技巧</title><link>https://www.chucklin.net/post/sqlindex_tips/</link><pubDate>Sun, 23 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/sqlindex_tips/</guid><description>&lt;h2 id="优化-order-by-语句">优化 Order by 语句&lt;/h2>
+&lt;em>《深入浅出 mysql》&lt;/em>&lt;/p></description></item><item><title>索引的优化技巧</title><link>https://www.chucklin.net/post/index_tips/</link><pubDate>Sun, 23 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/index_tips/</guid><description>&lt;h2 id="优化-order-by-语句">优化 Order by 语句&lt;/h2>
 &lt;p>众所周知，针对大量数据进行排序费时费力。了解 Mysql 的排序方式是优化数据库排序性能的充分条件。&lt;/p>
 &lt;h3 id="索引顺序扫描">索引顺序扫描&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sql" data-lang="sql">&lt;span style="color:#66d9ef">show&lt;/span> &lt;span style="color:#66d9ef">index&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> test_index_table
@@ -1437,7 +1451,7 @@ grant_type=authorization_code&amp;amp;redirect_uri=http://mrpicture.com/callback
 &lt;span style="color:#66d9ef">on&lt;/span> a.id &lt;span style="color:#f92672">=&lt;/span> b.id
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="http://static.zybuluo.com/mikumikulch/pkoun1q19wbxccetkfwhk8lb/image_1bhknak3k1ion1uas1iuk610lej13.png" alt="image_1bhknak3k1ion1uas1iuk610lej13.png-69.2kB">&lt;/p>
 &lt;h2 id="总结">总结&lt;/h2>
-&lt;p>本问提及的优化手段虽然十分浅显，但是却至关重要。一个 web 工程大部分的性能问题都是由 database IO 引起的。对 SQL 语句进行适当的合理优化能够解决一个 web 工程 80%的性能问题。&lt;/p></description></item><item><title>索引的使用误区</title><link>https://www.chucklin.net/post/sqlindex_badusage/</link><pubDate>Sun, 23 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/sqlindex_badusage/</guid><description>&lt;p>回顾上一章的内容，除了介绍了基本的使用索引优化 sql 语句的基本手法以外，还提到了滥用索引会引起性能恶化的问题。本章节的内容将会举例说明哪些场景的索引属于滥用，以及如何避免索引的误用。&lt;/p>
+&lt;p>本问提及的优化手段虽然十分浅显，但是却至关重要。一个 web 工程大部分的性能问题都是由 database IO 引起的。对 SQL 语句进行适当的合理优化能够解决一个 web 工程 80%的性能问题。&lt;/p></description></item><item><title>索引的使用误区</title><link>https://www.chucklin.net/post/index_badusage/</link><pubDate>Sun, 23 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/index_badusage/</guid><description>&lt;p>回顾上一章的内容，除了介绍了基本的使用索引优化 sql 语句的基本手法以外，还提到了滥用索引会引起性能恶化的问题。本章节的内容将会举例说明哪些场景的索引属于滥用，以及如何避免索引的误用。&lt;/p>
 &lt;h2 id="索引的滥用">索引的滥用&lt;/h2>
 &lt;p>为了优化 sql 语句的执行效率，我们往往会给表中加上各种各样的索引。
 但是在某些场景下索引不仅无法被用来提升效率，还会增加表空间占用，延长 modify 方法的执行时间。
@@ -1504,7 +1518,7 @@ grant_type=authorization_code&amp;amp;redirect_uri=http://mrpicture.com/callback
 &lt;p>最后，索引在精不在多。对于某些经常被访问的查询我们可以尝试使用索引来优化执行效率。而对于某个速度很慢但是为系统管理员设计的查询，是否需要加上索引就需要结合实际情况判断了！&lt;/p>
 &lt;hr>
 &lt;p>&lt;em>参考书籍：&lt;/em>
-&lt;em>《深入浅出 Mysql》&lt;/em>&lt;/p></description></item><item><title>索引的应用</title><link>https://www.chucklin.net/post/sqlindex/</link><pubDate>Sat, 22 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/sqlindex/</guid><description>&lt;p>接上一章，我们成功分析出了有问题的 sql 语句。接下来该针对问题语句进行更进一步的优化了。索引往往在这个时候被引入来解决 sql 的运行效率的问题。&lt;/p>
+&lt;em>《深入浅出 Mysql》&lt;/em>&lt;/p></description></item><item><title>索引的应用</title><link>https://www.chucklin.net/post/index_overview/</link><pubDate>Sat, 22 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/index_overview/</guid><description>&lt;p>接上一章，我们成功分析出了有问题的 sql 语句。接下来该针对问题语句进行更进一步的优化了。索引往往在这个时候被引入来解决 sql 的运行效率的问题。&lt;/p>
 &lt;p>虽然索引的使用十分广泛，但是部分开发人员对索引的知识没有成体系的了解，造成了误用索引。误用索引不仅不能解决问题，还会进一步恶化性能。&lt;/p>
 &lt;p>好消息是，过阅读索引相关的章节的内容你将掌握以下几个知识点，从而建立起正确运用索引的基本知识。&lt;/p>
 &lt;ul>
