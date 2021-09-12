@@ -1,5 +1,5 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ChuckLin's Blog</title><link>https://www.chucklin.net/</link><description>Recent content on ChuckLin's Blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>Copyright © 2021 Chuck Lin. All rights reserved.</copyright><lastBuildDate>Wed, 08 Sep 2021 14:28:26 +0800</lastBuildDate><atom:link href="https://www.chucklin.net/index.xml" rel="self" type="application/rss+xml"/><item><title>索引的物理结构</title><link>https://www.chucklin.net/post/index_principle/</link><pubDate>Wed, 08 Sep 2021 14:28:26 +0800</pubDate><guid>https://www.chucklin.net/post/index_principle/</guid><description>&lt;h2 id="行的格式">行的格式&lt;/h2>
-&lt;p>在 innodb 存储引擎中，一个表中的记录(records)会使用固定的行格式，根据字符集的比较规则根据主键顺序存储到硬盘上。&lt;/p>
+&lt;p>在 innodb 存储引擎中，一个表中的记录(records)会使用固定的行格式，根据字符集的比较规则按主键顺序存储到硬盘上。&lt;/p>
 &lt;p>&lt;img src="https://www.chucklin.net/images/index-principal/row.jpg" alt="row">&lt;/p>
 &lt;p>比如上图中的行格式就规定：除了保存记录的列信息以外，还需要在行中保存额外的信息。如：变长字段的占为长度、空值的列、行的(head)信息等。
 行的头信息中有一个名为 next_record 的指针。这个指针指向下一条记录在磁盘上的偏移量，行之间通过这个指针构成一个链表。&lt;/p>
