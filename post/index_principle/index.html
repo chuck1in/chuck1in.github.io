@@ -70,10 +70,11 @@
 <h3 id=页目录>页目录</h3>
 <p>由于表中的 record 使用 next_record 指针构成一个链表，那么查找 records 中某一行数据的问题，在物理上就是已知一个链表的地址，查找这个链表中的节点的问题。</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>select</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;
-</code></pre></div><p>查找链表中的节点通常采用线性查找法来实现。但是线性查找法的时间复杂度是 $O(n$)，如果数据量较大，那这个时间复杂度就难以让人接受。于是，为了提高查询的效率，innodb 使用了「目录」的抽象方案。
-首先将 record 进行逻辑分组，再将每组中最大记录的地址偏移量集中存储到一起的；当查询某条记录时，先查询记录所在的分组（文件目录），再进入组内（目录内）查找，这样就缩小了线性查找的范围。存储各分组的地址的空间，被称为页目录（Page Directory） 。</p>
+</code></pre></div><p>查找链表中的节点通常采用线性查找法来实现。但是线性查找法的时间复杂度是 $O(n$)，如果数据量较大，那这个时间复杂度就难以让人接受。于是，为了提高查询的效率，innodb 使用了「目录」的抽象方案。</p>
+<p>首先将 record 进行逻辑分组，再将每组中最大记录在磁盘上的偏移量集中存储到一起的；当查询某条记录时，先查询记录所在的分组(文件目录)，再进入组内(目录内)查找，这样就缩小了线性查找的范围。
+再加上 record 分组地址依然按照主键排序的特性，在查询记录所属的分组时，还能够利用二分查找将查询处理的时间复杂度降低为 $O(\log n)$。</p>
+<p>页中用来存储各分组在磁盘上的偏移量的空间，被称为页目录(Page Directory)。</p>
 <p><img src=/images/index-principal/page-dir.jpg alt=directory></p>
-<p>同时 record 又是按照主键顺序排列存储在数据页中的，在缩小线性查找范围的基础上，还能利用二分查找提升页目录的搜索效率，将查询处理的时间复杂度降低为 $O(\log n)$</p>
 <h2 id=聚簇索引>聚簇索引</h2>
 <p>前面提到过页的大小是有限的（16KB）。如果表中的记录超出了这个容量，那就得使用多个页来存储 records， 再通过指针将页关联起来，形成一个页的双向链表。</p>
 <p><img src=/images/index-principal/page-dirs.jpg alt=dirs></p>
