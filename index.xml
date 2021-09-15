@@ -1,4 +1,112 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ChuckLin's Blog</title><link>https://www.chucklin.net/</link><description>Recent content on ChuckLin's Blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>Copyright © 2021 Chuck Lin. All rights reserved.</copyright><lastBuildDate>Wed, 08 Sep 2021 14:28:26 +0800</lastBuildDate><atom:link href="https://www.chucklin.net/index.xml" rel="self" type="application/rss+xml"/><item><title>索引的物理结构</title><link>https://www.chucklin.net/post/index_principle/</link><pubDate>Wed, 08 Sep 2021 14:28:26 +0800</pubDate><guid>https://www.chucklin.net/post/index_principle/</guid><description>&lt;h2 id="行的格式">行的格式&lt;/h2>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ChuckLin's Blog</title><link>https://www.chucklin.net/</link><description>Recent content on ChuckLin's Blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>Copyright © 2021 Chuck Lin. All rights reserved.</copyright><lastBuildDate>Tue, 14 Sep 2021 16:30:57 +0800</lastBuildDate><atom:link href="https://www.chucklin.net/index.xml" rel="self" type="application/rss+xml"/><item><title>事务与锁的设计思想</title><link>https://www.chucklin.net/post/transcation_lock/</link><pubDate>Tue, 14 Sep 2021 16:30:57 +0800</pubDate><guid>https://www.chucklin.net/post/transcation_lock/</guid><description>&lt;p>事务是一个抽象的概念，代表一个或多个数据库操作。比如下面这三组查询语句 A、B、C 分别代表三个事务。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sql" data-lang="sql">&lt;span style="color:#66d9ef">SET&lt;/span> autocommit &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">ON&lt;/span>;
+&lt;span style="color:#f92672">//&lt;/span> A
+&lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span>;
+&lt;span style="color:#f92672">//&lt;/span> B
+&lt;span style="color:#66d9ef">begin&lt;/span>
+&lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span>;
+&lt;span style="color:#66d9ef">commit&lt;/span>;
+&lt;span style="color:#f92672">//&lt;/span> &lt;span style="color:#66d9ef">C&lt;/span>
+&lt;span style="color:#66d9ef">begin&lt;/span>
+&lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span>;
+&lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span> name &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#39;cherry&amp;#39;&lt;/span>;
+&lt;span style="color:#66d9ef">commit&lt;/span>;
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>一个只有一条语句的操作(A)也是一个事务。所以实际上不存在「没有事务」的概念。&lt;/p>
+&lt;h3 id="trx_id">trx_id&lt;/h3>
+&lt;p>和 record 一样，事务也拥有自己的主键。如果一个事务中包含了 modify 语句，那这个事务就会被分配一个全局递增的数字作为这个事务的主键，主键的名称为 trx_id。&lt;/p>
+&lt;h3 id="undo-与版本链">undo 与版本链&lt;/h3>
+&lt;p>事务操作必须具备原子性；原子性意味着操作能够回滚(rollback)；回滚需要历史记录；历史记录想要保留，最简单的方法是每次 modify 之前都把当前记录保存下来，这样就能在任何时候回到过去了。&lt;/p>
+&lt;p>保留下来的历史记录称做撤销日志(undo log)；保存 undo log 的页面类型为 FILE_PAGE_UNDO_LOG；多个 undo page 之间使用指针链接成链表；整个 undo chain 和 record chain 共同形成了一个版本控制系统。&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/transcation_lock/undo.jpg" alt="undo">&lt;/p>
+&lt;h3 id="版本号">版本号&lt;/h3>
+&lt;p>前文提到，凡是修改记录的事务都会分配一个全局递增的标识符 trx_id。如果每次修改 record 时都把分配的 trx_id 写入记录的 head 部分的话，就能够溯源记录的事务操作。&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/transcation_lock/version.jpg" alt="undo">&lt;/p>
+&lt;p>被写入记录的 trx_id 就像 undo chain 的版本号一样，同一个事务操作生成的内容拥有相同的版本号；不同的版本号根据 trx_id 的递增特性可以推断出事务发生的先后顺序。
+回滚事务时，只要把该版本号对应的 undo 全部执行一次即可。&lt;/p>
+&lt;h3 id="并发控制">并发控制&lt;/h3>
+&lt;p>多个操作并发修改相同的资源就会发生并发安全问题。 innodb 根据操作类型(读或写)与隔离等级，对并发安全问题提供了不同程度的解决方案。&lt;/p>
+&lt;h4 id="readview">ReadView&lt;/h4>
+&lt;p>一般来讲，读操作并不涉及资源的修改，所以没有安全问题。但是如果我们使用的事务隔离等级是 REPEATABLE READ 的话就另当别论了 。REPEATABLE READ 要求一个事务只能读取到已提交的事务修改过的记录。&lt;/p>
+&lt;p>那如何才能判断版本链中哪些记录是当前事务开启时已提交的事务产生的记录呢？上文提到的版本号提供了判断事务发生顺序的线索。简单来说，根据版本号的大小就可以判断某条记录对当前事务是否可见。&lt;/p>
+&lt;p>不过实际情况肯定要复杂些。innodb 采取的方案是在事务开启时，对当前系统中的事务获取一个称为一致性视图的快照(ReadView)。&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>key&lt;/th>
+&lt;th>Description&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>m_ids&lt;/td>
+&lt;td>当前系统中，活跃的事务 id&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>min_trx_id&lt;/td>
+&lt;td>当前系统中，活跃的事务 id 最小值&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>max_trx_id&lt;/td>
+&lt;td>系统应该分配下一个事务的 id&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>creator_trx_id&lt;/td>
+&lt;td>当前事务的 id&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>有了 ReadView，只需要按照固定的步骤把某条记录的 trx_id 和 view 中的内容做比较，就可以判断记录是否对事务可见了。如果记录不可见，则顺着版本链寻找 undo 日志中匹配的内容，直到到达链表的尾部。&lt;/p>
+&lt;p>这种使用版本号来控制记录在并发读时的可见性的做法，叫做多版本并发控制系统，简称 MVCC。&lt;/p>
+&lt;h3 id="lock">Lock&lt;/h3>
+&lt;p>使用了 MVCC 方案的读操作叫做快照读(Consistent Read)——他读取的是当前事务可见的记录，这些记录可能是历史信息。
+还有一种读取操作只会读取最新的记录，不会读取 undo 日志，这种读取操作叫做当前读。由于写操作都是针对版本链最新记录的写入，所以写操作也是当前读的一种形式。&lt;/p>
+&lt;p>并发写操作一般都是有并发安全问题的。在数据库的领域中这叫做脏写：&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/transcation_lock/zx1.jpg" alt="undo">&lt;/p>
+&lt;p>假设有两个事务 trx1、trx2 同时更新同一条记录的某列为 B、A；&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/transcation_lock/zx2.jpg" alt="undo">&lt;/p>
+&lt;p>在两个事务提交之前 trx1 先进行回滚后再提交 trx2，版本链中的最新记录就会回到版本链中的 trx0；此时 trx2 事务的提交就发生了更新丢失。&lt;/p>
+&lt;blockquote>
+&lt;p>更新丢失不是更新覆盖。更新覆盖指的是后一个操作的结果，覆盖了前一个操作的内容，并且大多数时候指的是 read-compute-write 类型的操作。&lt;/p>
+&lt;/blockquote>
+&lt;p>发生更新丢失的本质原因是因为 trx2 事务修改了 trx1 事务还未提交的记录所造成的。为了解决这样的问题，innodb 提供的解决方案就是 Lock。&lt;/p>
+&lt;p>存储引擎的加锁方案牵扯的变量因素非常多，本文篇幅有限无法详尽讨论。接下来只通过一个 modify 语句作为示例来简要说明在 REPEATABLE READ 隔离等级下的加锁过程。&lt;/p>
+&lt;h4 id="加锁过程分析">加锁过程分析&lt;/h4>
+&lt;p>在数据库中新建二级索引和聚簇索引如下：&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/transcation_lock/lock1.jpg" alt="undo">&lt;/p>
+&lt;p>使用下面的语句更新上图中的记录。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sql" data-lang="sql">&lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span> col3 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#39;test&amp;#39;&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> col2 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#39;f&amp;#39;&lt;/span>;
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>分析加锁过程：&lt;/p>
+&lt;ol>
+&lt;li>查询语句的查询条件生成扫描区间 &lt;code>(f,f)&lt;/code>。&lt;/li>
+&lt;li>查询到二级索引中满足扫描区间的第一条记录 &lt;code>col2=f&lt;/code> 。为此条记录加上 next-key 排它锁。&lt;/li>
+&lt;li>回表扫描聚簇索引，为 &lt;code>id=7&lt;/code> 的记录加上 next-key 排它锁。&lt;/li>
+&lt;li>查询二级索引链表中，符合扫描区间的下一条记录。如果有，为此条记录加上 next-key 排它锁。&lt;/li>
+&lt;li>回表扫描聚簇索引，为对应的的记录加上 next-key 排它锁。&lt;/li>
+&lt;li>重复上述步骤直到遍历完扫描区间中的记录项。&lt;/li>
+&lt;/ol>
+&lt;p>加锁完成的结果如下图所示：&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/transcation_lock/lock2.jpg" alt="undo">&lt;/p>
+&lt;blockquote>
+&lt;p>如果查询语句无法利用索引，那查询条件生成的扫描区间就是 (-,+)，最后加锁的范围就是全表。&lt;/p>
+&lt;/blockquote>
+&lt;p>一旦记录加上了排它锁，在锁被释放之前任何其他事务都无法对当前记录做出更改，于是脏写的问题得到了解决。&lt;/p>
+&lt;h2 id="结语">结语&lt;/h2>
+&lt;p>innodb 解决并发事务的一致性问题，主要依靠两个方案。&lt;/p>
+&lt;ol>
+&lt;li>MVCC 方案解决了「读操作」的并发问题：
+&lt;ul>
+&lt;li>脏读。&lt;/li>
+&lt;li>幻读。&lt;/li>
+&lt;li>不可重复读的问题。锁解决数据库。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>Lock 方案解决了「写操作」的并发问题：
+&lt;ul>
+&lt;li>脏写。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;p>使用 MVCC 的读操作也称为快照读，因为它读取的内容可能是历史数据。总是读取最新记录的操作，称为当前读。其中写操作就是当前读的一种形式。&lt;/p></description></item><item><title>索引的物理结构</title><link>https://www.chucklin.net/post/index_principle/</link><pubDate>Wed, 08 Sep 2021 14:28:26 +0800</pubDate><guid>https://www.chucklin.net/post/index_principle/</guid><description>&lt;h2 id="行的格式">行的格式&lt;/h2>
 &lt;p>在 innodb 存储引擎中，一个表中的记录(records)会使用固定的行格式，根据字符集的比较规则按主键顺序存储到硬盘上。&lt;/p>
 &lt;p>&lt;img src="https://www.chucklin.net/images/index-principal/row.jpg" alt="row">&lt;/p>
 &lt;p>比如上图中的行格式就规定：除了保存记录的列信息以外，还需要在行中保存额外的信息。如：变长字段的占为长度、空值的列、行的(head)信息等。

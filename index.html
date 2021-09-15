@@ -53,6 +53,20 @@ Love and Peace 🐷
 <div id=content>
 <article>
 <header>
+<h2 class=list-title><a href=https://www.chucklin.net/post/transcation_lock/>事务与锁的设计思想</a></h2>
+<p class=list-post-date>
+<time datetime=2021-09-14T16:30:57+08:00>
+14 September, 2021 at 16:30 +0800
+</time>
+</p>
+</header>
+<div>
+事务是一个抽象的概念，代表一个或多个数据库操作。比如下面这三组查询语句 A、B、C 分别代表三个事务。 SET autocommit = ON; // A select * from table; // B begin select * from
+</div>
+<p><a class=read-more href=https://www.chucklin.net/post/transcation_lock/>Read more &rarr;</a></p>
+</article>
+<article>
+<header>
 <h2 class=list-title><a href=https://www.chucklin.net/post/index_principle/>索引的物理结构</a></h2>
 <p class=list-post-date>
 <time datetime=2021-09-08T14:28:26+08:00>
@@ -176,20 +190,6 @@ Filter Spring security 的运行依赖于一系列 filter chains ，其中每一
 前言 针对不同的存储引擎的数据库锁的实现是不相同的，而现代大型项目基本都选择了 innoDB 作为存储引擎，所以本章节只探讨 innoDB 数据库锁的内容。 innoDB 的
 </div>
 <p><a class=read-more href=https://www.chucklin.net/post/lockinmysql/>Read more &rarr;</a></p>
-</article>
-<article>
-<header>
-<h2 class=list-title><a href=https://www.chucklin.net/post/index_tips/>索引的优化技巧</a></h2>
-<p class=list-post-date>
-<time datetime=2020-02-23T09:52:00+08:00>
-23 February, 2020 at 09:52 +0800
-</time>
-</p>
-</header>
-<div>
-优化 Order by 语句 众所周知，针对大量数据进行排序费时费力。了解 Mysql 的排序方式是优化数据库排序性能的充分条件。
-</div>
-<p><a class=read-more href=https://www.chucklin.net/post/index_tips/>Read more &rarr;</a></p>
 </article>
 <nav>
 <div id=pagination>
