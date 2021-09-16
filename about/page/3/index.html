@@ -167,7 +167,7 @@ Java 的内部类种类较多，语法比较复杂，用法也不尽相同。 �
 </article>
 <article>
 <header>
-<h2 class=list-title><a href=https://www.chucklin.net/post/git/>为什么 Git 与众不同</a></h2>
+<h2 class=list-title><a href=https://www.chucklin.net/post/git_branch/>git 中的分支</a></h2>
 <p class=list-post-date>
 <time datetime=2019-06-01T09:23:00+08:00>
 1 June, 2019 at 09:23 +0800
@@ -175,24 +175,23 @@ Java 的内部类种类较多，语法比较复杂，用法也不尽相同。 �
 </p>
 </header>
 <div>
-关于版本控制系统 按照时间顺序记录某一系列的文件的变更，使其可以查看以前的特定版本的软件，我们称之为版本控制系统。
-简单来讲：创建两个文件夹，在两个文件夹中分别保存一月份与二月份的销售数据，这样就创建了一个简单且稳定的版本控制系统。
+Git 如何存储数据 Git 仓库中包含了三种对象：blob 对象、tree object、commit object。三种对象共同组成 git 仓库中的提交记录。
 </div>
-<p><a class=read-more href=https://www.chucklin.net/post/git/>Read more &rarr;</a></p>
+<p><a class=read-more href=https://www.chucklin.net/post/git_branch/>Read more &rarr;</a></p>
 </article>
 <article>
 <header>
-<h2 class=list-title><a href=https://www.chucklin.net/post/sign_designmode/>单例设计模式</a></h2>
+<h2 class=list-title><a href=https://www.chucklin.net/post/git_revert_reset/>git 中的撤回机制</a></h2>
 <p class=list-post-date>
-<time datetime=2018-10-01T18:23:00+08:00>
-1 October, 2018 at 18:23 +0800
+<time datetime=2019-06-01T09:23:00+08:00>
+1 June, 2019 at 09:23 +0800
 </time>
 </p>
 </header>
 <div>
-单例设计模式是应用最广泛的设计模式，没有之一。当我们需要控制一个类只能被创建出单个对象时，就可以采用单例设计模式。 使用 java 来实现单例设计模式，普遍有四种实现方式。
+Reset 假设目前我们处于下图所示的工作场景中。我们正在 master 分支上进行工作。目前工作目录是干净的，这意味着暂存索引区中的文件内容与工作目录是一致的。并且，HEAD 指向的 master 分支指向的提交对象，也和目前工作空间中的文件内容保持一致。
 </div>
-<p><a class=read-more href=https://www.chucklin.net/post/sign_designmode/>Read more &rarr;</a></p>
+<p><a class=read-more href=https://www.chucklin.net/post/git_revert_reset/>Read more &rarr;</a></p>
 </article>
 </div>
 <div class=h-card>
