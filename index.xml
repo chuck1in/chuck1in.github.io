@@ -79,26 +79,27 @@
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>分析加锁过程：&lt;/p>
 &lt;ol>
 &lt;li>查询语句的查询条件生成扫描区间 &lt;code>(f,f)&lt;/code>。&lt;/li>
-&lt;li>查询到二级索引中满足扫描区间的第一条记录 &lt;code>col2=f&lt;/code> 。为此条记录加上 next-key 排它锁。&lt;/li>
+&lt;li>查询二级索引，定位满足扫描区间的第一条记录 &lt;code>col2=f&lt;/code> 。&lt;/li>
+&lt;li>为 &lt;code>col2=f&lt;/code> 的记录加上 next-key 排它锁。&lt;/li>
 &lt;li>回表扫描聚簇索引，为 &lt;code>id=7&lt;/code> 的记录加上 next-key 排它锁。&lt;/li>
-&lt;li>查询二级索引链表中，符合扫描区间的下一条记录。如果有，为此条记录加上 next-key 排它锁。&lt;/li>
-&lt;li>回表扫描聚簇索引，为对应的的记录加上 next-key 排它锁。&lt;/li>
+&lt;li>查询二级索引链表中 &lt;code>col2=f&lt;/code> 的下一条记录。并为查询到的记录加上 next-key 排它锁。&lt;/li>
+&lt;li>回表扫描二级索引对应的聚簇索引，并对该聚簇索引加上 next-key 排它锁。&lt;/li>
 &lt;li>重复上述步骤直到遍历完扫描区间中的记录项。&lt;/li>
 &lt;/ol>
 &lt;p>加锁完成的结果如下图所示：&lt;/p>
 &lt;p>&lt;img src="https://www.chucklin.net/images/transcation_lock/lock2.jpg" alt="undo">&lt;/p>
 &lt;blockquote>
-&lt;p>如果查询语句无法利用索引，那查询条件生成的扫描区间就是 (-,+)，最后加锁的范围就是全表。&lt;/p>
+&lt;p>如果查询语句无法利用索引，那查询条件生成的扫描区间就是 $(-\infty,+\infty)$，最后加锁的范围就是全表。&lt;/p>
 &lt;/blockquote>
-&lt;p>一旦记录加上了排它锁，在锁被释放之前任何其他事务都无法对当前记录做出更改，于是脏写的问题得到了解决。&lt;/p>
+&lt;p>记录一旦加上了排它锁，在锁被释放之前任何其他事务都无法对当前记录做出更改，这样就解决了脏写的问题。&lt;/p>
 &lt;h2 id="结语">结语&lt;/h2>
-&lt;p>innodb 解决并发事务的一致性问题，主要依靠两个方案。&lt;/p>
+&lt;p>innodb 解决并发事务的一致性问题主要依靠两个方案—— MVCC 和 Lock。&lt;/p>
 &lt;ol>
 &lt;li>MVCC 方案解决了「读操作」的并发问题：
 &lt;ul>
 &lt;li>脏读。&lt;/li>
 &lt;li>幻读。&lt;/li>
-&lt;li>不可重复读的问题。锁解决数据库。&lt;/li>
+&lt;li>不可重复读的问题。&lt;/li>
 &lt;/ul>
 &lt;/li>
 &lt;li>Lock 方案解决了「写操作」的并发问题：
@@ -107,7 +108,7 @@
 &lt;/ul>
 &lt;/li>
 &lt;/ol>
-&lt;p>使用 MVCC 的读操作也称为快照读，因为它读取的内容可能是历史数据。总是读取最新记录的操作，称为当前读。其中写操作就是当前读的一种形式。&lt;/p></description></item><item><title>索引的物理结构</title><link>https://www.chucklin.net/post/index_principle/</link><pubDate>Wed, 08 Sep 2021 14:28:26 +0800</pubDate><guid>https://www.chucklin.net/post/index_principle/</guid><description>&lt;h2 id="行的格式">行的格式&lt;/h2>
+&lt;p>使用 MVCC 的读操作也称为快照读，因为它读取的内容可能是历史数据；写操作是当前读的一种形式，因为他总是面向最新记录写入数据。&lt;/p></description></item><item><title>索引的物理结构</title><link>https://www.chucklin.net/post/index_principle/</link><pubDate>Wed, 08 Sep 2021 14:28:26 +0800</pubDate><guid>https://www.chucklin.net/post/index_principle/</guid><description>&lt;h2 id="行的格式">行的格式&lt;/h2>
 &lt;p>在 innodb 存储引擎中，一个表中的记录(records)会使用固定的行格式，根据字符集的比较规则按主键顺序存储到硬盘上。&lt;/p>
 &lt;p>&lt;img src="https://www.chucklin.net/images/index-principal/row.jpg" alt="row">&lt;/p>
 &lt;p>比如上图中的行格式就规定：除了保存记录的列信息以外，还需要在行中保存额外的信息。如：变长字段的占为长度、空值的列、行的(head)信息等。
