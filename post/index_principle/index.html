@@ -149,8 +149,7 @@
 <h4 id=分组>分组</h4>
 <p>分组操作如果缺少索引，innodb 会在扫描聚簇索引的记录时，新建一个临时表来存储分组的统计结果。统计完成后，将临时表的内容发送给客户端。</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>select</span> <span style=color:#66d9ef>count</span>(<span style=color:#f92672>*</span>) <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>group</span> <span style=color:#66d9ef>by</span> code, code2
-</code></pre></div><p>如果分组的字段有索引，并且顺序和索引顺序相同，那就没有必
-要建立中间表进行统计了，直接使用索引项就即可完成分组了。</p>
+</code></pre></div><p>如果分组的字段有索引，并且顺序和索引顺序相同，那就没有必要建立中间表进行统计了，直接使用索引项就可以完成分组。</p>
 <h2 id=表连接中的索引>表连接中的索引</h2>
 <p>表连接的执行方式是嵌套循环链接(Nested-Loop Join)——根据连接的方式(内外)和方向(左右)针对驱动表和被驱动表分别做单表查询。驱动表查询出的记录数量，就是被驱动表的查询次数。
 所以表连接的索引问题就是单表索引的问题。而这部分的知识已经在上面的内容介绍过了。</p>
