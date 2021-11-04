@@ -141,7 +141,7 @@
 <li>查询语句的查询条件生成扫描区间 <code>(f,f)</code>。</li>
 <li>查询二级索引，定位满足扫描区间的第一条记录 <code>col2=f</code> 。</li>
 <li>为 <code>col2=f</code> 的记录加上 next-key 排它锁。</li>
-<li>回表扫描聚簇索引，为 <code>id=7</code> 的记录加上 next-key 排它锁。</li>
+<li>回表扫描聚簇索引，为 <code>id=7</code> 的记录加上 next-key(防止幻读) 排它锁。</li>
 <li>查询二级索引链表中 <code>col2=f</code> 的下一条记录。并为查询到的记录加上 next-key 排它锁。</li>
 <li>回表扫描二级索引对应的聚簇索引，并对该聚簇索引加上 next-key 排它锁。</li>
 <li>重复上述步骤直到遍历完扫描区间中的记录项。</li>
