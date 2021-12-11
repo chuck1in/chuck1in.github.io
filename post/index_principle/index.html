@@ -73,7 +73,7 @@
 <span style=color:#66d9ef>select</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;
 </code></pre></div><p>一般来讲，查找链表中的节点通常采用线性查找法来实现。但是线性查找法的时间复杂度是 $O(n$)，如果数据量较大，那这个时间复杂度就难以让人接受。于是，为了提高查询的效率，innodb 使用了「目录」的抽象方案。</p>
 <p>首先将 record 进行逻辑分组，再将每组中最大的记录在磁盘上的偏移量使用数组结构集中存储到一起；当查询某条记录时，先查询记录所在的分组(文件目录)，再进入组内(目录内)查找，这样就缩小了线性查找的范围。</p>
-<p>又因为 record 按照主键排序的特性，在查询记录所属的分组时同样可以利用二分查找将查询处理的时间复杂度降低为 $O(\log n)$。</p>
+<p>又因为 record 按照主键排序的特性与偏移量的数组结构，在查询记录所属的分组时同样可以利用二分查找将查询处理的时间复杂度降低为 $O(\log n)$。</p>
 <p>页中集中存储各分组在磁盘上的偏移量的空间，被称为页目录(Page Directory)。</p>
 <p><img src=/images/index-principal/page-dir.jpg alt=directory></p>
 <h2 id=聚簇索引>聚簇索引</h2>
