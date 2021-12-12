@@ -1235,7 +1235,7 @@ AuthenticationException exception&lt;span style="color:#f92672">)&lt;/span> &lt;
 &lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">authenticationEntryPoint&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">commence&lt;/span>&lt;span style="color:#f92672">(&lt;/span>request&lt;span style="color:#f92672">,&lt;/span> response&lt;span style="color:#f92672">,&lt;/span> exception&lt;span style="color:#f92672">);&lt;/span>
 &lt;span style="color:#f92672">}&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="uml-diagram">UML Diagram&lt;/h2>
-&lt;p>&lt;img src="https://raw.githubusercontent.com/mikumikulch/pictures/master/Xnip2021-04-19_12-18-22.jpg" alt="">&lt;/p>
+&lt;p>&lt;img src="https://www.chucklin.net/images/springsecurity/authentication.jpg" alt="row">&lt;/p>
 &lt;h2 id="总结">总结&lt;/h2>
 &lt;ol>
 &lt;li>Spring security 首先由一系列 filter chians 构成。&lt;/li>
