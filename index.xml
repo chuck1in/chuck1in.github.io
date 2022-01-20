@@ -1288,7 +1288,7 @@ Content-Type: application/json
 &amp;quot;given_name&amp;quot;: &amp;quot;Chuck&amp;quot;,
 &amp;quot;family_name&amp;quot;: &amp;quot;Lin&amp;quot;,
 &amp;quot;preferred_username&amp;quot;: &amp;quot;ChuckLin2020@hotmail.com&amp;quot;,
-&amp;quot;email&amp;quot;: &amp;quot;mikumiku.lch@hotmail.com&amp;quot;
+&amp;quot;email&amp;quot;: &amp;quot;chuck1in9996@gmail.com&amp;quot;
 }
 &lt;/code>&lt;/pre>&lt;p>同时这也是 access_token 用于访问受保护资源，id_token 用于身份认证的一次结合应用。
 说了这么多，那学习 OIDC 有什么用呢？ OIDC 的其中一个用处就是可以用来构建一个单点登录系统（SSO）。&lt;/p>
