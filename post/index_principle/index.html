@@ -1,215 +1,39 @@
-<!doctype html><html lang=zh-cn>
-<head>
-<meta charset=utf-8>
-<title>索引的物理结构 | ChuckLin's Blog</title>
-<meta name=description content="Love and Peace">
-<meta name=author content>
-<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
-<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
-<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
-<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
-<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
-<meta name=msapplication-TileColor content="#00aba9">
-<meta name=theme-color content="#ffffff">
-<link rel=me href=mailto:chuck1in9996@gmail.com>
-<link rel=me href=https://github.com/chuck1in>
-<link rel=authorization_endpoint href=https://indieauth.com/auth>
-<link rel=token_endpoint href=https://tokens.indieauth.com/token>
-<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
-<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
-<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
-<meta name=viewport content="width=device-width,initial-scale=1">
-<script>MathJax={tex:{inlineMath:[["$","$"]]},displayMath:[["$$","$$"],["[[","]]"]],svg:{fontCache:"global"}}</script>
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-<script id=MathJax-script async src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script>
-</head>
-<body>
-<div id=sitelogo>
-<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
-</div>
-<header>
-<nav>
-<div id=page-nav>
-<div class=page-nav-item>
-<a href=https://www.chucklin.net/>Home</a>
-</div>
-<div class=page-nav-item>
-<a href=/about/me>
-<span>About</span>
-</a>
-</div>
-<div class=page-nav-item>
-<a href=/tags>
-<span>Tag</span>
-</a>
-</div>
-</div>
-</nav>
-</header>
-<div id=content>
-<article class=h-entry>
-<header>
-<h1 class="post-title p-name">索引的物理结构</h1>
-<p class=post-date>Posted on
-<time class=dt-published datetime=2021-09-08T14:28:26+08:00>
-8 September, 2021 at 14:28 +0800
-</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
-</p>
-</header>
-<section class="content e-content">
-<h2 id=行的格式>行的格式</h2>
-<p>在 innodb 存储引擎中，一个表中的记录(records)会使用固定的行格式，根据字符集的比较规则按主键顺序存储到硬盘上。</p>
-<p><img src=/images/index-principal/row.jpg alt=row></p>
-<p>比如上图中的行格式就规定：除了保存记录的列信息以外，还需要在行中保存额外的信息。如：变长字段的占位长度、空值的列、行的(head)信息等。
-行的头信息中有一个名为 next_record 的指针。这个指针指向下一条记录在磁盘上的偏移量，行之间通过这个指针构成一个链表。</p>
-<h2 id=页>页</h2>
-<p>innodb 每次从磁盘检索并加载数据，都以页（16KB/页）为单位。为此 mysql 设计了各式各样的页用来存储不同种类的数据，其中用来保存用户数据的页称为索引页/数据页。</p>
-<p>一个简化的数据页结构如下：</p>
-<p><img src=/images/index-principal/page.jpg alt=page></p>
-<p>可以看到，这个数据页除了保存 records 以外，还保存了页的元数据(meta data)：比如页目录、页头、页尾等。</p>
-<h3 id=页目录>页目录</h3>
-<p>因为页中的 records 使用 next_record 指针构成一个链表，所以查找 records 中某一行数据的问题就是已知一个链表的地址，查找这个链表中的节点的问题。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#f92672>//</span> <span style=color:#960050;background-color:#1e0010>查找链表中</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span> <span style=color:#960050;background-color:#1e0010>的节点</span>
-<span style=color:#66d9ef>select</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;
-</code></pre></div><p>一般来讲，查找链表中的节点通常采用线性查找法来实现。但是线性查找法的时间复杂度是 $O(n$)，如果数据量较大，那这个时间复杂度就难以让人接受。于是，为了提高查询的效率，innodb 使用了「目录」的抽象方案。</p>
-<p>首先将 record 进行逻辑分组，再将每组中最大的记录在磁盘上的偏移量使用数组结构集中存储到一起；当查询某条记录时，先查询记录所在的分组(文件目录)，再进入组内(目录内)查找，这样就缩小了线性查找的范围。</p>
-<p>又因为 record 按照主键排序的特性与偏移量的数组结构，在查询记录所属的分组时同样可以利用二分查找将查询处理的时间复杂度降低为 $O(\log n)$。</p>
-<p>页中集中存储各分组在磁盘上的偏移量的空间，被称为页目录(Page Directory)。</p>
-<p><img src=/images/index-principal/page-dir.jpg alt=directory></p>
-<h2 id=聚簇索引>聚簇索引</h2>
-<p>页的大小是有限的（16KB）。如果表中的记录超出了这个容量，那就得使用多个页来存储 records， 再通过指针将页关联起来，形成一个页的双向链表。</p>
-<p><img src=/images/index-principal/page-dirs.jpg alt=dirs></p>
-<p>所以当使用多个页存储数据时，查询 record 的工作就变为了两步：</p>
-<ol>
-<li>确定记录所在的页的地址（页号）。</li>
-<li>通过页目录查找记录在页中的偏移量。</li>
-</ol>
-<p>因为数据页是链表的结构，所以通过线性查找法肯定可以找到被查找记录所在的页；但是，在数据量较大时线性查找法的性能依然存在问题。</p>
-<p>那么，是否可以参考页目录的设计将页进行分组呢？先按照页号分组，并保证分组按照数据页中用户记录的主键进行排序，最后再用一个数据页作为分组后的目录，保存各组中数据页内最小的主键值。</p>
-<p><img src=/images/index-principal/index.jpg alt=index></p>
-<p>现在，针对页的分组操作，使页的结构从链表转化为了一颗 B+ 树。
-树根所在的节点就是根页(root page)；树的内节点是目录项页，用来存储主键与页号的映射；树的叶节点存储完整的记录；整颗树就称为聚簇索引。</p>
-<p>假设我们使用主键（或者唯一二级索引）的等值为条件对这个聚簇索引进行查询的话，那这个查询的速度会像火箭一样快。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>select</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>5</span>;
-<span style=color:#f92672>//</span> <span style=color:#66d9ef>output</span>: id:<span style=color:#ae81ff>5</span> code:b
-</code></pre></div><p>innodb 会先利用二分查找在聚簇索引的目录项中定位到 <code>id=5</code> 的记录位于页号为 2 的页中；然后在 page2 的页目录（Page directory） 里搜索<code>id=5</code> 的记录在页中的偏移量，就能轻松获取到记录内容。</p>
-<p>像这样和火箭一样快的查询方法，我们称之为常数方法（const）—— 因为他的效率就和 $O(1$) 一样好。</p>
-<h2 id=二级索引>二级索引</h2>
-<p>针对非主键建立的索引就是二级索引。相比聚簇索引，二级索引的叶节点只存储了两类信息：索引项与索引项对应的主键。</p>
-<p><img src=/images/index-principal/ref.jpg alt=ref></p>
-<p>由于二级索引没有存储 record 的完整信息，所以针对二级索引的查询工作就变成了三步：</p>
-<ol>
-<li>确定记录所在的页。</li>
-<li>在页中通过页目录查找记录。</li>
-<li>根据第二步记录的主键，回聚簇索引查找完整的内容。</li>
-</ol>
-<p>通过二级索引进行查询的方法称为 ref 查询方法，回聚簇索引查询完整记录的动作被称为回表扫描。因为这样的缘故，ref 查询方法的性能要比 const 方法低一些。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>select</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;a&#39;</span>;
-<span style=color:#f92672>//</span> <span style=color:#66d9ef>output</span>: code:a id:<span style=color:#ae81ff>1</span>
-</code></pre></div><p>但是，假设只根据二级索引查询 id（主键）的信息，那么就不需要回表扫描了，因为二级索引本身包含了被查询列的信息。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;a&#39;</span>;
-<span style=color:#f92672>//</span> <span style=color:#66d9ef>output</span>: id:<span style=color:#ae81ff>1</span>
-</code></pre></div><p>不需要回表扫描，二级索引直接返回结果的查询方法叫做索引覆盖（index）查询方法。</p>
-<h2 id=联合索引>联合索引</h2>
-<p>假如一个二级索引由多个字段组成，那这个二级索引就是一个联合索引。</p>
-<p><img src=/images/index-principal/union-index.jpg alt=union></p>
-<p>针对联合索引进行查询要注意查询条件需遵守「左前缀原则」——这是由联合索引的底层构造所决定的，不然就无法利用联合索引进行查询。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#f92672>//</span> A
-<span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;a&#39;</span> <span style=color:#66d9ef>and</span> code2 <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;b&#39;</span>;
-<span style=color:#f92672>//</span> <span style=color:#66d9ef>output</span>: id:<span style=color:#ae81ff>1</span>
-
-<span style=color:#f92672>//</span> B
-<span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;a&#39;</span>
-<span style=color:#f92672>//</span> <span style=color:#66d9ef>output</span>: id:<span style=color:#ae81ff>1</span>
-
-<span style=color:#f92672>//</span> <span style=color:#66d9ef>C</span>
-<span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code2 <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;b&#39;</span> <span style=color:#66d9ef>and</span> code <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;a&#39;</span>;
-<span style=color:#f92672>//</span> <span style=color:#66d9ef>output</span>: id:<span style=color:#ae81ff>1</span>
-
-
-</code></pre></div><p>上面的语句中，A 语句和 B 语句的查询条件 <code>[(code && code2),(code)]</code> 和联合索引 <code>(code,code2)</code> 的索引字段顺序一致，可以通过索引树提高查找效率。
-但是由于 B 语句的查询条件不符合索引字段的顺序，所以无法利用索引树提高查询效率。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#f92672>//</span> D
-<span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>&gt;</span> <span style=color:#e6db74>&#39;a&#39;</span> <span style=color:#66d9ef>and</span> code2 <span style=color:#f92672>&lt;</span> <span style=color:#e6db74>&#39;g&#39;</span>
-
-<span style=color:#f92672>//</span> E
-<span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>&gt;</span> <span style=color:#e6db74>&#39;a&#39;</span> <span style=color:#66d9ef>and</span> code2 <span style=color:#f92672>&lt;</span> <span style=color:#e6db74>&#39;g&#39;</span> <span style=color:#66d9ef>and</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>6</span>
-</code></pre></div><p>查询语句 D 是一个针对联合索引的范围查询 (Range)。因为联合索引按照<code>(code,code2)</code>排序，所以查询条件<code>(code,code2)</code>可以形成一个关于索引项的扫描区间 $[(a,\forall),(a,g)]$ ；这个扫描区间有助于减少索引项的扫描范围，所以他是一个有效的扫描区间。也就是说，查询语句 D 可以利用索引提高查询效率。</p>
-<p>查询语句 E 中相比 D 增加了一个 <code>id=6</code> 的条件，这个条件并不是联合索引的排序字段，所以它不能提供有效的扫描区间。凡是无法形成有效扫描区间的查询条件，在索引的利用分析中都可以用 TRUE 替换掉。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#f92672>//</span> E
-<span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>&gt;</span> <span style=color:#e6db74>&#39;a&#39;</span> <span style=color:#66d9ef>and</span> code2 <span style=color:#f92672>&lt;</span> <span style=color:#e6db74>&#39;g&#39;</span> <span style=color:#66d9ef>and</span> <span style=color:#66d9ef>TRUE</span>
-</code></pre></div><p>再对替换后的查询语句中，使用 and 连接的查询条件各自形成的扫描区间求交集：$(-\infty,+\infty) \cup [(a,\forall),(a,g)] = [(a,\forall),(a,g)]$ 得出查询语句 E 可以利用索引提高查询效率的结论。</p>
-<h2 id=使用索引排序和分组>使用索引排序和分组</h2>
-<h4 id=排序>排序</h4>
-<p>对于大数据量进行排序是比较耗时的，这不仅仅是在内存中运行排序算法的 CPU 成本，还有将排序的中间结果保存到磁盘造成的 IO 成本。
-但是若利用索引的物理结构本身有序的特性，就可以省去额外的排序工作。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#f92672>//</span> F
-<span style=color:#66d9ef>select</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>&gt;</span> <span style=color:#e6db74>&#39;a&#39;</span> <span style=color:#66d9ef>and</span> code2 <span style=color:#f92672>&lt;</span> <span style=color:#e6db74>&#39;g&#39;</span> <span style=color:#66d9ef>order</span> <span style=color:#66d9ef>by</span> code;
-</code></pre></div><p>上面已经提到过，F 这个查询语句会根据扫描区间扫描二级索引并回表查询记录。当完成扫描区间的二级索引回表查询的工作并整合结果集后，由于查询语句的排序条件联合索引的顺序一直，所以省去了额外的排序的步骤，innodb 可以直接将结果集返回给客户端。</p>
-<h4 id=分组>分组</h4>
-<p>分组操作如果缺少索引，innodb 会在扫描聚簇索引的记录时，新建一个临时表来存储分组的统计结果。统计完成后，将临时表的内容发送给客户端。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>select</span> <span style=color:#66d9ef>count</span>(<span style=color:#f92672>*</span>) <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>group</span> <span style=color:#66d9ef>by</span> code, code2
-</code></pre></div><p>如果分组的字段有索引，并且顺序和索引顺序相同，那就没有必要建立中间表进行统计了，直接使用索引项就可以完成分组。</p>
-<h2 id=表连接中的索引>表连接中的索引</h2>
-<p>表连接的执行方式是嵌套循环链接(Nested-Loop Join)——根据连接的方式(内外)和方向(左右)针对驱动表和被驱动表分别做单表查询。驱动表查询出的记录数量，就是被驱动表的查询次数。
-所以表连接的索引问题就是单表索引的问题。而这部分的知识已经在上面的内容介绍过了。</p>
-<h2 id=结语>结语</h2>
-<ol>
-<li>记录按照行格式存储在磁盘，并根据头指针构成链表。</li>
-<li>记录按照逻辑分组被存储在页中，分组信息保存在页目录中。</li>
-<li>关联页使用指针构成链表。</li>
-<li>对页的分组抽象又把链表升级为树。</li>
-<li>排序、分组、目录结构抽象是索引能够加速查询的重要物理特性。</li>
-<li>聚簇索引是主键索引。</li>
-<li>聚簇索引体现了索引即数据——索引树的页节点保存了索引项与记录项。</li>
-<li>二级索引是非主键索引——索引树页结点只保存索引项与主键。</li>
-<li>表链接的索引问题就是多个单表的索引问题。</li>
-<li>索引能否生效的关键，在于查询条件是否能够减少聚簇索引的扫描范围。</li>
-</ol>
-</section>
-<footer>
-<a class="permalink u-url" href=https://www.chucklin.net/post/index_principle/>🔗</a>
-<hr class=post-underline>
-<p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/sql class="post-tag p-category">sql</a>
-</p>
-</footer>
-</article>
-</div>
-<div class=h-card>
-<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
-<div class=card-content>
-<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
-<p class=card-subhead>
-<span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br>
-<a class=u-email href=mailto:chuck1in9996@gmail.com>Email me</a>
-</p>
-</div>
-<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
-</div>
-<div id=footer>
-<nav id=article-skip>
-<div class=next>
-<a alt="Newer article" href=https://www.chucklin.net/post/transcation_lock/>&larr; Newer</a>
-</div>
-<div class=top>
-<a alt="Top of page" href=#>Top</a>
-</div>
-<div class=prev>
-<a alt="Older article" href=https://www.chucklin.net/post/ts_enum/>Older &rarr;</a>
-</div>
-</nav>
-<aside id=social>
-<div id=social-icons>
-<div class=icon-24x24>
-<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
-</div>
-</div>
-</aside>
-<p class=copyright>
-Copyright © 2021 Chuck Lin. All rights reserved.
-</p>
-</div>
-</body>
-</html>
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>索引的物理结构 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:chuck1inzl@gmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"><script>MathJax={tex:{inlineMath:[["$","$"]]},displayMath:[["$$","$$"],["[[","]]"]],svg:{fontCache:"global"}}</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id=MathJax-script async src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">索引的物理结构</h1><p class=post-date>Posted on
+<time class=dt-published datetime=2021-09-08T14:28:26+08:00>8 September, 2021 at 14:28 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h2 id=行的格式>行的格式</h2><p>在 innodb 存储引擎中，一个表中的记录(records)会使用固定的行格式，根据字符集的比较规则按主键顺序存储到硬盘上。</p><p><img src=/images/index-principal/row.jpg alt=row></p><p>比如上图中的行格式就规定：除了保存记录的列信息以外，还需要在行中保存额外的信息。如：变长字段的占位长度、空值的列、行的(head)信息等。
+行的头信息中有一个名为 next_record 的指针。这个指针指向下一条记录在磁盘上的偏移量，行之间通过这个指针构成一个链表。</p><h2 id=页>页</h2><p>innodb 每次从磁盘检索并加载数据，都以页（16KB/页）为单位。为此 mysql 设计了各式各样的页用来存储不同种类的数据，其中用来保存用户数据的页称为索引页/数据页。</p><p>一个简化的数据页结构如下：</p><p><img src=/images/index-principal/page.jpg alt=page></p><p>可以看到，这个数据页除了保存 records 以外，还保存了页的元数据(meta data)：比如页目录、页头、页尾等。</p><h3 id=页目录>页目录</h3><p>因为页中的 records 使用 next_record 指针构成一个链表，所以查找 records 中某一行数据的问题就是已知一个链表的地址，查找这个链表中的节点的问题。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#f92672>//</span> <span style=color:#960050;background-color:#1e0010>查找链表中</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span> <span style=color:#960050;background-color:#1e0010>的节点</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>select</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;
+</span></span></code></pre></div><p>一般来讲，查找链表中的节点通常采用线性查找法来实现。但是线性查找法的时间复杂度是 $O(n$)，如果数据量较大，那这个时间复杂度就难以让人接受。于是，为了提高查询的效率，innodb 使用了「目录」的抽象方案。</p><p>首先将 record 进行逻辑分组，再将每组中最大的记录在磁盘上的偏移量使用数组结构集中存储到一起；当查询某条记录时，先查询记录所在的分组(文件目录)，再进入组内(目录内)查找，这样就缩小了线性查找的范围。</p><p>又因为 record 按照主键排序的特性与偏移量的数组结构，在查询记录所属的分组时同样可以利用二分查找将查询处理的时间复杂度降低为 $O(\log n)$。</p><p>页中集中存储各分组在磁盘上的偏移量的空间，被称为页目录(Page Directory)。</p><p><img src=/images/index-principal/page-dir.jpg alt=directory></p><h2 id=聚簇索引>聚簇索引</h2><p>页的大小是有限的（16KB）。如果表中的记录超出了这个容量，那就得使用多个页来存储 records， 再通过指针将页关联起来，形成一个页的双向链表。</p><p><img src=/images/index-principal/page-dirs.jpg alt=dirs></p><p>所以当使用多个页存储数据时，查询 record 的工作就变为了两步：</p><ol><li>确定记录所在的页的地址（页号）。</li><li>通过页目录查找记录在页中的偏移量。</li></ol><p>因为数据页是链表的结构，所以通过线性查找法肯定可以找到被查找记录所在的页；但是，在数据量较大时线性查找法的性能依然存在问题。</p><p>那么，是否可以参考页目录的设计将页进行分组呢？先按照页号分组，并保证分组按照数据页中用户记录的主键进行排序，最后再用一个数据页作为分组后的目录，保存各组中数据页内最小的主键值。</p><p><img src=/images/index-principal/index.jpg alt=index></p><p>现在，针对页的分组操作，使页的结构从链表转化为了一颗 B+ 树。
+树根所在的节点就是根页(root page)；树的内节点是目录项页，用来存储主键与页号的映射；树的叶节点存储完整的记录；整颗树就称为聚簇索引。</p><p>假设我们使用主键（或者唯一二级索引）的等值为条件对这个聚簇索引进行查询的话，那这个查询的速度会像火箭一样快。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>select</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>5</span>;
+</span></span><span style=display:flex><span><span style=color:#f92672>//</span> <span style=color:#66d9ef>output</span>: id:<span style=color:#ae81ff>5</span> code:b
+</span></span></code></pre></div><p>innodb 会先利用二分查找在聚簇索引的目录项中定位到 <code>id=5</code> 的记录位于页号为 2 的页中；然后在 page2 的页目录（Page directory） 里搜索<code>id=5</code> 的记录在页中的偏移量，就能轻松获取到记录内容。</p><p>像这样和火箭一样快的查询方法，我们称之为常数方法（const）—— 因为他的效率就和 $O(1$) 一样好。</p><h2 id=二级索引>二级索引</h2><p>针对非主键建立的索引就是二级索引。相比聚簇索引，二级索引的叶节点只存储了两类信息：索引项与索引项对应的主键。</p><p><img src=/images/index-principal/ref.jpg alt=ref></p><p>由于二级索引没有存储 record 的完整信息，所以针对二级索引的查询工作就变成了三步：</p><ol><li>确定记录所在的页。</li><li>在页中通过页目录查找记录。</li><li>根据第二步记录的主键，回聚簇索引查找完整的内容。</li></ol><p>通过二级索引进行查询的方法称为 ref 查询方法，回聚簇索引查询完整记录的动作被称为回表扫描。因为这样的缘故，ref 查询方法的性能要比 const 方法低一些。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>select</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;a&#39;</span>;
+</span></span><span style=display:flex><span><span style=color:#f92672>//</span> <span style=color:#66d9ef>output</span>: code:a id:<span style=color:#ae81ff>1</span>
+</span></span></code></pre></div><p>但是，假设只根据二级索引查询 id（主键）的信息，那么就不需要回表扫描了，因为二级索引本身包含了被查询列的信息。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;a&#39;</span>;
+</span></span><span style=display:flex><span><span style=color:#f92672>//</span> <span style=color:#66d9ef>output</span>: id:<span style=color:#ae81ff>1</span>
+</span></span></code></pre></div><p>不需要回表扫描，二级索引直接返回结果的查询方法叫做索引覆盖（index）查询方法。</p><h2 id=联合索引>联合索引</h2><p>假如一个二级索引由多个字段组成，那这个二级索引就是一个联合索引。</p><p><img src=/images/index-principal/union-index.jpg alt=union></p><p>针对联合索引进行查询要注意查询条件需遵守「左前缀原则」——这是由联合索引的底层构造所决定的，不然就无法利用联合索引进行查询。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#f92672>//</span> A
+</span></span><span style=display:flex><span><span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;a&#39;</span> <span style=color:#66d9ef>and</span> code2 <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;b&#39;</span>;
+</span></span><span style=display:flex><span><span style=color:#f92672>//</span> <span style=color:#66d9ef>output</span>: id:<span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>//</span> B
+</span></span><span style=display:flex><span><span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;a&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>//</span> <span style=color:#66d9ef>output</span>: id:<span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>//</span> <span style=color:#66d9ef>C</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code2 <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;b&#39;</span> <span style=color:#66d9ef>and</span> code <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;a&#39;</span>;
+</span></span><span style=display:flex><span><span style=color:#f92672>//</span> <span style=color:#66d9ef>output</span>: id:<span style=color:#ae81ff>1</span>
+</span></span></code></pre></div><p>上面的语句中，A 语句和 B 语句的查询条件 <code>[(code && code2),(code)]</code> 和联合索引 <code>(code,code2)</code> 的索引字段顺序一致，可以通过索引树提高查找效率。
+但是由于 B 语句的查询条件不符合索引字段的顺序，所以无法利用索引树提高查询效率。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#f92672>//</span> D
+</span></span><span style=display:flex><span><span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>&gt;</span> <span style=color:#e6db74>&#39;a&#39;</span> <span style=color:#66d9ef>and</span> code2 <span style=color:#f92672>&lt;</span> <span style=color:#e6db74>&#39;g&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>//</span> E
+</span></span><span style=display:flex><span><span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>&gt;</span> <span style=color:#e6db74>&#39;a&#39;</span> <span style=color:#66d9ef>and</span> code2 <span style=color:#f92672>&lt;</span> <span style=color:#e6db74>&#39;g&#39;</span> <span style=color:#66d9ef>and</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>6</span>
+</span></span></code></pre></div><p>查询语句 D 是一个针对联合索引的范围查询 (Range)。因为联合索引按照<code>(code,code2)</code>排序，所以查询条件<code>(code,code2)</code>可以形成一个关于索引项的扫描区间 $[(a,\forall),(a,g)]$ ；这个扫描区间有助于减少索引项的扫描范围，所以他是一个有效的扫描区间。也就是说，查询语句 D 可以利用索引提高查询效率。</p><p>查询语句 E 中相比 D 增加了一个 <code>id=6</code> 的条件，这个条件并不是联合索引的排序字段，所以它不能提供有效的扫描区间。凡是无法形成有效扫描区间的查询条件，在索引的利用分析中都可以用 TRUE 替换掉。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#f92672>//</span> E
+</span></span><span style=display:flex><span><span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>&gt;</span> <span style=color:#e6db74>&#39;a&#39;</span> <span style=color:#66d9ef>and</span> code2 <span style=color:#f92672>&lt;</span> <span style=color:#e6db74>&#39;g&#39;</span> <span style=color:#66d9ef>and</span> <span style=color:#66d9ef>TRUE</span>
+</span></span></code></pre></div><p>再对替换后的查询语句中，使用 and 连接的查询条件各自形成的扫描区间求交集：$(-\infty,+\infty) \cup [(a,\forall),(a,g)] = [(a,\forall),(a,g)]$ 得出查询语句 E 可以利用索引提高查询效率的结论。</p><h2 id=使用索引排序和分组>使用索引排序和分组</h2><h4 id=排序>排序</h4><p>对于大数据量进行排序是比较耗时的，这不仅仅是在内存中运行排序算法的 CPU 成本，还有将排序的中间结果保存到磁盘造成的 IO 成本。
+但是若利用索引的物理结构本身有序的特性，就可以省去额外的排序工作。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#f92672>//</span> F
+</span></span><span style=display:flex><span><span style=color:#66d9ef>select</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>where</span> code <span style=color:#f92672>&gt;</span> <span style=color:#e6db74>&#39;a&#39;</span> <span style=color:#66d9ef>and</span> code2 <span style=color:#f92672>&lt;</span> <span style=color:#e6db74>&#39;g&#39;</span> <span style=color:#66d9ef>order</span> <span style=color:#66d9ef>by</span> code;
+</span></span></code></pre></div><p>上面已经提到过，F 这个查询语句会根据扫描区间扫描二级索引并回表查询记录。当完成扫描区间的二级索引回表查询的工作并整合结果集后，由于查询语句的排序条件联合索引的顺序一直，所以省去了额外的排序的步骤，innodb 可以直接将结果集返回给客户端。</p><h4 id=分组>分组</h4><p>分组操作如果缺少索引，innodb 会在扫描聚簇索引的记录时，新建一个临时表来存储分组的统计结果。统计完成后，将临时表的内容发送给客户端。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>select</span> <span style=color:#66d9ef>count</span>(<span style=color:#f92672>*</span>) <span style=color:#66d9ef>from</span> <span style=color:#66d9ef>table</span> <span style=color:#66d9ef>group</span> <span style=color:#66d9ef>by</span> code, code2
+</span></span></code></pre></div><p>如果分组的字段有索引，并且顺序和索引顺序相同，那就没有必要建立中间表进行统计了，直接使用索引项就可以完成分组。</p><h2 id=表连接中的索引>表连接中的索引</h2><p>表连接的执行方式是嵌套循环链接(Nested-Loop Join)——根据连接的方式(内外)和方向(左右)针对驱动表和被驱动表分别做单表查询。驱动表查询出的记录数量，就是被驱动表的查询次数。
+所以表连接的索引问题就是单表索引的问题。而这部分的知识已经在上面的内容介绍过了。</p><h2 id=结语>结语</h2><ol><li>记录按照行格式存储在磁盘，并根据头指针构成链表。</li><li>记录按照逻辑分组被存储在页中，分组信息保存在页目录中。</li><li>关联页使用指针构成链表。</li><li>对页的分组抽象又把链表升级为树。</li><li>排序、分组、目录结构抽象是索引能够加速查询的重要物理特性。</li><li>聚簇索引是主键索引。</li><li>聚簇索引体现了索引即数据——索引树的页节点保存了索引项与记录项。</li><li>二级索引是非主键索引——索引树页结点只保存索引项与主键。</li><li>表链接的索引问题就是多个单表的索引问题。</li><li>索引能否生效的关键，在于查询条件是否能够减少聚簇索引的扫描范围。</li></ol></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/index_principle/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/sql class="post-tag p-category">sql</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br><a class=u-email href=mailto:chuck1inzl@gmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/transcation_lock/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/ts_enum/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>

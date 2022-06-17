@@ -1,274 +1,151 @@
-<!doctype html><html lang=zh-cn>
-<head>
-<meta charset=utf-8>
-<title>Spring security 自定义 token 身份验证 | ChuckLin's Blog</title>
-<meta name=description content="Love and Peace">
-<meta name=author content>
-<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
-<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
-<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
-<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
-<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
-<meta name=msapplication-TileColor content="#00aba9">
-<meta name=theme-color content="#ffffff">
-<link rel=me href=mailto:chuck1in9996@gmail.com>
-<link rel=me href=https://github.com/chuck1in>
-<link rel=authorization_endpoint href=https://indieauth.com/auth>
-<link rel=token_endpoint href=https://tokens.indieauth.com/token>
-<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
-<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
-<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
-<meta name=viewport content="width=device-width,initial-scale=1">
-</head>
-<body>
-<div id=sitelogo>
-<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
-</div>
-<header>
-<nav>
-<div id=page-nav>
-<div class=page-nav-item>
-<a href=https://www.chucklin.net/>Home</a>
-</div>
-<div class=page-nav-item>
-<a href=/about/me>
-<span>About</span>
-</a>
-</div>
-<div class=page-nav-item>
-<a href=/tags>
-<span>Tag</span>
-</a>
-</div>
-</div>
-</nav>
-</header>
-<div id=content>
-<article class=h-entry>
-<header>
-<h1 class="post-title p-name">Spring security 自定义 token 身份验证</h1>
-<p class=post-date>Posted on
-<time class=dt-published datetime=2021-04-03T10:52:00+08:00>
-3 April, 2021 at 10:52 +0800
-</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
-</p>
-</header>
-<section class="content e-content">
-<h2 id=前言>前言</h2>
-<p>既然 Spring securtiy 的核心是 Filter chains，那我们只需要定义一个符合 security 标准的 filter ，再把自己的 chain 加入到 VirtualFilterChain 里面，就可以自定义身份验证的认证逻辑了。</p>
-<p>之前提到过，大部分身份认证相关的过滤器都继承了 AbstractAuthenticationProcessingFilter。但是这一次我们让接下来的自定义过滤器不选择继承它，而是继承 OncePerRequestFilter。</p>
-<p>这个类之前我们没有见过，其实它也是 security 框架提供的一个 VirtualFilter 父类。继承一个陌生的类听起来有点吓人，不过很快你就知道 AbstractAuthenticationProcessingFilter 也好，OncePerRequestFilter 也罢，都是 filter 而已。</p>
-<h2 id=自定义一个-filter>自定义一个 Filter</h2>
-<p>我们参照 security 的基础身份认证过滤器 UsernamePasswordAuthenticationFilter 来编写我们的过滤器。这是不是意味着我们也必须使用模板设计模式来编写自定义过滤器的父类，然后聚合 providerManager 再自定义 provider 实现一整套 security 范式的身份认证代码？</p>
-<p>不是的，你完全可以把 provider 的逻辑全部抽离出来加入到你的自定义过滤器里面。实际上我的过滤器一共就三个逻辑。非常简单并且可以工作的很好！</p>
-<ol>
-<li>通过确认 token 的有效性来验证请求的身份。类似于 DaoAuthenticationProvider.additionalAuthenticationChecks。</li>
-<li>从数据库检索出用户的详情，方便后续取用。类似于 DaoAuthenticationProvider. retrieveUser()。</li>
-<li>将验证通过的身份资产（principal）封装到 UsernamePasswordAuthenticationToken，并设置到 security context。类似于 AbstractAuthenticationProcessingFilter.successfulAuthentication。</li>
-</ol>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java> <span style=color:#a6e22e>@Override</span>
-    <span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>doFilterInternal</span><span style=color:#f92672>(</span>HttpServletRequest request<span style=color:#f92672>,</span>
-                                    HttpServletResponse response<span style=color:#f92672>,</span>
-                                    FilterChain chain<span style=color:#f92672>)</span>
-        <span style=color:#66d9ef>throws</span> ServletException<span style=color:#f92672>,</span> IOException <span style=color:#f92672>{</span>
-        String header <span style=color:#f92672>=</span> request<span style=color:#f92672>.</span><span style=color:#a6e22e>getHeader</span><span style=color:#f92672>(</span>HttpHeaders<span style=color:#f92672>.</span><span style=color:#a6e22e>AUTHORIZATION</span><span style=color:#f92672>);</span>
-        <span style=color:#66d9ef>if</span> <span style=color:#f92672>(</span>StringUtils<span style=color:#f92672>.</span><span style=color:#a6e22e>isEmpty</span><span style=color:#f92672>(</span>header<span style=color:#f92672>)</span> <span style=color:#f92672>||</span> <span style=color:#f92672>!</span>header<span style=color:#f92672>.</span><span style=color:#a6e22e>startsWith</span><span style=color:#f92672>(</span>BEARER_SPACE<span style=color:#f92672>))</span> <span style=color:#f92672>{</span>
-            globalExceptionHandler<span style=color:#f92672>.</span><span style=color:#a6e22e>commence</span><span style=color:#f92672>(</span>request<span style=color:#f92672>,</span> response<span style=color:#f92672>,</span> <span style=color:#66d9ef>new</span> AuthenticationException<span style=color:#f92672>(</span><span style=color:#e6db74>&#34;非法的 token 请求参数&#34;</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-            <span style=color:#f92672>});</span>
-            <span style=color:#66d9ef>return</span><span style=color:#f92672>;</span>
-        <span style=color:#f92672>}</span>
-
-        String token <span style=color:#f92672>=</span> header<span style=color:#f92672>.</span><span style=color:#a6e22e>split</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34; &#34;</span><span style=color:#f92672>)[</span>1<span style=color:#f92672>].</span><span style=color:#a6e22e>trim</span><span style=color:#f92672>();</span>
-        <span style=color:#66d9ef>try</span> <span style=color:#f92672>{</span>
-            TokenUtil<span style=color:#f92672>.</span><span style=color:#a6e22e>verifyToken</span><span style=color:#f92672>(</span>token<span style=color:#f92672>,</span> base64Secret<span style=color:#f92672>);</span>
-
-        <span style=color:#f92672>}</span> <span style=color:#66d9ef>catch</span> <span style=color:#f92672>(</span>FoundationAppException e<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-            globalExceptionHandler<span style=color:#f92672>.</span><span style=color:#a6e22e>commence</span><span style=color:#f92672>(</span>request<span style=color:#f92672>,</span> response<span style=color:#f92672>,</span> <span style=color:#66d9ef>new</span> AuthenticationException<span style=color:#f92672>(</span><span style=color:#e6db74>&#34;非法的 token&#34;</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-            <span style=color:#f92672>});</span>
-            <span style=color:#66d9ef>return</span><span style=color:#f92672>;</span>
-        <span style=color:#f92672>}</span>
-        <span style=color:#75715e>// 返回 401
-</span><span style=color:#75715e></span>        <span style=color:#75715e>// jwt 认证通过即代表认证成功。将 principal 资源装配到 context
-</span><span style=color:#75715e></span>        UserDetails userDetails <span style=color:#f92672>=</span> userAppService<span style=color:#f92672>.</span><span style=color:#a6e22e>loadUserByUsername</span><span style=color:#f92672>(</span>TokenUtil<span style=color:#f92672>.</span><span style=color:#a6e22e>getUsername</span><span style=color:#f92672>(</span>token<span style=color:#f92672>)</span> <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34;@&#34;</span> <span style=color:#f92672>+</span> TokenUtil<span style=color:#f92672>.</span><span style=color:#a6e22e>getDomain</span><span style=color:#f92672>(</span>token<span style=color:#f92672>));</span>
-        UsernamePasswordAuthenticationToken
-            authentication <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> UsernamePasswordAuthenticationToken<span style=color:#f92672>(</span>
-            userDetails<span style=color:#f92672>,</span> <span style=color:#66d9ef>null</span><span style=color:#f92672>,</span>
-            userDetails<span style=color:#f92672>.</span><span style=color:#a6e22e>getAuthorities</span><span style=color:#f92672>()</span>
-        <span style=color:#f92672>);</span>
-        <span style=color:#66d9ef>if</span> <span style=color:#f92672>(!</span>userDetails<span style=color:#f92672>.</span><span style=color:#a6e22e>isEnabled</span><span style=color:#f92672>())</span> <span style=color:#f92672>{</span>
-            globalExceptionHandler<span style=color:#f92672>.</span><span style=color:#a6e22e>commence</span><span style=color:#f92672>(</span>request<span style=color:#f92672>,</span> response<span style=color:#f92672>,</span> <span style=color:#66d9ef>new</span> DisabledException<span style=color:#f92672>(</span><span style=color:#e6db74>&#34;当前账户已锁定&#34;</span><span style=color:#f92672>));</span>
-            <span style=color:#66d9ef>return</span><span style=color:#f92672>;</span>
-        <span style=color:#f92672>}</span>
-        authentication<span style=color:#f92672>.</span><span style=color:#a6e22e>setDetails</span><span style=color:#f92672>(</span>
-            <span style=color:#66d9ef>new</span> WebAuthenticationDetailsSource<span style=color:#f92672>().</span><span style=color:#a6e22e>buildDetails</span><span style=color:#f92672>(</span>request<span style=color:#f92672>)</span>
-        <span style=color:#f92672>);</span>
-        SecurityContextHolder<span style=color:#f92672>.</span><span style=color:#a6e22e>getContext</span><span style=color:#f92672>().</span><span style=color:#a6e22e>setAuthentication</span><span style=color:#f92672>(</span>authentication<span style=color:#f92672>);</span>
-        chain<span style=color:#f92672>.</span><span style=color:#a6e22e>doFilter</span><span style=color:#f92672>(</span>request<span style=color:#f92672>,</span> response<span style=color:#f92672>);</span>
-    <span style=color:#f92672>}</span>
-
-</code></pre></div><h2 id=实现-loadbyusername>实现 loadByUsername</h2>
-<p>让我们的任何一个类——我建议是和 user 相关处理的 service 类实现 UserDetailsService 接口，就可以重写 loadByUsername 方法了。
-实现这个接口很重要，因为他定义了 UserDetails 接口——这个你的用户对象应该遵守的规范和行为。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#a6e22e>@Override</span>
-    <span style=color:#66d9ef>public</span> UserDetails <span style=color:#a6e22e>loadUserByUsername</span><span style=color:#f92672>(</span>String name<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> UsernameNotFoundException <span style=color:#f92672>{</span>
-        String<span style=color:#f92672>[]</span> split <span style=color:#f92672>=</span> name<span style=color:#f92672>.</span><span style=color:#a6e22e>split</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;@&#34;</span><span style=color:#f92672>);</span>
-        String username <span style=color:#f92672>=</span> split<span style=color:#f92672>[</span>0<span style=color:#f92672>];</span>
-        String domainCode <span style=color:#f92672>=</span> split<span style=color:#f92672>[</span>1<span style=color:#f92672>];</span>
-        Domain domain <span style=color:#f92672>=</span> domainRepository<span style=color:#f92672>.</span><span style=color:#a6e22e>findByCode</span><span style=color:#f92672>(</span>domainCode<span style=color:#f92672>).</span><span style=color:#a6e22e>orElseThrow</span><span style=color:#f92672>(</span>
-            <span style=color:#f92672>()</span> <span style=color:#f92672>-&gt;</span> <span style=color:#66d9ef>new</span> UsernameNotFoundException<span style=color:#f92672>(</span>String<span style=color:#f92672>.</span><span style=color:#a6e22e>format</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;User with domain - %s, not found&#34;</span><span style=color:#f92672>,</span> domainCode<span style=color:#f92672>))</span>
-        <span style=color:#f92672>);</span>
-        AuthUser user <span style=color:#f92672>=</span> authUserRepository
-            <span style=color:#f92672>.</span><span style=color:#a6e22e>findByDomainAndUsername</span><span style=color:#f92672>(</span>domain<span style=color:#f92672>,</span> username<span style=color:#f92672>)</span>
-            <span style=color:#f92672>.</span><span style=color:#a6e22e>orElseThrow</span><span style=color:#f92672>(</span>
-                <span style=color:#f92672>()</span> <span style=color:#f92672>-&gt;</span> <span style=color:#66d9ef>new</span> UsernameNotFoundException<span style=color:#f92672>(</span>String<span style=color:#f92672>.</span><span style=color:#a6e22e>format</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;User with username and domain - %s, not found&#34;</span><span style=color:#f92672>,</span> name<span style=color:#f92672>))</span>
-            <span style=color:#f92672>);</span>
-        <span style=color:#66d9ef>return</span> user<span style=color:#f92672>;</span>
-    <span style=color:#f92672>}</span>
-</code></pre></div><h2 id=考虑一下异常处理>考虑一下异常处理</h2>
-<p>自定义 token 过滤器的工作这就基本完成了。不过健壮的处理程序，往往都伴随着异常逻辑的完美捕获。回忆之前的内容，filter 的异常处理都是通过端点处理程序——AuthenticationEntryPointFailureHandler 来处理的。所以只要我们自定义端点处理程序并重写 commence 方法就完全可以达到一样的效果。</p>
-<p><strong>AuthenticationEntryPointFailureHandler</strong></p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#a6e22e>@Override</span>
-	<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>onAuthenticationFailure</span><span style=color:#f92672>(</span>HttpServletRequest request<span style=color:#f92672>,</span> HttpServletResponse response<span style=color:#f92672>,</span>
-			AuthenticationException exception<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> IOException<span style=color:#f92672>,</span> ServletException <span style=color:#f92672>{</span>
-		<span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>authenticationEntryPoint</span><span style=color:#f92672>.</span><span style=color:#a6e22e>commence</span><span style=color:#f92672>(</span>request<span style=color:#f92672>,</span> response<span style=color:#f92672>,</span> exception<span style=color:#f92672>);</span>
-	<span style=color:#f92672>}</span>
-</code></pre></div><p><strong>自定义异常处理程序</strong></p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>    <span style=color:#a6e22e>@Override</span>
-    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>commence</span><span style=color:#f92672>(</span>HttpServletRequest httpServletRequest<span style=color:#f92672>,</span> HttpServletResponse httpServletResponse<span style=color:#f92672>,</span> AuthenticationException e<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> IOException <span style=color:#f92672>{</span>
-        log<span style=color:#f92672>.</span><span style=color:#a6e22e>error</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;spring security 认证发生异常。&#34;</span><span style=color:#f92672>,</span> e<span style=color:#f92672>);</span>
-        HttpResponseWriter<span style=color:#f92672>.</span><span style=color:#a6e22e>sendError</span><span style=color:#f92672>(</span>httpServletResponse<span style=color:#f92672>,</span> HttpServletResponse<span style=color:#f92672>.</span><span style=color:#a6e22e>SC_UNAUTHORIZED</span><span style=color:#f92672>,</span> <span style=color:#e6db74>&#34;身份认证失败&#34;</span><span style=color:#f92672>);</span>
-    <span style=color:#f92672>}</span>
-
-    <span style=color:#a6e22e>@Override</span>
-    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>handle</span><span style=color:#f92672>(</span>HttpServletRequest httpServletRequest<span style=color:#f92672>,</span> HttpServletResponse httpServletResponse<span style=color:#f92672>,</span> AccessDeniedException e<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> IOException <span style=color:#f92672>{</span>
-        log<span style=color:#f92672>.</span><span style=color:#a6e22e>error</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;spring security 鉴权发生异常。&#34;</span><span style=color:#f92672>,</span> e<span style=color:#f92672>);</span>
-        HttpResponseWriter<span style=color:#f92672>.</span><span style=color:#a6e22e>sendError</span><span style=color:#f92672>(</span>httpServletResponse<span style=color:#f92672>,</span> HttpServletResponse<span style=color:#f92672>.</span><span style=color:#a6e22e>SC_FORBIDDEN</span><span style=color:#f92672>,</span> <span style=color:#e6db74>&#34;鉴权失败&#34;</span><span style=color:#f92672>);</span>
-    <span style=color:#f92672>}</span>
-</code></pre></div><h2 id=将自定义内容装配进-security-架构>将自定义内容装配进 security 架构</h2>
-<p>要想我们的过滤器先一步生效，需要将过滤器加入到 security 自带的认证过滤器之前；接着还需要把自定义异常配置到异常处理流程中。是的，就这些工作内容，没有更多了。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#a6e22e>@EnableWebSecurity</span>
-<span style=color:#a6e22e>@EnableGlobalMethodSecurity</span><span style=color:#f92672>(</span>prePostEnabled <span style=color:#f92672>=</span> <span style=color:#66d9ef>true</span><span style=color:#f92672>,</span> securedEnabled <span style=color:#f92672>=</span> <span style=color:#66d9ef>true</span><span style=color:#f92672>)</span>
-<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>SecurityConfig</span> <span style=color:#66d9ef>extends</span> WebSecurityConfigurerAdapter <span style=color:#f92672>{</span>
-
-    <span style=color:#a6e22e>@Autowired</span>
-    <span style=color:#66d9ef>private</span> UserAppService userAppService<span style=color:#f92672>;</span>
-
-    <span style=color:#a6e22e>@Autowired</span>
-    <span style=color:#66d9ef>private</span> JwtTokenFilter jwtTokenFilter<span style=color:#f92672>;</span>
-
-    <span style=color:#a6e22e>@Autowired</span>
-    <span style=color:#66d9ef>private</span> GlobalExceptionHandler globalExceptionHandler<span style=color:#f92672>;</span>
-
-    <span style=color:#75715e>/**
-</span><span style=color:#75715e>     * 配置密码加密装置
-</span><span style=color:#75715e>     */</span>
-    <span style=color:#a6e22e>@Bean</span>
-    <span style=color:#66d9ef>public</span> PasswordEncoder <span style=color:#a6e22e>passwordEncoder</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
-        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> BCryptPasswordEncoder<span style=color:#f92672>();</span>
-    <span style=color:#f92672>}</span>
-
-    <span style=color:#75715e>/**
-</span><span style=color:#75715e>     * 配置 Dao Authenticationprovider 协调器
-</span><span style=color:#75715e>     */</span>
-    <span style=color:#a6e22e>@Override</span>
-    <span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>configure</span><span style=color:#f92672>(</span>AuthenticationManagerBuilder auth<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> Exception <span style=color:#f92672>{</span>
-        <span style=color:#75715e>// configure authentication manager
-</span><span style=color:#75715e></span>        auth<span style=color:#f92672>.</span><span style=color:#a6e22e>userDetailsService</span><span style=color:#f92672>(</span>userAppService<span style=color:#f92672>);</span>
-    <span style=color:#f92672>}</span>
-
-    <span style=color:#a6e22e>@Override</span>
-    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>configure</span><span style=color:#f92672>(</span>WebSecurity web<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-        web<span style=color:#f92672>.</span><span style=color:#a6e22e>ignoring</span><span style=color:#f92672>()</span>
-            <span style=color:#f92672>.</span><span style=color:#a6e22e>antMatchers</span><span style=color:#f92672>(</span>HttpMethod<span style=color:#f92672>.</span><span style=color:#a6e22e>OPTIONS</span><span style=color:#f92672>,</span> <span style=color:#e6db74>&#34;/**&#34;</span><span style=color:#f92672>)</span>
-            <span style=color:#f92672>.</span><span style=color:#a6e22e>antMatchers</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;/swagger-ui/index.html&#34;</span><span style=color:#f92672>)</span>
-            <span style=color:#f92672>.</span><span style=color:#a6e22e>antMatchers</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;/test/**&#34;</span><span style=color:#f92672>);</span>
-    <span style=color:#f92672>}</span>
-
-    <span style=color:#75715e>/**
-</span><span style=color:#75715e>     * web 安全配置
-</span><span style=color:#75715e>     */</span>
-    <span style=color:#a6e22e>@Override</span>
-    <span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>configure</span><span style=color:#f92672>(</span>HttpSecurity http<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> Exception <span style=color:#f92672>{</span>
-        <span style=color:#75715e>// Enable CORS and disable CSRF
-</span><span style=color:#75715e></span>        http <span style=color:#f92672>=</span> http<span style=color:#f92672>.</span><span style=color:#a6e22e>cors</span><span style=color:#f92672>().</span><span style=color:#a6e22e>and</span><span style=color:#f92672>().</span><span style=color:#a6e22e>csrf</span><span style=color:#f92672>().</span><span style=color:#a6e22e>disable</span><span style=color:#f92672>();</span>
-
-        <span style=color:#75715e>// Set session management to stateless
-</span><span style=color:#75715e></span>        http <span style=color:#f92672>=</span> http
-            <span style=color:#f92672>.</span><span style=color:#a6e22e>sessionManagement</span><span style=color:#f92672>()</span>
-            <span style=color:#f92672>.</span><span style=color:#a6e22e>sessionCreationPolicy</span><span style=color:#f92672>(</span>SessionCreationPolicy<span style=color:#f92672>.</span><span style=color:#a6e22e>STATELESS</span><span style=color:#f92672>)</span>
-            <span style=color:#f92672>.</span><span style=color:#a6e22e>and</span><span style=color:#f92672>();</span>
-
-        <span style=color:#75715e>// exception handler
-</span><span style=color:#75715e></span>        http<span style=color:#f92672>.</span><span style=color:#a6e22e>exceptionHandling</span><span style=color:#f92672>()</span>
-            <span style=color:#f92672>.</span><span style=color:#a6e22e>authenticationEntryPoint</span><span style=color:#f92672>(</span>globalExceptionHandler<span style=color:#f92672>)</span>
-            <span style=color:#f92672>.</span><span style=color:#a6e22e>accessDeniedHandler</span><span style=color:#f92672>(</span>globalExceptionHandler<span style=color:#f92672>);</span>
-
-        <span style=color:#75715e>// Set permissions on endpoints
-</span><span style=color:#75715e></span>        http<span style=color:#f92672>.</span><span style=color:#a6e22e>authorizeRequests</span><span style=color:#f92672>()</span>
-            <span style=color:#75715e>// Our public endpoints
-</span><span style=color:#75715e></span>            <span style=color:#f92672>.</span><span style=color:#a6e22e>antMatchers</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;/foundation/api/example/**&#34;</span><span style=color:#f92672>).</span><span style=color:#a6e22e>permitAll</span><span style=color:#f92672>()</span>
-            <span style=color:#f92672>.</span><span style=color:#a6e22e>anyRequest</span><span style=color:#f92672>().</span><span style=color:#a6e22e>authenticated</span><span style=color:#f92672>();</span>
-
-        <span style=color:#75715e>// Add JWT token filter
-</span><span style=color:#75715e></span>        http<span style=color:#f92672>.</span><span style=color:#a6e22e>addFilterBefore</span><span style=color:#f92672>(</span>
-            jwtTokenFilter<span style=color:#f92672>,</span>
-            UsernamePasswordAuthenticationFilter<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
-        <span style=color:#f92672>);</span>
-    <span style=color:#f92672>}</span>
-
-
-    <span style=color:#a6e22e>@Bean</span>
-    <span style=color:#a6e22e>@Override</span>
-    <span style=color:#66d9ef>public</span> AuthenticationManager <span style=color:#a6e22e>authenticationManagerBean</span><span style=color:#f92672>()</span> <span style=color:#66d9ef>throws</span> Exception <span style=color:#f92672>{</span>
-        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>super</span><span style=color:#f92672>.</span><span style=color:#a6e22e>authenticationManagerBean</span><span style=color:#f92672>();</span>
-    <span style=color:#f92672>}</span>
-
-</code></pre></div><h2 id=结语>结语</h2>
-<p>这就是自定义 token 身份验证与配置的全部工作内容。由于 spring security 大量使用了组合与设计模式使得任何开发者都可以定义出各式各样的身份验证逻辑，所以只要你的自定义程序可以嵌合到 security 框架里并且可以很好的工作，那他就是适合你的身份验证。</p>
-</section>
-<footer>
-<a class="permalink u-url" href=https://www.chucklin.net/post/springsecurity_authentication2/>🔗</a>
-<hr class=post-underline>
-<p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a>
-</p>
-</footer>
-</article>
-</div>
-<div class=h-card>
-<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
-<div class=card-content>
-<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
-<p class=card-subhead>
-<span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br>
-<a class=u-email href=mailto:chuck1in9996@gmail.com>Email me</a>
-</p>
-</div>
-<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
-</div>
-<div id=footer>
-<nav id=article-skip>
-<div class=next>
-<a alt="Newer article" href=https://www.chucklin.net/post/springsecurity_authority/>&larr; Newer</a>
-</div>
-<div class=top>
-<a alt="Top of page" href=#>Top</a>
-</div>
-<div class=prev>
-<a alt="Older article" href=https://www.chucklin.net/post/springsecurity_authentication/>Older &rarr;</a>
-</div>
-</nav>
-<aside id=social>
-<div id=social-icons>
-<div class=icon-24x24>
-<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
-</div>
-</div>
-</aside>
-<p class=copyright>
-Copyright © 2021 Chuck Lin. All rights reserved.
-</p>
-</div>
-</body>
-</html>
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>Spring security 自定义 token 身份验证 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:chuck1inzl@gmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">Spring security 自定义 token 身份验证</h1><p class=post-date>Posted on
+<time class=dt-published datetime=2021-04-03T10:52:00+08:00>3 April, 2021 at 10:52 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h2 id=前言>前言</h2><p>既然 Spring securtiy 的核心是 Filter chains，那我们只需要定义一个符合 security 标准的 filter ，再把自己的 chain 加入到 VirtualFilterChain 里面，就可以自定义身份验证的认证逻辑了。</p><p>之前提到过，大部分身份认证相关的过滤器都继承了 AbstractAuthenticationProcessingFilter。但是这一次我们让接下来的自定义过滤器不选择继承它，而是继承 OncePerRequestFilter。</p><p>这个类之前我们没有见过，其实它也是 security 框架提供的一个 VirtualFilter 父类。继承一个陌生的类听起来有点吓人，不过很快你就知道 AbstractAuthenticationProcessingFilter 也好，OncePerRequestFilter 也罢，都是 filter 而已。</p><h2 id=自定义一个-filter>自定义一个 Filter</h2><p>我们参照 security 的基础身份认证过滤器 UsernamePasswordAuthenticationFilter 来编写我们的过滤器。这是不是意味着我们也必须使用模板设计模式来编写自定义过滤器的父类，然后聚合 providerManager 再自定义 provider 实现一整套 security 范式的身份认证代码？</p><p>不是的，你完全可以把 provider 的逻辑全部抽离出来加入到你的自定义过滤器里面。实际上我的过滤器一共就三个逻辑。非常简单并且可以工作的很好！</p><ol><li>通过确认 token 的有效性来验证请求的身份。类似于 DaoAuthenticationProvider.additionalAuthenticationChecks。</li><li>从数据库检索出用户的详情，方便后续取用。类似于 DaoAuthenticationProvider. retrieveUser()。</li><li>将验证通过的身份资产（principal）封装到 UsernamePasswordAuthenticationToken，并设置到 security context。类似于 AbstractAuthenticationProcessingFilter.successfulAuthentication。</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span> <span style=color:#a6e22e>@Override</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>doFilterInternal</span><span style=color:#f92672>(</span>HttpServletRequest request<span style=color:#f92672>,</span>
+</span></span><span style=display:flex><span>                                    HttpServletResponse response<span style=color:#f92672>,</span>
+</span></span><span style=display:flex><span>                                    FilterChain chain<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>throws</span> ServletException<span style=color:#f92672>,</span> IOException <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        String header <span style=color:#f92672>=</span> request<span style=color:#f92672>.</span><span style=color:#a6e22e>getHeader</span><span style=color:#f92672>(</span>HttpHeaders<span style=color:#f92672>.</span><span style=color:#a6e22e>AUTHORIZATION</span><span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> <span style=color:#f92672>(</span>StringUtils<span style=color:#f92672>.</span><span style=color:#a6e22e>isEmpty</span><span style=color:#f92672>(</span>header<span style=color:#f92672>)</span> <span style=color:#f92672>||</span> <span style=color:#f92672>!</span>header<span style=color:#f92672>.</span><span style=color:#a6e22e>startsWith</span><span style=color:#f92672>(</span>BEARER_SPACE<span style=color:#f92672>))</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            globalExceptionHandler<span style=color:#f92672>.</span><span style=color:#a6e22e>commence</span><span style=color:#f92672>(</span>request<span style=color:#f92672>,</span> response<span style=color:#f92672>,</span> <span style=color:#66d9ef>new</span> AuthenticationException<span style=color:#f92672>(</span><span style=color:#e6db74>&#34;非法的 token 请求参数&#34;</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>});</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span><span style=color:#f92672>;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        String token <span style=color:#f92672>=</span> header<span style=color:#f92672>.</span><span style=color:#a6e22e>split</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34; &#34;</span><span style=color:#f92672>)[</span>1<span style=color:#f92672>].</span><span style=color:#a6e22e>trim</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>try</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            TokenUtil<span style=color:#f92672>.</span><span style=color:#a6e22e>verifyToken</span><span style=color:#f92672>(</span>token<span style=color:#f92672>,</span> base64Secret<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>}</span> <span style=color:#66d9ef>catch</span> <span style=color:#f92672>(</span>FoundationAppException e<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            globalExceptionHandler<span style=color:#f92672>.</span><span style=color:#a6e22e>commence</span><span style=color:#f92672>(</span>request<span style=color:#f92672>,</span> response<span style=color:#f92672>,</span> <span style=color:#66d9ef>new</span> AuthenticationException<span style=color:#f92672>(</span><span style=color:#e6db74>&#34;非法的 token&#34;</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>});</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span><span style=color:#f92672>;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 返回 401
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#75715e>// jwt 认证通过即代表认证成功。将 principal 资源装配到 context
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        UserDetails userDetails <span style=color:#f92672>=</span> userAppService<span style=color:#f92672>.</span><span style=color:#a6e22e>loadUserByUsername</span><span style=color:#f92672>(</span>TokenUtil<span style=color:#f92672>.</span><span style=color:#a6e22e>getUsername</span><span style=color:#f92672>(</span>token<span style=color:#f92672>)</span> <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34;@&#34;</span> <span style=color:#f92672>+</span> TokenUtil<span style=color:#f92672>.</span><span style=color:#a6e22e>getDomain</span><span style=color:#f92672>(</span>token<span style=color:#f92672>));</span>
+</span></span><span style=display:flex><span>        UsernamePasswordAuthenticationToken
+</span></span><span style=display:flex><span>            authentication <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> UsernamePasswordAuthenticationToken<span style=color:#f92672>(</span>
+</span></span><span style=display:flex><span>            userDetails<span style=color:#f92672>,</span> <span style=color:#66d9ef>null</span><span style=color:#f92672>,</span>
+</span></span><span style=display:flex><span>            userDetails<span style=color:#f92672>.</span><span style=color:#a6e22e>getAuthorities</span><span style=color:#f92672>()</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> <span style=color:#f92672>(!</span>userDetails<span style=color:#f92672>.</span><span style=color:#a6e22e>isEnabled</span><span style=color:#f92672>())</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            globalExceptionHandler<span style=color:#f92672>.</span><span style=color:#a6e22e>commence</span><span style=color:#f92672>(</span>request<span style=color:#f92672>,</span> response<span style=color:#f92672>,</span> <span style=color:#66d9ef>new</span> DisabledException<span style=color:#f92672>(</span><span style=color:#e6db74>&#34;当前账户已锁定&#34;</span><span style=color:#f92672>));</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span><span style=color:#f92672>;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>        authentication<span style=color:#f92672>.</span><span style=color:#a6e22e>setDetails</span><span style=color:#f92672>(</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>new</span> WebAuthenticationDetailsSource<span style=color:#f92672>().</span><span style=color:#a6e22e>buildDetails</span><span style=color:#f92672>(</span>request<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>        SecurityContextHolder<span style=color:#f92672>.</span><span style=color:#a6e22e>getContext</span><span style=color:#f92672>().</span><span style=color:#a6e22e>setAuthentication</span><span style=color:#f92672>(</span>authentication<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>        chain<span style=color:#f92672>.</span><span style=color:#a6e22e>doFilter</span><span style=color:#f92672>(</span>request<span style=color:#f92672>,</span> response<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span></code></pre></div><h2 id=实现-loadbyusername>实现 loadByUsername</h2><p>让我们的任何一个类——我建议是和 user 相关处理的 service 类实现 UserDetailsService 接口，就可以重写 loadByUsername 方法了。
+实现这个接口很重要，因为他定义了 UserDetails 接口——这个你的用户对象应该遵守的规范和行为。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#a6e22e>@Override</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> UserDetails <span style=color:#a6e22e>loadUserByUsername</span><span style=color:#f92672>(</span>String name<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> UsernameNotFoundException <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        String<span style=color:#f92672>[]</span> split <span style=color:#f92672>=</span> name<span style=color:#f92672>.</span><span style=color:#a6e22e>split</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;@&#34;</span><span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>        String username <span style=color:#f92672>=</span> split<span style=color:#f92672>[</span>0<span style=color:#f92672>];</span>
+</span></span><span style=display:flex><span>        String domainCode <span style=color:#f92672>=</span> split<span style=color:#f92672>[</span>1<span style=color:#f92672>];</span>
+</span></span><span style=display:flex><span>        Domain domain <span style=color:#f92672>=</span> domainRepository<span style=color:#f92672>.</span><span style=color:#a6e22e>findByCode</span><span style=color:#f92672>(</span>domainCode<span style=color:#f92672>).</span><span style=color:#a6e22e>orElseThrow</span><span style=color:#f92672>(</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>()</span> <span style=color:#f92672>-&gt;</span> <span style=color:#66d9ef>new</span> UsernameNotFoundException<span style=color:#f92672>(</span>String<span style=color:#f92672>.</span><span style=color:#a6e22e>format</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;User with domain - %s, not found&#34;</span><span style=color:#f92672>,</span> domainCode<span style=color:#f92672>))</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>        AuthUser user <span style=color:#f92672>=</span> authUserRepository
+</span></span><span style=display:flex><span>            <span style=color:#f92672>.</span><span style=color:#a6e22e>findByDomainAndUsername</span><span style=color:#f92672>(</span>domain<span style=color:#f92672>,</span> username<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>.</span><span style=color:#a6e22e>orElseThrow</span><span style=color:#f92672>(</span>
+</span></span><span style=display:flex><span>                <span style=color:#f92672>()</span> <span style=color:#f92672>-&gt;</span> <span style=color:#66d9ef>new</span> UsernameNotFoundException<span style=color:#f92672>(</span>String<span style=color:#f92672>.</span><span style=color:#a6e22e>format</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;User with username and domain - %s, not found&#34;</span><span style=color:#f92672>,</span> name<span style=color:#f92672>))</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> user<span style=color:#f92672>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span></code></pre></div><h2 id=考虑一下异常处理>考虑一下异常处理</h2><p>自定义 token 过滤器的工作这就基本完成了。不过健壮的处理程序，往往都伴随着异常逻辑的完美捕获。回忆之前的内容，filter 的异常处理都是通过端点处理程序——AuthenticationEntryPointFailureHandler 来处理的。所以只要我们自定义端点处理程序并重写 commence 方法就完全可以达到一样的效果。</p><p><strong>AuthenticationEntryPointFailureHandler</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#a6e22e>@Override</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>onAuthenticationFailure</span><span style=color:#f92672>(</span>HttpServletRequest request<span style=color:#f92672>,</span> HttpServletResponse response<span style=color:#f92672>,</span>
+</span></span><span style=display:flex><span>			AuthenticationException exception<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> IOException<span style=color:#f92672>,</span> ServletException <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>authenticationEntryPoint</span><span style=color:#f92672>.</span><span style=color:#a6e22e>commence</span><span style=color:#f92672>(</span>request<span style=color:#f92672>,</span> response<span style=color:#f92672>,</span> exception<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>	<span style=color:#f92672>}</span>
+</span></span></code></pre></div><p><strong>自定义异常处理程序</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span>    <span style=color:#a6e22e>@Override</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>commence</span><span style=color:#f92672>(</span>HttpServletRequest httpServletRequest<span style=color:#f92672>,</span> HttpServletResponse httpServletResponse<span style=color:#f92672>,</span> AuthenticationException e<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> IOException <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        log<span style=color:#f92672>.</span><span style=color:#a6e22e>error</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;spring security 认证发生异常。&#34;</span><span style=color:#f92672>,</span> e<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>        HttpResponseWriter<span style=color:#f92672>.</span><span style=color:#a6e22e>sendError</span><span style=color:#f92672>(</span>httpServletResponse<span style=color:#f92672>,</span> HttpServletResponse<span style=color:#f92672>.</span><span style=color:#a6e22e>SC_UNAUTHORIZED</span><span style=color:#f92672>,</span> <span style=color:#e6db74>&#34;身份认证失败&#34;</span><span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@Override</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>handle</span><span style=color:#f92672>(</span>HttpServletRequest httpServletRequest<span style=color:#f92672>,</span> HttpServletResponse httpServletResponse<span style=color:#f92672>,</span> AccessDeniedException e<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> IOException <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        log<span style=color:#f92672>.</span><span style=color:#a6e22e>error</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;spring security 鉴权发生异常。&#34;</span><span style=color:#f92672>,</span> e<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>        HttpResponseWriter<span style=color:#f92672>.</span><span style=color:#a6e22e>sendError</span><span style=color:#f92672>(</span>httpServletResponse<span style=color:#f92672>,</span> HttpServletResponse<span style=color:#f92672>.</span><span style=color:#a6e22e>SC_FORBIDDEN</span><span style=color:#f92672>,</span> <span style=color:#e6db74>&#34;鉴权失败&#34;</span><span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span></code></pre></div><h2 id=将自定义内容装配进-security-架构>将自定义内容装配进 security 架构</h2><p>要想我们的过滤器先一步生效，需要将过滤器加入到 security 自带的认证过滤器之前；接着还需要把自定义异常配置到异常处理流程中。是的，就这些工作内容，没有更多了。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#a6e22e>@EnableWebSecurity</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@EnableGlobalMethodSecurity</span><span style=color:#f92672>(</span>prePostEnabled <span style=color:#f92672>=</span> <span style=color:#66d9ef>true</span><span style=color:#f92672>,</span> securedEnabled <span style=color:#f92672>=</span> <span style=color:#66d9ef>true</span><span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>SecurityConfig</span> <span style=color:#66d9ef>extends</span> WebSecurityConfigurerAdapter <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@Autowired</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> UserAppService userAppService<span style=color:#f92672>;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@Autowired</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> JwtTokenFilter jwtTokenFilter<span style=color:#f92672>;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@Autowired</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> GlobalExceptionHandler globalExceptionHandler<span style=color:#f92672>;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>/**
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * 配置密码加密装置
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     */</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@Bean</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> PasswordEncoder <span style=color:#a6e22e>passwordEncoder</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> BCryptPasswordEncoder<span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>/**
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * 配置 Dao Authenticationprovider 协调器
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     */</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@Override</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>configure</span><span style=color:#f92672>(</span>AuthenticationManagerBuilder auth<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> Exception <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// configure authentication manager
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        auth<span style=color:#f92672>.</span><span style=color:#a6e22e>userDetailsService</span><span style=color:#f92672>(</span>userAppService<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@Override</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>configure</span><span style=color:#f92672>(</span>WebSecurity web<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        web<span style=color:#f92672>.</span><span style=color:#a6e22e>ignoring</span><span style=color:#f92672>()</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>.</span><span style=color:#a6e22e>antMatchers</span><span style=color:#f92672>(</span>HttpMethod<span style=color:#f92672>.</span><span style=color:#a6e22e>OPTIONS</span><span style=color:#f92672>,</span> <span style=color:#e6db74>&#34;/**&#34;</span><span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>.</span><span style=color:#a6e22e>antMatchers</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;/swagger-ui/index.html&#34;</span><span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>.</span><span style=color:#a6e22e>antMatchers</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;/test/**&#34;</span><span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>/**
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * web 安全配置
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     */</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@Override</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>configure</span><span style=color:#f92672>(</span>HttpSecurity http<span style=color:#f92672>)</span> <span style=color:#66d9ef>throws</span> Exception <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// Enable CORS and disable CSRF
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        http <span style=color:#f92672>=</span> http<span style=color:#f92672>.</span><span style=color:#a6e22e>cors</span><span style=color:#f92672>().</span><span style=color:#a6e22e>and</span><span style=color:#f92672>().</span><span style=color:#a6e22e>csrf</span><span style=color:#f92672>().</span><span style=color:#a6e22e>disable</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// Set session management to stateless
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        http <span style=color:#f92672>=</span> http
+</span></span><span style=display:flex><span>            <span style=color:#f92672>.</span><span style=color:#a6e22e>sessionManagement</span><span style=color:#f92672>()</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>.</span><span style=color:#a6e22e>sessionCreationPolicy</span><span style=color:#f92672>(</span>SessionCreationPolicy<span style=color:#f92672>.</span><span style=color:#a6e22e>STATELESS</span><span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>.</span><span style=color:#a6e22e>and</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// exception handler
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        http<span style=color:#f92672>.</span><span style=color:#a6e22e>exceptionHandling</span><span style=color:#f92672>()</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>.</span><span style=color:#a6e22e>authenticationEntryPoint</span><span style=color:#f92672>(</span>globalExceptionHandler<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>.</span><span style=color:#a6e22e>accessDeniedHandler</span><span style=color:#f92672>(</span>globalExceptionHandler<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// Set permissions on endpoints
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        http<span style=color:#f92672>.</span><span style=color:#a6e22e>authorizeRequests</span><span style=color:#f92672>()</span>
+</span></span><span style=display:flex><span>            <span style=color:#75715e>// Our public endpoints
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>            <span style=color:#f92672>.</span><span style=color:#a6e22e>antMatchers</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;/foundation/api/example/**&#34;</span><span style=color:#f92672>).</span><span style=color:#a6e22e>permitAll</span><span style=color:#f92672>()</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>.</span><span style=color:#a6e22e>anyRequest</span><span style=color:#f92672>().</span><span style=color:#a6e22e>authenticated</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// Add JWT token filter
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        http<span style=color:#f92672>.</span><span style=color:#a6e22e>addFilterBefore</span><span style=color:#f92672>(</span>
+</span></span><span style=display:flex><span>            jwtTokenFilter<span style=color:#f92672>,</span>
+</span></span><span style=display:flex><span>            UsernamePasswordAuthenticationFilter<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@Bean</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@Override</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> AuthenticationManager <span style=color:#a6e22e>authenticationManagerBean</span><span style=color:#f92672>()</span> <span style=color:#66d9ef>throws</span> Exception <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>super</span><span style=color:#f92672>.</span><span style=color:#a6e22e>authenticationManagerBean</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span></code></pre></div><h2 id=结语>结语</h2><p>这就是自定义 token 身份验证与配置的全部工作内容。由于 spring security 大量使用了组合与设计模式使得任何开发者都可以定义出各式各样的身份验证逻辑，所以只要你的自定义程序可以嵌合到 security 框架里并且可以很好的工作，那他就是适合你的身份验证。</p></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/springsecurity_authentication2/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br><a class=u-email href=mailto:chuck1inzl@gmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/springsecurity_authority/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/springsecurity_authentication/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>

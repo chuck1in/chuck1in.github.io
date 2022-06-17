@@ -1,172 +1,44 @@
-<!doctype html><html lang=zh-cn>
-<head>
-<meta charset=utf-8>
-<title>索引的使用误区 | ChuckLin's Blog</title>
-<meta name=description content="Love and Peace">
-<meta name=author content>
-<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
-<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
-<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
-<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
-<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
-<meta name=msapplication-TileColor content="#00aba9">
-<meta name=theme-color content="#ffffff">
-<link rel=me href=mailto:chuck1in9996@gmail.com>
-<link rel=me href=https://github.com/chuck1in>
-<link rel=authorization_endpoint href=https://indieauth.com/auth>
-<link rel=token_endpoint href=https://tokens.indieauth.com/token>
-<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
-<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
-<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
-<meta name=viewport content="width=device-width,initial-scale=1">
-</head>
-<body>
-<div id=sitelogo>
-<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
-</div>
-<header>
-<nav>
-<div id=page-nav>
-<div class=page-nav-item>
-<a href=https://www.chucklin.net/>Home</a>
-</div>
-<div class=page-nav-item>
-<a href=/about/me>
-<span>About</span>
-</a>
-</div>
-<div class=page-nav-item>
-<a href=/tags>
-<span>Tag</span>
-</a>
-</div>
-</div>
-</nav>
-</header>
-<div id=content>
-<article class=h-entry>
-<header>
-<h1 class="post-title p-name">索引的使用误区</h1>
-<p class=post-date>Posted on
-<time class=dt-published datetime=2020-02-23T09:52:00+08:00>
-23 February, 2020 at 09:52 +0800
-</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
-</p>
-</header>
-<section class="content e-content">
-<p>回顾上一章的内容，除了介绍了基本的使用索引优化 sql 语句的基本手法以外，还提到了滥用索引会引起性能恶化的问题。本章节的内容将会举例说明哪些场景的索引属于滥用，以及如何避免索引的误用。</p>
-<h2 id=索引的滥用>索引的滥用</h2>
-<p>为了优化 sql 语句的执行效率，我们往往会给表中加上各种各样的索引。
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>索引的使用误区 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:chuck1inzl@gmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">索引的使用误区</h1><p class=post-date>Posted on
+<time class=dt-published datetime=2020-02-23T09:52:00+08:00>23 February, 2020 at 09:52 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><p>回顾上一章的内容，除了介绍了基本的使用索引优化 sql 语句的基本手法以外，还提到了滥用索引会引起性能恶化的问题。本章节的内容将会举例说明哪些场景的索引属于滥用，以及如何避免索引的误用。</p><h2 id=索引的滥用>索引的滥用</h2><p>为了优化 sql 语句的执行效率，我们往往会给表中加上各种各样的索引。
 但是在某些场景下索引不仅无法被用来提升效率，还会增加表空间占用，延长 modify 方法的执行时间。
-下面是一些存在索引但无法使用的典型场景。</p>
-<h3 id=以开头的-like-查询>以%开头的 Like 查询</h3>
-<p>在上一章的内容中我们已经有所体会不遵循左前缀原则的查询统统无法使用 B-tree 索引。
-那么针对 %Like 的查询我们有什么优化手段呢？来看下面这个例子：</p>
-<p>表 test_index_table 拥有联合索引 NAME_ADDRESS 如下：</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>CREATE</span> <span style=color:#66d9ef>TABLE</span> <span style=color:#f92672>`</span>test_index_table<span style=color:#f92672>`</span> (
-  <span style=color:#f92672>`</span>id<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>NOT</span> <span style=color:#66d9ef>NULL</span> AUTO_INCREMENT,
-  <span style=color:#f92672>`</span>name<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>birthday<span style=color:#f92672>`</span> datetime <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>address<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>phone<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>note<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>age<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#66d9ef>PRIMARY</span> <span style=color:#66d9ef>KEY</span> (<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>),
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>NAME_ADDRESS<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>,<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE
-) ENGINE<span style=color:#f92672>=</span>InnoDB AUTO_INCREMENT<span style=color:#f92672>=</span><span style=color:#ae81ff>283</span> <span style=color:#66d9ef>DEFAULT</span> CHARSET<span style=color:#f92672>=</span>utf8
-</code></pre></div><pre><code>有一种轻量级的解决方式为，利用索引比表小，扫描索引比扫描全表更快的原理，通过模糊匹配查询出符合条件的索引列表，之后再根据查询出的索引列表，回表进行连表检索。这样就能避免全表扫描时产生的大量 IO 请求。
-</code></pre>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>select</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>from</span>  (<span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> test_index_table <span style=color:#66d9ef>where</span> name <span style=color:#66d9ef>like</span> <span style=color:#e6db74>&#39;%四&#39;</span>) <span style=color:#66d9ef>as</span> a, test_index_table <span style=color:#66d9ef>as</span> b
-<span style=color:#66d9ef>where</span> a.id <span style=color:#f92672>=</span> b.id
-
-</code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/uaxvgl9u59jcuzc33m94i8m0/image_1bj0kbioikli17lo1o1tuid7pl9.png alt=image_1bj0kbioikli17lo1o1tuid7pl9.png-96.8kB></p>
-<pre><code>内层的子查询的 Using index 代表索引覆盖扫描。扫描出来的 id 与外表做关联，再查出相应的结果。
-</code></pre>
-<p>从结果分析可以看出两个 Sql 都利用了索引，所以理论上要比直接使用 name 来做全表扫描更快一些。</p>
-<h3 id=数据类型出现隐式转换时也不会使用索引>数据类型出现隐式转换时也不会使用索引</h3>
-<p>让我们对上一个例子中的表增加一个 AGE 索引。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>CREATE</span> <span style=color:#66d9ef>TABLE</span> <span style=color:#f92672>`</span>test_index_table<span style=color:#f92672>`</span> (
-  <span style=color:#f92672>`</span>id<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>NOT</span> <span style=color:#66d9ef>NULL</span> AUTO_INCREMENT,
-  <span style=color:#f92672>`</span>name<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>birthday<span style=color:#f92672>`</span> datetime <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>address<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>phone<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>note<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>age<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#66d9ef>PRIMARY</span> <span style=color:#66d9ef>KEY</span> (<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>),
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>NAME_ADDRESS<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>,<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>AGE<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>age<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE
-) ENGINE<span style=color:#f92672>=</span>InnoDB AUTO_INCREMENT<span style=color:#f92672>=</span><span style=color:#ae81ff>283</span> <span style=color:#66d9ef>DEFAULT</span> CHARSET<span style=color:#f92672>=</span>utf8
-</code></pre></div><p>尝试使用下面的 sql 语句进行查询</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_index_table <span style=color:#66d9ef>where</span> age <span style=color:#f92672>=</span> <span style=color:#ae81ff>26</span>
-</code></pre></div><p>由于表中的 age 是 VARCHAR 类型。而在 sql 语句中我们使用的是数字类型 26。MYSQL 默认会把输入的常量值进行转换以后才进行检索。现在我们通过 explain 看看这个语句的分析结果。
+下面是一些存在索引但无法使用的典型场景。</p><h3 id=以开头的-like-查询>以%开头的 Like 查询</h3><p>在上一章的内容中我们已经有所体会不遵循左前缀原则的查询统统无法使用 B-tree 索引。
+那么针对 %Like 的查询我们有什么优化手段呢？来看下面这个例子：</p><p>表 test_index_table 拥有联合索引 NAME_ADDRESS 如下：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>CREATE</span> <span style=color:#66d9ef>TABLE</span> <span style=color:#f92672>`</span>test_index_table<span style=color:#f92672>`</span> (
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>id<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>NOT</span> <span style=color:#66d9ef>NULL</span> AUTO_INCREMENT,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>name<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>birthday<span style=color:#f92672>`</span> datetime <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>address<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>phone<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>note<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>age<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>PRIMARY</span> <span style=color:#66d9ef>KEY</span> (<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>),
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>NAME_ADDRESS<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>,<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE
+</span></span><span style=display:flex><span>) ENGINE<span style=color:#f92672>=</span>InnoDB AUTO_INCREMENT<span style=color:#f92672>=</span><span style=color:#ae81ff>283</span> <span style=color:#66d9ef>DEFAULT</span> CHARSET<span style=color:#f92672>=</span>utf8
+</span></span></code></pre></div><pre><code>有一种轻量级的解决方式为，利用索引比表小，扫描索引比扫描全表更快的原理，通过模糊匹配查询出符合条件的索引列表，之后再根据查询出的索引列表，回表进行连表检索。这样就能避免全表扫描时产生的大量 IO 请求。
+</code></pre><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>select</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>from</span>  (<span style=color:#66d9ef>select</span> id <span style=color:#66d9ef>from</span> test_index_table <span style=color:#66d9ef>where</span> name <span style=color:#66d9ef>like</span> <span style=color:#e6db74>&#39;%四&#39;</span>) <span style=color:#66d9ef>as</span> a, test_index_table <span style=color:#66d9ef>as</span> b
+</span></span><span style=display:flex><span><span style=color:#66d9ef>where</span> a.id <span style=color:#f92672>=</span> b.id
+</span></span></code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/uaxvgl9u59jcuzc33m94i8m0/image_1bj0kbioikli17lo1o1tuid7pl9.png alt=image_1bj0kbioikli17lo1o1tuid7pl9.png-96.8kB></p><pre><code>内层的子查询的 Using index 代表索引覆盖扫描。扫描出来的 id 与外表做关联，再查出相应的结果。
+</code></pre><p>从结果分析可以看出两个 Sql 都利用了索引，所以理论上要比直接使用 name 来做全表扫描更快一些。</p><h3 id=数据类型出现隐式转换时也不会使用索引>数据类型出现隐式转换时也不会使用索引</h3><p>让我们对上一个例子中的表增加一个 AGE 索引。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>CREATE</span> <span style=color:#66d9ef>TABLE</span> <span style=color:#f92672>`</span>test_index_table<span style=color:#f92672>`</span> (
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>id<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>NOT</span> <span style=color:#66d9ef>NULL</span> AUTO_INCREMENT,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>name<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>birthday<span style=color:#f92672>`</span> datetime <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>address<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>phone<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>note<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>age<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>PRIMARY</span> <span style=color:#66d9ef>KEY</span> (<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>),
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>NAME_ADDRESS<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>,<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>AGE<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>age<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE
+</span></span><span style=display:flex><span>) ENGINE<span style=color:#f92672>=</span>InnoDB AUTO_INCREMENT<span style=color:#f92672>=</span><span style=color:#ae81ff>283</span> <span style=color:#66d9ef>DEFAULT</span> CHARSET<span style=color:#f92672>=</span>utf8
+</span></span></code></pre></div><p>尝试使用下面的 sql 语句进行查询</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_index_table <span style=color:#66d9ef>where</span> age <span style=color:#f92672>=</span> <span style=color:#ae81ff>26</span>
+</span></span></code></pre></div><p>由于表中的 age 是 VARCHAR 类型。而在 sql 语句中我们使用的是数字类型 26。MYSQL 默认会把输入的常量值进行转换以后才进行检索。现在我们通过 explain 看看这个语句的分析结果。
 <img src=http://static.zybuluo.com/mikumikulch/kvhx1z2hj5wt6a8e64zhvj0p/image_1bgr0r2s9inlnb7o71g30v79.png alt=image_1bgr0r2s9inlnb7o71g30v79.png-43.5kB>
-很遗憾，索引并没有起到相应的作用。分析结果当前查询执行了全表扫描。</p>
-<p>尝试将数字改为字符串重新执行 sql</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_index_table <span style=color:#66d9ef>where</span> age <span style=color:#f92672>=</span> <span style=color:#ae81ff>26</span>
-</code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/hdf0iuezwpfpktiw127i8hff/image_1bgr0uotkjd34hhj3a1lkc1ksr9.png alt=image_1bgr0uotkjd34hhj3a1lkc1ksr9.png-29.9kB>
-索引重新恢复了作用。可见，隐式的类型转换出现时，索引不会被使用。</p>
-<pre><code>并非所有的隐式类型转换都无法使用索引。当列为 int、而查询语句中的 age 为字符串时，索引照样能够被使用。你可以试试对上面表中的索引 id 列进行查询，证明这个结论。
-</code></pre>
-<h3 id=使用-or-分割条件时若-or-前的条件中的列有索引而后面的列中没有索引则前后涉及的索引都不会被用到>使用 or 分割条件时，若 or 前的条件中的列有索引，而后面的列中没有索引，则前后涉及的索引都不会被用到。</h3>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_index_table <span style=color:#66d9ef>where</span> id <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;145&#39;</span> <span style=color:#66d9ef>or</span> address <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;北京&#39;</span>
-</code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/3we8nh5pni28clxayqvujuuo/image_1bgr1h59m1skq1e141054k911cim.png alt=image_1bgr1h59m1skq1e141054k911cim.png-44.3kB>
-由于 address 没有索引，所以后面的查询一定会通过全表扫描执行。在存在全表扫描的情况下，就没必要多一次索引扫描，增加 IO 访问了。</p>
-<h2 id=查看索引使用情况>查看索引使用情况</h2>
-<p>掌握了索引的正确使用方法后是不是有点跃跃欲试的感觉了？别着急， mysql 还提供了一个针对数据库的索引有效性分析工具。在尝试优化索引之前最好通过此工具对数据库目前的索引效率进行一个全面的大致了解。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>show</span> status <span style=color:#66d9ef>like</span> <span style=color:#e6db74>&#39;handler_read%&#39;</span>;
-</code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/inaqs9cqp81ii5eqwcfdswfn/image_1bhcscfvtas9db6a1s1g3p1l8f9.png alt=image_1bhcscfvtas9db6a1s1g3p1l8f9.png-49.6kB></p>
-<p>Handler_read_key 的值代表了一个行被索引值读的次数。若值较高则意味着索引高效。若值较低则意味着增加索引所带来的性能改善不够理想。Handler_read_rnd_next 值的含义为：在数据文件中读取下一行的请求数。如果你的库进行了大量的全表扫描，则该值通常较高。这意味着查询运行的语句运行较为低效，应该马上建立索引进行补救。</p>
-<h2 id=总结>总结</h2>
-<p>上面举例了三个有代表性的索引被误用的场景。建议在平时的工作与学习中，可以将比较具有代表性的索引使用与误用的场景都记下来，整理成前后连贯的文章以加深理解和方便日后进行查询与再利用。</p>
-<p>最后，索引在精不在多。对于某些经常被访问的查询我们可以尝试使用索引来优化执行效率。而对于某个速度很慢但是为系统管理员设计的查询，是否需要加上索引就需要结合实际情况判断了！</p>
-<hr>
-<p><em>参考书籍：</em>
-<em>《深入浅出 Mysql》</em></p>
-</section>
-<footer>
-<a class="permalink u-url" href=https://www.chucklin.net/post/index_badusage/>🔗</a>
-<hr class=post-underline>
-<p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/sql class="post-tag p-category">sql</a>
-</p>
-</footer>
-</article>
-</div>
-<div class=h-card>
-<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
-<div class=card-content>
-<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
-<p class=card-subhead>
-<span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br>
-<a class=u-email href=mailto:chuck1in9996@gmail.com>Email me</a>
-</p>
-</div>
-<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
-</div>
-<div id=footer>
-<nav id=article-skip>
-<div class=next>
-<a alt="Newer article" href=https://www.chucklin.net/post/index_tips/>&larr; Newer</a>
-</div>
-<div class=top>
-<a alt="Top of page" href=#>Top</a>
-</div>
-<div class=prev>
-<a alt="Older article" href=https://www.chucklin.net/post/index_overview/>Older &rarr;</a>
-</div>
-</nav>
-<aside id=social>
-<div id=social-icons>
-<div class=icon-24x24>
-<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
-</div>
-</div>
-</aside>
-<p class=copyright>
-Copyright © 2021 Chuck Lin. All rights reserved.
-</p>
-</div>
-</body>
-</html>
+很遗憾，索引并没有起到相应的作用。分析结果当前查询执行了全表扫描。</p><p>尝试将数字改为字符串重新执行 sql</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_index_table <span style=color:#66d9ef>where</span> age <span style=color:#f92672>=</span> <span style=color:#ae81ff>26</span>
+</span></span></code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/hdf0iuezwpfpktiw127i8hff/image_1bgr0uotkjd34hhj3a1lkc1ksr9.png alt=image_1bgr0uotkjd34hhj3a1lkc1ksr9.png-29.9kB>
+索引重新恢复了作用。可见，隐式的类型转换出现时，索引不会被使用。</p><pre><code>并非所有的隐式类型转换都无法使用索引。当列为 int、而查询语句中的 age 为字符串时，索引照样能够被使用。你可以试试对上面表中的索引 id 列进行查询，证明这个结论。
+</code></pre><h3 id=使用-or-分割条件时若-or-前的条件中的列有索引而后面的列中没有索引则前后涉及的索引都不会被用到>使用 or 分割条件时，若 or 前的条件中的列有索引，而后面的列中没有索引，则前后涉及的索引都不会被用到。</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_index_table <span style=color:#66d9ef>where</span> id <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;145&#39;</span> <span style=color:#66d9ef>or</span> address <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;北京&#39;</span>
+</span></span></code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/3we8nh5pni28clxayqvujuuo/image_1bgr1h59m1skq1e141054k911cim.png alt=image_1bgr1h59m1skq1e141054k911cim.png-44.3kB>
+由于 address 没有索引，所以后面的查询一定会通过全表扫描执行。在存在全表扫描的情况下，就没必要多一次索引扫描，增加 IO 访问了。</p><h2 id=查看索引使用情况>查看索引使用情况</h2><p>掌握了索引的正确使用方法后是不是有点跃跃欲试的感觉了？别着急， mysql 还提供了一个针对数据库的索引有效性分析工具。在尝试优化索引之前最好通过此工具对数据库目前的索引效率进行一个全面的大致了解。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>show</span> status <span style=color:#66d9ef>like</span> <span style=color:#e6db74>&#39;handler_read%&#39;</span>;
+</span></span></code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/inaqs9cqp81ii5eqwcfdswfn/image_1bhcscfvtas9db6a1s1g3p1l8f9.png alt=image_1bhcscfvtas9db6a1s1g3p1l8f9.png-49.6kB></p><p>Handler_read_key 的值代表了一个行被索引值读的次数。若值较高则意味着索引高效。若值较低则意味着增加索引所带来的性能改善不够理想。Handler_read_rnd_next 值的含义为：在数据文件中读取下一行的请求数。如果你的库进行了大量的全表扫描，则该值通常较高。这意味着查询运行的语句运行较为低效，应该马上建立索引进行补救。</p><h2 id=总结>总结</h2><p>上面举例了三个有代表性的索引被误用的场景。建议在平时的工作与学习中，可以将比较具有代表性的索引使用与误用的场景都记下来，整理成前后连贯的文章以加深理解和方便日后进行查询与再利用。</p><p>最后，索引在精不在多。对于某些经常被访问的查询我们可以尝试使用索引来优化执行效率。而对于某个速度很慢但是为系统管理员设计的查询，是否需要加上索引就需要结合实际情况判断了！</p><hr><p><em>参考书籍：</em>
+<em>《深入浅出 Mysql》</em></p></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/index_badusage/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/sql class="post-tag p-category">sql</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br><a class=u-email href=mailto:chuck1inzl@gmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/index_tips/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/index_overview/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>

@@ -1,224 +1,97 @@
-<!doctype html><html lang=zh-cn>
-<head>
-<meta charset=utf-8>
-<title>模板方法设计模式 | ChuckLin's Blog</title>
-<meta name=description content="Love and Peace">
-<meta name=author content>
-<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
-<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
-<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
-<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
-<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
-<meta name=msapplication-TileColor content="#00aba9">
-<meta name=theme-color content="#ffffff">
-<link rel=me href=mailto:chuck1in9996@gmail.com>
-<link rel=me href=https://github.com/chuck1in>
-<link rel=authorization_endpoint href=https://indieauth.com/auth>
-<link rel=token_endpoint href=https://tokens.indieauth.com/token>
-<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
-<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
-<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
-<meta name=viewport content="width=device-width,initial-scale=1">
-</head>
-<body>
-<div id=sitelogo>
-<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
-</div>
-<header>
-<nav>
-<div id=page-nav>
-<div class=page-nav-item>
-<a href=https://www.chucklin.net/>Home</a>
-</div>
-<div class=page-nav-item>
-<a href=/about/me>
-<span>About</span>
-</a>
-</div>
-<div class=page-nav-item>
-<a href=/tags>
-<span>Tag</span>
-</a>
-</div>
-</div>
-</nav>
-</header>
-<div id=content>
-<article class=h-entry>
-<header>
-<h1 class="post-title p-name">模板方法设计模式</h1>
-<p class=post-date>Posted on
-<time class=dt-published datetime=2017-01-07T10:56:57+08:00>
-7 January, 2017 at 10:56 +0800
-</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
-</p>
-</header>
-<section class="content e-content">
-<p>定义一个操作的主要逻辑方法，而将其他其他逻辑延迟到子类中实现，使子类可以在不改变主要逻辑结构的基础上，即可对某些特定逻辑进行重新实现的做法，叫做模板方法设计模式。</p>
-<h2 id=模板方法设计模式怎么用>模板方法设计模式怎么用？</h2>
-<p>试想一个业务场景。项目产生了一个代码排序后打印的需求。此需求被交付给了程序员 A 来实现。A 通过分析需求后发现要解决此问题需要 2 个步骤.</p>
-<ol>
-<li>排序数组</li>
-<li>打印排序后的数组</li>
-</ol>
-<p>打印好做，而排序方法和规则较多，就比较麻烦了。于是 A 想到了一个办法，先把打印部分的代码做好，其他的交由其他程序员实现。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
-</span><span style=color:#75715e> * 模板方法设计模式
-</span><span style=color:#75715e> * 抽象类
-</span><span style=color:#75715e> */</span>
-<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>abstract</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>AbstractSort</span> <span style=color:#f92672>{</span>
-
-
-    <span style=color:#75715e>/**
-</span><span style=color:#75715e>     * 将数组由大到小排序.
-</span><span style=color:#75715e>     *
-</span><span style=color:#75715e>     * @param array
-</span><span style=color:#75715e>     */</span>
-    <span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>abstract</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>sort</span><span style=color:#f92672>(</span><span style=color:#66d9ef>int</span><span style=color:#f92672>[]</span> array<span style=color:#f92672>);</span>
-
-
-    <span style=color:#75715e>/**
-</span><span style=color:#75715e>     * 打印排序好的数组.
-</span><span style=color:#75715e>     *
-</span><span style=color:#75715e>     * @param array
-</span><span style=color:#75715e>     */</span>
-    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>showSortResult</span><span style=color:#f92672>(</span><span style=color:#66d9ef>int</span><span style=color:#f92672>[]</span> array<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-
-        <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>sort</span><span style=color:#f92672>(</span>array<span style=color:#f92672>);</span>
-        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>print</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;排序结果：&#34;</span><span style=color:#f92672>);</span>
-        <span style=color:#66d9ef>for</span> <span style=color:#f92672>(</span><span style=color:#66d9ef>int</span> i <span style=color:#f92672>=</span> 0<span style=color:#f92672>;</span> i <span style=color:#f92672>&lt;</span> array<span style=color:#f92672>.</span><span style=color:#a6e22e>length</span><span style=color:#f92672>;</span> i<span style=color:#f92672>++)</span> <span style=color:#f92672>{</span>
-            System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>printf</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;%3s&#34;</span><span style=color:#f92672>,</span> array<span style=color:#f92672>[</span>i<span style=color:#f92672>]);</span>
-        <span style=color:#f92672>}</span>
-
-    <span style=color:#f92672>}</span>
-
-<span style=color:#f92672>}</span>
-
-</code></pre></div><p>现在，A 已经做好了该需求主要框架部分的代码了。于是 A 通知到程序员 B，希望由 B 来负责实现剩下的逻辑。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#75715e>/**
-</span><span style=color:#75715e> * 模板方法设计模式
-</span><span style=color:#75715e> * 排序具体实现类
-</span><span style=color:#75715e> */</span>
-<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>ConcreteSort</span> <span style=color:#66d9ef>extends</span> AbstractSort <span style=color:#f92672>{</span>
-
-    <span style=color:#75715e>/**
-</span><span style=color:#75715e>     * 排序方法
-</span><span style=color:#75715e>     * 排序数组里每个元素的值.
-</span><span style=color:#75715e>     *
-</span><span style=color:#75715e>     * @param array 数组
-</span><span style=color:#75715e>     */</span>
-    <span style=color:#a6e22e>@Override</span>
-    <span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>sort</span><span style=color:#f92672>(</span><span style=color:#66d9ef>int</span><span style=color:#f92672>[]</span> array<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-        <span style=color:#66d9ef>for</span> <span style=color:#f92672>(</span><span style=color:#66d9ef>int</span> i <span style=color:#f92672>=</span> 0<span style=color:#f92672>;</span> i <span style=color:#f92672>&lt;</span> array<span style=color:#f92672>.</span><span style=color:#a6e22e>length</span> <span style=color:#f92672>-</span> 1<span style=color:#f92672>;</span> i<span style=color:#f92672>++)</span> <span style=color:#f92672>{</span>
-            selectSort<span style=color:#f92672>(</span>array<span style=color:#f92672>,</span> i<span style=color:#f92672>);</span>
-        <span style=color:#f92672>}</span>
-    <span style=color:#f92672>}</span>
-
-    <span style=color:#75715e>/**
-</span><span style=color:#75715e>     * 排序具体算法实现
-</span><span style=color:#75715e>     * 遍历每个元素,找出相对于当前最小的元素的索引,然后调换互相的位置
-</span><span style=color:#75715e>     *
-</span><span style=color:#75715e>     * @param array 数组
-</span><span style=color:#75715e>     * @param index 索引
-</span><span style=color:#75715e>     */</span>
-    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>selectSort</span><span style=color:#f92672>(</span><span style=color:#66d9ef>int</span><span style=color:#f92672>[]</span> array<span style=color:#f92672>,</span> <span style=color:#66d9ef>int</span> index<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-
-        <span style=color:#66d9ef>int</span> MinValue <span style=color:#f92672>=</span> 32767<span style=color:#f92672>;</span> <span style=color:#75715e>// 最小值变量
-</span><span style=color:#75715e></span>        <span style=color:#66d9ef>int</span> indexMin <span style=color:#f92672>=</span> 0<span style=color:#f92672>;</span> <span style=color:#75715e>// 最小值索引变量
-</span><span style=color:#75715e></span>        <span style=color:#66d9ef>int</span> Temp<span style=color:#f92672>;</span> <span style=color:#75715e>// 暂存变量
-</span><span style=color:#75715e></span>        <span style=color:#66d9ef>for</span> <span style=color:#f92672>(</span><span style=color:#66d9ef>int</span> i <span style=color:#f92672>=</span> index<span style=color:#f92672>;</span> i <span style=color:#f92672>&lt;</span> array<span style=color:#f92672>.</span><span style=color:#a6e22e>length</span><span style=color:#f92672>;</span> i<span style=color:#f92672>++)</span> <span style=color:#f92672>{</span>
-            <span style=color:#66d9ef>if</span> <span style=color:#f92672>(</span>array<span style=color:#f92672>[</span>i<span style=color:#f92672>]</span> <span style=color:#f92672>&lt;</span> MinValue<span style=color:#f92672>)</span> <span style=color:#f92672>{</span> <span style=color:#75715e>// 找到最小值
-</span><span style=color:#75715e></span>                MinValue <span style=color:#f92672>=</span> array<span style=color:#f92672>[</span>i<span style=color:#f92672>];</span> <span style=color:#75715e>// 储存最小值
-</span><span style=color:#75715e></span>                indexMin <span style=color:#f92672>=</span> i<span style=color:#f92672>;</span>
-            <span style=color:#f92672>}</span>
-        <span style=color:#f92672>}</span>
-        Temp <span style=color:#f92672>=</span> array<span style=color:#f92672>[</span>index<span style=color:#f92672>];</span> <span style=color:#75715e>// 交换两数值
-</span><span style=color:#75715e></span>        array<span style=color:#f92672>[</span>index<span style=color:#f92672>]</span> <span style=color:#f92672>=</span> array<span style=color:#f92672>[</span>indexMin<span style=color:#f92672>];</span>
-        array<span style=color:#f92672>[</span>indexMin<span style=color:#f92672>]</span> <span style=color:#f92672>=</span> Temp<span style=color:#f92672>;</span>
-
-    <span style=color:#f92672>}</span>
-
-<span style=color:#f92672>}</span>
-</code></pre></div><p>程序员 B 实现了小->大的排序逻辑，通知到 A 进行测试。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java>
-<span style=color:#75715e>/**
-</span><span style=color:#75715e> * 模板方法设计模式
-</span><span style=color:#75715e> * 排序测试
-</span><span style=color:#75715e> */</span>
-<span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Client</span> <span style=color:#f92672>{</span>
-    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>int</span><span style=color:#f92672>[]</span> a <span style=color:#f92672>=</span> <span style=color:#f92672>{</span>10<span style=color:#f92672>,</span> 32<span style=color:#f92672>,</span> 1<span style=color:#f92672>};</span> <span style=color:#75715e>// 预设数据数组
-</span><span style=color:#75715e></span>
-    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>main</span><span style=color:#f92672>(</span>String<span style=color:#f92672>[]</span> args<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-        AbstractSort s <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> ConcreteSort<span style=color:#f92672>();</span>
-        s<span style=color:#f92672>.</span><span style=color:#a6e22e>showSortResult</span><span style=color:#f92672>(</span>a<span style=color:#f92672>);</span>
-    <span style=color:#f92672>}</span>
-<span style=color:#f92672>}</span>
-</code></pre></div><p>排序结果： 1，10，32
-这就是模板方法模式的主要用法。是不是很好理解？认识了模板方法的用法以后，再认识一下模板方法模式的结构，从理论上巩固一下该章节的知识。</p>
-<p>模板方法模式主要包含下面 3 个方法。</p>
-<ul>
-<li>模板方法</li>
-<li>抽象方法</li>
-<li>钩子方法</li>
-</ul>
-<p><strong>模板方法</strong>
-父类中只声明但不加以实现，而是定义好规范，然后由它的子类去实现。</p>
-<p><strong>抽象方法</strong>
-由抽象类声明并加以实现。一般来说，模版方法调用抽象方法来完成主要的逻辑功能，并且，模版方法大多会定义为 final 类型，指明主要的逻辑功能在子类中不能被重写。</p>
-<p><strong>钩子方法</strong>
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>模板方法设计模式 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:chuck1inzl@gmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">模板方法设计模式</h1><p class=post-date>Posted on
+<time class=dt-published datetime=2017-01-07T10:56:57+08:00>7 January, 2017 at 10:56 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><p>定义一个操作的主要逻辑方法，而将其他其他逻辑延迟到子类中实现，使子类可以在不改变主要逻辑结构的基础上，即可对某些特定逻辑进行重新实现的做法，叫做模板方法设计模式。</p><h2 id=模板方法设计模式怎么用>模板方法设计模式怎么用？</h2><p>试想一个业务场景。项目产生了一个代码排序后打印的需求。此需求被交付给了程序员 A 来实现。A 通过分析需求后发现要解决此问题需要 2 个步骤.</p><ol><li>排序数组</li><li>打印排序后的数组</li></ol><p>打印好做，而排序方法和规则较多，就比较麻烦了。于是 A 想到了一个办法，先把打印部分的代码做好，其他的交由其他程序员实现。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#75715e>/**
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * 模板方法设计模式
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * 抽象类
+</span></span></span><span style=display:flex><span><span style=color:#75715e> */</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>abstract</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>AbstractSort</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>/**
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * 将数组由大到小排序.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     *
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * @param array
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     */</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>abstract</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>sort</span><span style=color:#f92672>(</span><span style=color:#66d9ef>int</span><span style=color:#f92672>[]</span> array<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>/**
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * 打印排序好的数组.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     *
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * @param array
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     */</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>showSortResult</span><span style=color:#f92672>(</span><span style=color:#66d9ef>int</span><span style=color:#f92672>[]</span> array<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>this</span><span style=color:#f92672>.</span><span style=color:#a6e22e>sort</span><span style=color:#f92672>(</span>array<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>        System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>print</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;排序结果：&#34;</span><span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> <span style=color:#f92672>(</span><span style=color:#66d9ef>int</span> i <span style=color:#f92672>=</span> 0<span style=color:#f92672>;</span> i <span style=color:#f92672>&lt;</span> array<span style=color:#f92672>.</span><span style=color:#a6e22e>length</span><span style=color:#f92672>;</span> i<span style=color:#f92672>++)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>printf</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;%3s&#34;</span><span style=color:#f92672>,</span> array<span style=color:#f92672>[</span>i<span style=color:#f92672>]);</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>}</span>
+</span></span></code></pre></div><p>现在，A 已经做好了该需求主要框架部分的代码了。于是 A 通知到程序员 B，希望由 B 来负责实现剩下的逻辑。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#75715e>/**
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * 模板方法设计模式
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * 排序具体实现类
+</span></span></span><span style=display:flex><span><span style=color:#75715e> */</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>ConcreteSort</span> <span style=color:#66d9ef>extends</span> AbstractSort <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>/**
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * 排序方法
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * 排序数组里每个元素的值.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     *
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * @param array 数组
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     */</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@Override</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>sort</span><span style=color:#f92672>(</span><span style=color:#66d9ef>int</span><span style=color:#f92672>[]</span> array<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> <span style=color:#f92672>(</span><span style=color:#66d9ef>int</span> i <span style=color:#f92672>=</span> 0<span style=color:#f92672>;</span> i <span style=color:#f92672>&lt;</span> array<span style=color:#f92672>.</span><span style=color:#a6e22e>length</span> <span style=color:#f92672>-</span> 1<span style=color:#f92672>;</span> i<span style=color:#f92672>++)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            selectSort<span style=color:#f92672>(</span>array<span style=color:#f92672>,</span> i<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>/**
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * 排序具体算法实现
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * 遍历每个元素,找出相对于当前最小的元素的索引,然后调换互相的位置
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     *
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * @param array 数组
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * @param index 索引
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     */</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>selectSort</span><span style=color:#f92672>(</span><span style=color:#66d9ef>int</span><span style=color:#f92672>[]</span> array<span style=color:#f92672>,</span> <span style=color:#66d9ef>int</span> index<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>int</span> MinValue <span style=color:#f92672>=</span> 32767<span style=color:#f92672>;</span> <span style=color:#75715e>// 最小值变量
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#66d9ef>int</span> indexMin <span style=color:#f92672>=</span> 0<span style=color:#f92672>;</span> <span style=color:#75715e>// 最小值索引变量
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#66d9ef>int</span> Temp<span style=color:#f92672>;</span> <span style=color:#75715e>// 暂存变量
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#66d9ef>for</span> <span style=color:#f92672>(</span><span style=color:#66d9ef>int</span> i <span style=color:#f92672>=</span> index<span style=color:#f92672>;</span> i <span style=color:#f92672>&lt;</span> array<span style=color:#f92672>.</span><span style=color:#a6e22e>length</span><span style=color:#f92672>;</span> i<span style=color:#f92672>++)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> <span style=color:#f92672>(</span>array<span style=color:#f92672>[</span>i<span style=color:#f92672>]</span> <span style=color:#f92672>&lt;</span> MinValue<span style=color:#f92672>)</span> <span style=color:#f92672>{</span> <span style=color:#75715e>// 找到最小值
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>                MinValue <span style=color:#f92672>=</span> array<span style=color:#f92672>[</span>i<span style=color:#f92672>];</span> <span style=color:#75715e>// 储存最小值
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>                indexMin <span style=color:#f92672>=</span> i<span style=color:#f92672>;</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>        Temp <span style=color:#f92672>=</span> array<span style=color:#f92672>[</span>index<span style=color:#f92672>];</span> <span style=color:#75715e>// 交换两数值
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        array<span style=color:#f92672>[</span>index<span style=color:#f92672>]</span> <span style=color:#f92672>=</span> array<span style=color:#f92672>[</span>indexMin<span style=color:#f92672>];</span>
+</span></span><span style=display:flex><span>        array<span style=color:#f92672>[</span>indexMin<span style=color:#f92672>]</span> <span style=color:#f92672>=</span> Temp<span style=color:#f92672>;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>}</span>
+</span></span></code></pre></div><p>程序员 B 实现了小->大的排序逻辑，通知到 A 进行测试。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/**
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * 模板方法设计模式
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * 排序测试
+</span></span></span><span style=display:flex><span><span style=color:#75715e> */</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Client</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>int</span><span style=color:#f92672>[]</span> a <span style=color:#f92672>=</span> <span style=color:#f92672>{</span>10<span style=color:#f92672>,</span> 32<span style=color:#f92672>,</span> 1<span style=color:#f92672>};</span> <span style=color:#75715e>// 预设数据数组
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>main</span><span style=color:#f92672>(</span>String<span style=color:#f92672>[]</span> args<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        AbstractSort s <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> ConcreteSort<span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>        s<span style=color:#f92672>.</span><span style=color:#a6e22e>showSortResult</span><span style=color:#f92672>(</span>a<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>}</span>
+</span></span></code></pre></div><p>排序结果： 1，10，32
+这就是模板方法模式的主要用法。是不是很好理解？认识了模板方法的用法以后，再认识一下模板方法模式的结构，从理论上巩固一下该章节的知识。</p><p>模板方法模式主要包含下面 3 个方法。</p><ul><li>模板方法</li><li>抽象方法</li><li>钩子方法</li></ul><p><strong>模板方法</strong>
+父类中只声明但不加以实现，而是定义好规范，然后由它的子类去实现。</p><p><strong>抽象方法</strong>
+由抽象类声明并加以实现。一般来说，模版方法调用抽象方法来完成主要的逻辑功能，并且，模版方法大多会定义为 final 类型，指明主要的逻辑功能在子类中不能被重写。</p><p><strong>钩子方法</strong>
 由抽象类声明并加以实现。但是子类可以去扩展，子类可以通过扩展钩子方法来影响模版方法的逻辑。
-抽象类的任务是搭建逻辑的框架，通常由经验丰富的人员编写，因为抽象类的好坏直接决定了程序是否稳定性。实现类用来实现细节。抽象类中的模版方法正是通过实现类扩展的方法来完成业务逻辑。只要实现类中的扩展方法通过了单元测试，在模版方法正确的前提下，整体功能一般不会出现大的错误。</p>
-<h2 id=总结>总结</h2>
-<ol>
-<li>模板方法模式在项目中会经常运用到，需要熟练掌握。</li>
-<li>模板方法模式结构清晰。一般在项目中常常将不易于变化的部分封装为模板方法。而将易于变化的部分定义为抽象方法。</li>
-<li>模板方法模式易于扩展。面对新增需求，只需要增加相应的模板抽象方法实现子类就可以了，符合了接口的开闭原则。</li>
-<li>在多个子类拥有相同的方法，并且这些方法逻辑相同时，可以考虑使用模版方法模式。在程序的主框架相同，细节不同的场合下，也比较适合使用这种模式。</li>
-</ol>
-</section>
-<footer>
-<a class="permalink u-url" href=https://www.chucklin.net/post/template_designmode/>🔗</a>
-<hr class=post-underline>
-<p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a>
-</p>
-</footer>
-</article>
-</div>
-<div class=h-card>
-<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
-<div class=card-content>
-<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
-<p class=card-subhead>
-<span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br>
-<a class=u-email href=mailto:chuck1in9996@gmail.com>Email me</a>
-</p>
-</div>
-<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
-</div>
-<div id=footer>
-<nav id=article-skip>
-<div class=next>
-<a alt="Newer article" href=https://www.chucklin.net/post/deadlock/>&larr; Newer</a>
-</div>
-<div class=top>
-<a alt="Top of page" href=#>Top</a>
-</div>
-<div class=prev>
-<a alt="Older article" href=https://www.chucklin.net/about/me/>Older &rarr;</a>
-</div>
-</nav>
-<aside id=social>
-<div id=social-icons>
-<div class=icon-24x24>
-<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
-</div>
-</div>
-</aside>
-<p class=copyright>
-Copyright © 2021 Chuck Lin. All rights reserved.
-</p>
-</div>
-</body>
-</html>
+抽象类的任务是搭建逻辑的框架，通常由经验丰富的人员编写，因为抽象类的好坏直接决定了程序是否稳定性。实现类用来实现细节。抽象类中的模版方法正是通过实现类扩展的方法来完成业务逻辑。只要实现类中的扩展方法通过了单元测试，在模版方法正确的前提下，整体功能一般不会出现大的错误。</p><h2 id=总结>总结</h2><ol><li>模板方法模式在项目中会经常运用到，需要熟练掌握。</li><li>模板方法模式结构清晰。一般在项目中常常将不易于变化的部分封装为模板方法。而将易于变化的部分定义为抽象方法。</li><li>模板方法模式易于扩展。面对新增需求，只需要增加相应的模板抽象方法实现子类就可以了，符合了接口的开闭原则。</li><li>在多个子类拥有相同的方法，并且这些方法逻辑相同时，可以考虑使用模版方法模式。在程序的主框架相同，细节不同的场合下，也比较适合使用这种模式。</li></ol></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/template_designmode/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br><a class=u-email href=mailto:chuck1inzl@gmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/deadlock/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/about/me/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>

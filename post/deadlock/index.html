@@ -1,257 +1,121 @@
-<!doctype html><html lang=zh-cn>
-<head>
-<meta charset=utf-8>
-<title>什么是死锁 | ChuckLin's Blog</title>
-<meta name=description content="Love and Peace">
-<meta name=author content>
-<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
-<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
-<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
-<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
-<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
-<meta name=msapplication-TileColor content="#00aba9">
-<meta name=theme-color content="#ffffff">
-<link rel=me href=mailto:chuck1in9996@gmail.com>
-<link rel=me href=https://github.com/chuck1in>
-<link rel=authorization_endpoint href=https://indieauth.com/auth>
-<link rel=token_endpoint href=https://tokens.indieauth.com/token>
-<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
-<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
-<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
-<meta name=viewport content="width=device-width,initial-scale=1">
-</head>
-<body>
-<div id=sitelogo>
-<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
-</div>
-<header>
-<nav>
-<div id=page-nav>
-<div class=page-nav-item>
-<a href=https://www.chucklin.net/>Home</a>
-</div>
-<div class=page-nav-item>
-<a href=/about/me>
-<span>About</span>
-</a>
-</div>
-<div class=page-nav-item>
-<a href=/tags>
-<span>Tag</span>
-</a>
-</div>
-</div>
-</nav>
-</header>
-<div id=content>
-<article class=h-entry>
-<header>
-<h1 class="post-title p-name">什么是死锁</h1>
-<p class=post-date>Posted on
-<time class=dt-published datetime=2017-12-08T15:07:43+08:00>
-8 December, 2017 at 15:07 +0800
-</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
-</p>
-</header>
-<section class="content e-content">
-<h3 id=什么是死锁>什么是死锁</h3>
-<p>当线程 A 持有独占锁 a，并尝试去获取独占锁 b 的同时，线程 B 持有独占锁 b ，并尝试获取独占锁 a 的情况下，就会发生 AB 两个线程由于互相持有对方需要的锁，而发生的阻塞现象，我们称为死锁。</p>
-<p>下面用一个非常简单的死锁示例来帮助你理解死锁的定义。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>DeadLockDemo</span> <span style=color:#f92672>{</span>
-
-    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>main</span><span style=color:#f92672>(</span>String<span style=color:#f92672>[]</span> args<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-        <span style=color:#75715e>// 线程a
-</span><span style=color:#75715e></span>        Thread td1 <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Thread<span style=color:#f92672>(</span><span style=color:#66d9ef>new</span> Runnable<span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
-            <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>run</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
-                DeadLockDemo<span style=color:#f92672>.</span><span style=color:#a6e22e>method1</span><span style=color:#f92672>();</span>
-            <span style=color:#f92672>}</span>
-        <span style=color:#f92672>});</span>
-        <span style=color:#75715e>// 线程b
-</span><span style=color:#75715e></span>        Thread td2 <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Thread<span style=color:#f92672>(</span><span style=color:#66d9ef>new</span> Runnable<span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
-            <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>run</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
-                DeadLockDemo<span style=color:#f92672>.</span><span style=color:#a6e22e>method2</span><span style=color:#f92672>();</span>
-            <span style=color:#f92672>}</span>
-        <span style=color:#f92672>});</span>
-
-        td1<span style=color:#f92672>.</span><span style=color:#a6e22e>start</span><span style=color:#f92672>();</span>
-        td2<span style=color:#f92672>.</span><span style=color:#a6e22e>start</span><span style=color:#f92672>();</span>
-    <span style=color:#f92672>}</span>
-
-    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>method1</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
-        <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>String<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-            <span style=color:#66d9ef>try</span> <span style=color:#f92672>{</span>
-                Thread<span style=color:#f92672>.</span><span style=color:#a6e22e>sleep</span><span style=color:#f92672>(</span>2000<span style=color:#f92672>);</span>
-            <span style=color:#f92672>}</span> <span style=color:#66d9ef>catch</span> <span style=color:#f92672>(</span>InterruptedException e<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-                e<span style=color:#f92672>.</span><span style=color:#a6e22e>printStackTrace</span><span style=color:#f92672>();</span>
-            <span style=color:#f92672>}</span>
-            System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;线程a尝试获取integer.class&#34;</span><span style=color:#f92672>);</span>
-            <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>Integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-
-            <span style=color:#f92672>}</span>
-
-        <span style=color:#f92672>}</span>
-    <span style=color:#f92672>}</span>
-
-    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>method2</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
-        <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>Integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-            <span style=color:#66d9ef>try</span> <span style=color:#f92672>{</span>
-                Thread<span style=color:#f92672>.</span><span style=color:#a6e22e>sleep</span><span style=color:#f92672>(</span>2000<span style=color:#f92672>);</span>
-            <span style=color:#f92672>}</span> <span style=color:#66d9ef>catch</span> <span style=color:#f92672>(</span>InterruptedException e<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-                e<span style=color:#f92672>.</span><span style=color:#a6e22e>printStackTrace</span><span style=color:#f92672>();</span>
-            <span style=color:#f92672>}</span>
-            System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;线程b尝试获取String.class&#34;</span><span style=color:#f92672>);</span>
-            <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>String<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-
-            <span style=color:#f92672>}</span>
-
-        <span style=color:#f92672>}</span>
-    <span style=color:#f92672>}</span>
-
-<span style=color:#f92672>}</span>
-
-<span style=color:#f92672>----------------</span>
-线程b尝试获取String<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
-线程a尝试获取integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
-<span style=color:#f92672>....</span>
-<span style=color:#f92672>...</span>
-<span style=color:#f92672>..</span>
-<span style=color:#f92672>.</span>
-无限阻塞下去
-
-</code></pre></div><h3 id=如何避免死锁>如何避免死锁？</h3>
-<p>教科书般的回答应该是，结合“哲学家就餐<sup id=fnref:1><a href=#fn:1 class=footnote-ref role=doc-noteref>1</a></sup>”模型，分析并总结出以下死锁的原因，最后得出「避免死锁就是破坏造成死锁的，若干条件中的任意一个」的结论。</p>
-<p>造成死锁必须达成的 4 个条件：</p>
-<ol>
-<li>互斥条件：一个资源每次只能被一个线程使用。</li>
-<li>请求与保持条件：一个线程因请求资源而阻塞时，对已获得的资源保持不放。</li>
-<li>不剥夺条件：线程已获得的资源，在未使用完之前，不能强行剥夺。</li>
-<li>循环等待条件：若干线程之间形成一种头尾相接的循环等待资源关系。</li>
-</ol>
-<p>但是，「哲学家就餐」过于学术派了。 对 4 个造成死锁的条件进行逐条分析，我们可以得出以下  结论。</p>
-<ol>
-<li>互斥条件 &mdash;> 独占锁的特点之一。</li>
-<li>请求与保持条件 &mdash;> 独占锁的特点之一，尝试获取锁时并不会释放已经持有的锁</li>
-<li>不剥夺条件 &mdash;> 独占锁的特点之一。</li>
-<li>循环等待条件 &mdash;> 唯一需要记忆的造成死锁的条件。</li>
-</ol>
-<p>不错！复杂的死锁条件经过简化，现在需要记忆的仅只有独占锁与第四个条件而已。</p>
-<dl>
-<dt>所以，面对如何避免死锁这个问题，我们只需要这样回答！</dt>
-<dd>在并发程序中，避免了逻辑中出现复数个线程互相持有对方线程所需要的独占锁的的情况，就可以避免死锁。</dd>
-</dl>
-<p>下面我们通过“破坏”第四个死锁条件，来解决第一个小节中的死锁示例并证明我们的结论。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>DeadLockDemo2</span> <span style=color:#f92672>{</span>
-
-    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>main</span><span style=color:#f92672>(</span>String<span style=color:#f92672>[]</span> args<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-        <span style=color:#75715e>// 线程a
-</span><span style=color:#75715e></span>        Thread td1 <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Thread<span style=color:#f92672>(</span><span style=color:#66d9ef>new</span> Runnable<span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
-            <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>run</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
-                DeadLockDemo2<span style=color:#f92672>.</span><span style=color:#a6e22e>method1</span><span style=color:#f92672>();</span>
-            <span style=color:#f92672>}</span>
-        <span style=color:#f92672>});</span>
-        <span style=color:#75715e>// 线程b
-</span><span style=color:#75715e></span>        Thread td2 <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Thread<span style=color:#f92672>(</span><span style=color:#66d9ef>new</span> Runnable<span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
-            <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>run</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
-                DeadLockDemo2<span style=color:#f92672>.</span><span style=color:#a6e22e>method2</span><span style=color:#f92672>();</span>
-            <span style=color:#f92672>}</span>
-        <span style=color:#f92672>});</span>
-
-        td1<span style=color:#f92672>.</span><span style=color:#a6e22e>start</span><span style=color:#f92672>();</span>
-        td2<span style=color:#f92672>.</span><span style=color:#a6e22e>start</span><span style=color:#f92672>();</span>
-    <span style=color:#f92672>}</span>
-
-    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>method1</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
-        <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>String<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-            <span style=color:#66d9ef>try</span> <span style=color:#f92672>{</span>
-                Thread<span style=color:#f92672>.</span><span style=color:#a6e22e>sleep</span><span style=color:#f92672>(</span>2000<span style=color:#f92672>);</span>
-            <span style=color:#f92672>}</span> <span style=color:#66d9ef>catch</span> <span style=color:#f92672>(</span>InterruptedException e<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-                e<span style=color:#f92672>.</span><span style=color:#a6e22e>printStackTrace</span><span style=color:#f92672>();</span>
-            <span style=color:#f92672>}</span>
-            System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;线程a尝试获取integer.class&#34;</span><span style=color:#f92672>);</span>
-            <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>Integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-                System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;线程a获取到integer.class&#34;</span><span style=color:#f92672>);</span>
-            <span style=color:#f92672>}</span>
-
-        <span style=color:#f92672>}</span>
-    <span style=color:#f92672>}</span>
-
-    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>method2</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
-        <span style=color:#75715e>// 不再获取线程a需要的Integer.class锁。
-</span><span style=color:#75715e></span>        <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>String<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-            <span style=color:#66d9ef>try</span> <span style=color:#f92672>{</span>
-                Thread<span style=color:#f92672>.</span><span style=color:#a6e22e>sleep</span><span style=color:#f92672>(</span>2000<span style=color:#f92672>);</span>
-            <span style=color:#f92672>}</span> <span style=color:#66d9ef>catch</span> <span style=color:#f92672>(</span>InterruptedException e<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-                e<span style=color:#f92672>.</span><span style=color:#a6e22e>printStackTrace</span><span style=color:#f92672>();</span>
-            <span style=color:#f92672>}</span>
-            System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;线程b尝试获取Integer.class&#34;</span><span style=color:#f92672>);</span>
-            <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>Integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
-                System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;线程b获取到Integer.class&#34;</span><span style=color:#f92672>);</span>
-            <span style=color:#f92672>}</span>
-
-        <span style=color:#f92672>}</span>
-    <span style=color:#f92672>}</span>
-
-<span style=color:#f92672>}</span>
-<span style=color:#f92672>-----------------</span>
-线程a尝试获取integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
-线程a获取到integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
-线程b尝试获取Integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
-线程b获取到Integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
-
-
-</code></pre></div><p>在上面的例子中，由于已经不存在线程 a 持有线程 b 需要的锁，而线程 b 持有线程 a 需要的锁的逻辑了，所以 Demo 顺利执行完毕。</p>
-<section class=footnotes role=doc-endnotes>
-<hr>
-<ol>
-<li id=fn:1 role=doc-endnote>
-<p>关于哲学家就餐问题详细请参考<a href=https://zh.wikipedia.org/wiki/%E5%93%B2%E5%AD%A6%E5%AE%B6%E5%B0%B1%E9%A4%90%E9%97%AE%E9%A2%98>wiki</a>&#160;<a href=#fnref:1 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p>
-</li>
-</ol>
-</section>
-</section>
-<footer>
-<a class="permalink u-url" href=https://www.chucklin.net/post/deadlock/>🔗</a>
-<hr class=post-underline>
-<p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a>
-</p>
-</footer>
-</article>
-</div>
-<div class=h-card>
-<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
-<div class=card-content>
-<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
-<p class=card-subhead>
-<span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br>
-<a class=u-email href=mailto:chuck1in9996@gmail.com>Email me</a>
-</p>
-</div>
-<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
-</div>
-<div id=footer>
-<nav id=article-skip>
-<div class=next>
-<a alt="Newer article" href=https://www.chucklin.net/post/factory_designmode/>&larr; Newer</a>
-</div>
-<div class=top>
-<a alt="Top of page" href=#>Top</a>
-</div>
-<div class=prev>
-<a alt="Older article" href=https://www.chucklin.net/post/template_designmode/>Older &rarr;</a>
-</div>
-</nav>
-<aside id=social>
-<div id=social-icons>
-<div class=icon-24x24>
-<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
-</div>
-</div>
-</aside>
-<p class=copyright>
-Copyright © 2021 Chuck Lin. All rights reserved.
-</p>
-</div>
-</body>
-</html>
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>什么是死锁 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:chuck1inzl@gmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">什么是死锁</h1><p class=post-date>Posted on
+<time class=dt-published datetime=2017-12-08T15:07:43+08:00>8 December, 2017 at 15:07 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h3 id=什么是死锁>什么是死锁</h3><p>当线程 A 持有独占锁 a，并尝试去获取独占锁 b 的同时，线程 B 持有独占锁 b ，并尝试获取独占锁 a 的情况下，就会发生 AB 两个线程由于互相持有对方需要的锁，而发生的阻塞现象，我们称为死锁。</p><p>下面用一个非常简单的死锁示例来帮助你理解死锁的定义。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>DeadLockDemo</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>main</span><span style=color:#f92672>(</span>String<span style=color:#f92672>[]</span> args<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 线程a
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        Thread td1 <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Thread<span style=color:#f92672>(</span><span style=color:#66d9ef>new</span> Runnable<span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>run</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>                DeadLockDemo<span style=color:#f92672>.</span><span style=color:#a6e22e>method1</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>});</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 线程b
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        Thread td2 <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Thread<span style=color:#f92672>(</span><span style=color:#66d9ef>new</span> Runnable<span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>run</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>                DeadLockDemo<span style=color:#f92672>.</span><span style=color:#a6e22e>method2</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>});</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        td1<span style=color:#f92672>.</span><span style=color:#a6e22e>start</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>        td2<span style=color:#f92672>.</span><span style=color:#a6e22e>start</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>method1</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>String<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>try</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>                Thread<span style=color:#f92672>.</span><span style=color:#a6e22e>sleep</span><span style=color:#f92672>(</span>2000<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span> <span style=color:#66d9ef>catch</span> <span style=color:#f92672>(</span>InterruptedException e<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>                e<span style=color:#f92672>.</span><span style=color:#a6e22e>printStackTrace</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>            System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;线程a尝试获取integer.class&#34;</span><span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>Integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>method2</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>Integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>try</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>                Thread<span style=color:#f92672>.</span><span style=color:#a6e22e>sleep</span><span style=color:#f92672>(</span>2000<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span> <span style=color:#66d9ef>catch</span> <span style=color:#f92672>(</span>InterruptedException e<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>                e<span style=color:#f92672>.</span><span style=color:#a6e22e>printStackTrace</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>            System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;线程b尝试获取String.class&#34;</span><span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>String<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>----------------</span>
+</span></span><span style=display:flex><span>线程b尝试获取String<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
+</span></span><span style=display:flex><span>线程a尝试获取integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>....</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>..</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>.</span>
+</span></span><span style=display:flex><span>无限阻塞下去
+</span></span></code></pre></div><h3 id=如何避免死锁>如何避免死锁？</h3><p>教科书般的回答应该是，结合“哲学家就餐<sup id=fnref:1><a href=#fn:1 class=footnote-ref role=doc-noteref>1</a></sup>”模型，分析并总结出以下死锁的原因，最后得出「避免死锁就是破坏造成死锁的，若干条件中的任意一个」的结论。</p><p>造成死锁必须达成的 4 个条件：</p><ol><li>互斥条件：一个资源每次只能被一个线程使用。</li><li>请求与保持条件：一个线程因请求资源而阻塞时，对已获得的资源保持不放。</li><li>不剥夺条件：线程已获得的资源，在未使用完之前，不能强行剥夺。</li><li>循环等待条件：若干线程之间形成一种头尾相接的循环等待资源关系。</li></ol><p>但是，「哲学家就餐」过于学术派了。 对 4 个造成死锁的条件进行逐条分析，我们可以得出以下  结论。</p><ol><li>互斥条件 &mdash;> 独占锁的特点之一。</li><li>请求与保持条件 &mdash;> 独占锁的特点之一，尝试获取锁时并不会释放已经持有的锁</li><li>不剥夺条件 &mdash;> 独占锁的特点之一。</li><li>循环等待条件 &mdash;> 唯一需要记忆的造成死锁的条件。</li></ol><p>不错！复杂的死锁条件经过简化，现在需要记忆的仅只有独占锁与第四个条件而已。</p><dl><dt>所以，面对如何避免死锁这个问题，我们只需要这样回答！</dt><dd>在并发程序中，避免了逻辑中出现复数个线程互相持有对方线程所需要的独占锁的的情况，就可以避免死锁。</dd></dl><p>下面我们通过“破坏”第四个死锁条件，来解决第一个小节中的死锁示例并证明我们的结论。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>DeadLockDemo2</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>main</span><span style=color:#f92672>(</span>String<span style=color:#f92672>[]</span> args<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 线程a
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        Thread td1 <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Thread<span style=color:#f92672>(</span><span style=color:#66d9ef>new</span> Runnable<span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>run</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>                DeadLockDemo2<span style=color:#f92672>.</span><span style=color:#a6e22e>method1</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>});</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 线程b
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        Thread td2 <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> Thread<span style=color:#f92672>(</span><span style=color:#66d9ef>new</span> Runnable<span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>run</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>                DeadLockDemo2<span style=color:#f92672>.</span><span style=color:#a6e22e>method2</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>});</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        td1<span style=color:#f92672>.</span><span style=color:#a6e22e>start</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>        td2<span style=color:#f92672>.</span><span style=color:#a6e22e>start</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>method1</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>String<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>try</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>                Thread<span style=color:#f92672>.</span><span style=color:#a6e22e>sleep</span><span style=color:#f92672>(</span>2000<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span> <span style=color:#66d9ef>catch</span> <span style=color:#f92672>(</span>InterruptedException e<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>                e<span style=color:#f92672>.</span><span style=color:#a6e22e>printStackTrace</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>            System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;线程a尝试获取integer.class&#34;</span><span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>Integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>                System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;线程a获取到integer.class&#34;</span><span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>method2</span><span style=color:#f92672>()</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 不再获取线程a需要的Integer.class锁。
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>String<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>try</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>                Thread<span style=color:#f92672>.</span><span style=color:#a6e22e>sleep</span><span style=color:#f92672>(</span>2000<span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span> <span style=color:#66d9ef>catch</span> <span style=color:#f92672>(</span>InterruptedException e<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>                e<span style=color:#f92672>.</span><span style=color:#a6e22e>printStackTrace</span><span style=color:#f92672>();</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>            System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;线程b尝试获取Integer.class&#34;</span><span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>synchronized</span> <span style=color:#f92672>(</span>Integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span><span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>                System<span style=color:#f92672>.</span><span style=color:#a6e22e>out</span><span style=color:#f92672>.</span><span style=color:#a6e22e>println</span><span style=color:#f92672>(</span><span style=color:#e6db74>&#34;线程b获取到Integer.class&#34;</span><span style=color:#f92672>);</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>-----------------</span>
+</span></span><span style=display:flex><span>线程a尝试获取integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
+</span></span><span style=display:flex><span>线程a获取到integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
+</span></span><span style=display:flex><span>线程b尝试获取Integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
+</span></span><span style=display:flex><span>线程b获取到Integer<span style=color:#f92672>.</span><span style=color:#a6e22e>class</span>
+</span></span></code></pre></div><p>在上面的例子中，由于已经不存在线程 a 持有线程 b 需要的锁，而线程 b 持有线程 a 需要的锁的逻辑了，所以 Demo 顺利执行完毕。</p><div class=footnotes role=doc-endnotes><hr><ol><li id=fn:1><p>关于哲学家就餐问题详细请参考<a href=https://zh.wikipedia.org/wiki/%E5%93%B2%E5%AD%A6%E5%AE%B6%E5%B0%B1%E9%A4%90%E9%97%AE%E9%A2%98>wiki</a>&#160;<a href=#fnref:1 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li></ol></div></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/deadlock/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/java class="post-tag p-category">java</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br><a class=u-email href=mailto:chuck1inzl@gmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/factory_designmode/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/template_designmode/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>

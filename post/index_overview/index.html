@@ -1,240 +1,75 @@
-<!doctype html><html lang=zh-cn>
-<head>
-<meta charset=utf-8>
-<title>索引的应用 | ChuckLin's Blog</title>
-<meta name=description content="Love and Peace">
-<meta name=author content>
-<link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png>
-<link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png>
-<link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png>
-<link rel=manifest href=https://www.chucklin.net/site.webmanifest>
-<link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a>
-<meta name=msapplication-TileColor content="#00aba9">
-<meta name=theme-color content="#ffffff">
-<link rel=me href=mailto:chuck1in9996@gmail.com>
-<link rel=me href=https://github.com/chuck1in>
-<link rel=authorization_endpoint href=https://indieauth.com/auth>
-<link rel=token_endpoint href=https://tokens.indieauth.com/token>
-<link rel=stylesheet href=https://www.chucklin.net/css/fonts.css>
-<link rel=stylesheet href=https://www.chucklin.net/css/style.css>
-<link rel=stylesheet href=https://www.chucklin.net/css/custom.css>
-<meta name=viewport content="width=device-width,initial-scale=1">
-</head>
-<body>
-<div id=sitelogo>
-<a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a>
-</div>
-<header>
-<nav>
-<div id=page-nav>
-<div class=page-nav-item>
-<a href=https://www.chucklin.net/>Home</a>
-</div>
-<div class=page-nav-item>
-<a href=/about/me>
-<span>About</span>
-</a>
-</div>
-<div class=page-nav-item>
-<a href=/tags>
-<span>Tag</span>
-</a>
-</div>
-</div>
-</nav>
-</header>
-<div id=content>
-<article class=h-entry>
-<header>
-<h1 class="post-title p-name">索引的应用</h1>
-<p class=post-date>Posted on
-<time class=dt-published datetime=2020-02-22T09:52:00+08:00>
-22 February, 2020 at 09:52 +0800
-</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a>
-</p>
-</header>
-<section class="content e-content">
-<p>接上一章，我们成功分析出了有问题的 sql 语句。接下来该针对问题语句进行更进一步的优化了。索引往往在这个时候被引入来解决 sql 的运行效率的问题。</p>
-<p>虽然索引的使用十分广泛，但是部分开发人员对索引的知识没有成体系的了解，造成了误用索引。误用索引不仅不能解决问题，还会进一步恶化性能。</p>
-<p>好消息是，过阅读索引相关的章节的内容你将掌握以下几个知识点，从而建立起正确运用索引的基本知识。</p>
-<ul>
-<li>索引是什么，都有哪些索引？</li>
-<li>与索引相关的术语的基本概念。</li>
-<li>哪些典型的场景能够使用索引？</li>
-<li>哪些典型的场景无法使用索引？</li>
-</ul>
-<h2 id=索引是什么都有哪些索引>索引是什么？都有哪些索引？</h2>
-<p>和书本能够利用目录快速定位到具体内容一样，索引也能够快速查询到数据库表中的具体内容。索引就是数据库的目录。</p>
-<p>真正的索引是在 mysql 存储引擎中实现的。所以每种不同的存储引擎都对应了不同的索引类型。
-常见的索引类型分为以下四种：</p>
-<ul>
-<li>B-tree 索引：最常见的索引类型</li>
-<li>Hash 索引：只有 Memory 引擎支持</li>
-<li>R-tree 索引（空间索引）：MyIsam 存储引擎支持的一个特殊索引类型。主要用于地理空间数据类型。</li>
-<li>Full-text 索引：全文索引也是 MyIsam 的特殊索引类型。</li>
-</ul>
-<p>B-tree 索引是一个结构类似二叉树的索引。本篇文章只介绍 B-tree 索引的运用，关于其他索引请自行查阅网络资料进行学习。</p>
-<h2 id=能够使用索引的典型场景>能够使用索引的典型场景</h2>
-<h4 id=全值匹配>全值匹配</h4>
-<p>有如下一张测试表。主键为 id，无任何其他索引。
-<img src=http://static.zybuluo.com/mikumikulch/zuqchbxkq2maphi6pxhsw4ak/image_1bg37jhm96kr1qgl1864cobor39.png alt=image_1bg37jhm96kr1qgl1864cobor39.png-31.8kB></p>
-<p>指定索引中所有列的具体值。索引中的所有列，都有等值匹配的条件。
-现在看看 explain 的返回值情况。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>
-</code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/rkgjhif22l9vc8hhriolvfbw/image_1bg3j72qh160nmvnta15um1n2434.png alt=image_1bg3j72qh160nmvnta15um1n2434.png-40.7kB></p>
-<p>explain 输出结果中字段 type 的值为 const，表示为常量。即对索引中的列有等值的匹配条件。
-字段 key 的值为 Primary。表示索引优化器选择了主键索引进行优化。</p>
-<h4 id=匹配值的范围查询>匹配值的范围查询</h4>
-<p>现在我们给 test_table 这张表增加两个索引，如下：</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>CREATE</span> <span style=color:#66d9ef>TABLE</span> <span style=color:#f92672>`</span>test_table<span style=color:#f92672>`</span> (
-  <span style=color:#f92672>`</span>id<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>NOT</span> <span style=color:#66d9ef>NULL</span> AUTO_INCREMENT,
-  <span style=color:#f92672>`</span>name<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>birthday<span style=color:#f92672>`</span> datetime <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>address<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>phone<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>note<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>age<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#66d9ef>PRIMARY</span> <span style=color:#66d9ef>KEY</span> (<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>),
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>NAME<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>AGE<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>age<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE
-) ENGINE<span style=color:#f92672>=</span>InnoDB AUTO_INCREMENT<span style=color:#f92672>=</span><span style=color:#ae81ff>145</span> <span style=color:#66d9ef>DEFAULT</span> CHARSET<span style=color:#f92672>=</span>utf8
-
-</code></pre></div><p>现在尝试对索引的值进行范围查找。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span> age <span style=color:#f92672>&gt;</span><span style=color:#ae81ff>15</span> <span style=color:#66d9ef>and</span> age <span style=color:#f92672>&lt;</span><span style=color:#ae81ff>20</span>
-</code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/do5xtj56ywqrkdmicotw5089/image_1bgoc670t130r1l2g11qp1e569nu9.png alt=image_1bgoc670t130r1l2g11qp1e569nu9.png-46.8kB>
-type 为 range，说明优化器选择范围查询。索引 key 为 AGE 代表选择了 AGE 索引来加速访。注意本例中的 Extra 字段。Using index condition 代表在利用索引查询后，还需要对索引回表查询数据。但是把数据过滤操作下放到了存储引擎，从而减少了 IO 处理。</p>
-<h3 id=匹配最左前缀>匹配最左前缀</h3>
-<p>利用索引进行查询时，一定要遵循左前缀查询规则。
-首先在表上建立一个复合索引如下：</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>CREATE</span> <span style=color:#66d9ef>TABLE</span> <span style=color:#f92672>`</span>test_table<span style=color:#f92672>`</span> (
-  <span style=color:#f92672>`</span>id<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>NOT</span> <span style=color:#66d9ef>NULL</span> AUTO_INCREMENT,
-  <span style=color:#f92672>`</span>name<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>birthday<span style=color:#f92672>`</span> datetime <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>address<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>phone<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>note<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>age<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#66d9ef>PRIMARY</span> <span style=color:#66d9ef>KEY</span> (<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>),
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>NAME<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>AGE<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>age<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>LeftMostPreFix<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>,<span style=color:#f92672>`</span>address<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE
-) ENGINE<span style=color:#f92672>=</span>InnoDB AUTO_INCREMENT<span style=color:#f92672>=</span><span style=color:#ae81ff>145</span> <span style=color:#66d9ef>DEFAULT</span> CHARSET<span style=color:#f92672>=</span>utf8
-</code></pre></div><p>LeftMostPreFix 索引由 name、address 两列组成。在使用这个索引进行查询时，只有 name 、name and address 可以生效。
-直接使用 address 或者 address 以及 name 进行查询时候，索引都无法生效。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql> <span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span>  name <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39; 张&#39;</span> <span style=color:#66d9ef>and</span> address <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;东京&#39;</span>
-
-</code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/o5vmlkjzc4cpk277mksigi8p/image_1bg3g3bhb4ftec14kro8ns542a.png alt=image_1bg3g3bhb4ftec14kro8ns542a.png-50.8kB></p>
-<p>但是，如果仅仅是使用 address 进行查询的话，则复合索引无法产生效果。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql> <span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span>  address <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;东京&#39;</span>
-</code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/msjvr9xl1a7yhvy5aeoquuen/image_1bg3g4sv21oqh8be1bud1ptl114h9.png alt=image_1bg3g4sv21oqh8be1bud1ptl114h9.png-41.9kB></p>
-<h3 id=覆盖索引查询>覆盖索引查询</h3>
-<p>当查询的所有列都处在索引字段中时，查询的效率会更高。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql> <span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> name <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span>  name <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39; 林&#39;</span>
-</code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/dg1ue7q34iad5n5gh3doh6aw/image_1bg3g8fg71pj3rck1j7p13cg1clhm.png alt=image_1bg3g8fg71pj3rck1j7p13cg1clhm.png-46.2kB></p>
-<p>Extra 变成了 Using index。代表只需要访问索引就能得到全部数据，不需要通过索引获得地址后，再回表进行扫描。</p>
-<h3 id=左匹配列前缀>左匹配列前缀</h3>
-<p>like 查询是一种常见的查询方式。和左前缀原则一样，进行 like 查询时也需要遵循左前缀匹配原则。</p>
-<p>首先对表增加 address 列的索引。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>CREATE</span> <span style=color:#66d9ef>TABLE</span> <span style=color:#f92672>`</span>test_table<span style=color:#f92672>`</span> (
-  <span style=color:#f92672>`</span>id<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>NOT</span> <span style=color:#66d9ef>NULL</span> AUTO_INCREMENT,
-  <span style=color:#f92672>`</span>name<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>birthday<span style=color:#f92672>`</span> datetime <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>address<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>phone<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>note<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>age<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#66d9ef>PRIMARY</span> <span style=color:#66d9ef>KEY</span> (<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>),
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>NAME<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>AGE<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>age<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>LeftMostPreFix<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>,<span style=color:#f92672>`</span>address<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>ADDRESS<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>address<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE
-) ENGINE<span style=color:#f92672>=</span>InnoDB AUTO_INCREMENT<span style=color:#f92672>=</span><span style=color:#ae81ff>145</span> <span style=color:#66d9ef>DEFAULT</span> CHARSET<span style=color:#f92672>=</span>utf8
-</code></pre></div><p>接着尝试使用 like 检索数据。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql> <span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span> address <span style=color:#66d9ef>like</span> <span style=color:#e6db74>&#39;东%&#39;</span>
-</code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/cn6bna9ean95xmexjo5ivd1b/image_1bg3gpoh0126g1nbm1m64fsj1fmd1g.png alt=image_1bg3gpoh0126g1nbm1m64fsj1fmd1g.png-45.1kB>
-成功运用到索引 ADDRESS。查询类型为 range。</p>
-<p>然后违背左前缀匹配原则，使用 Like 关键字再查询一次。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span> address <span style=color:#66d9ef>like</span> <span style=color:#e6db74>&#39;%京&#39;</span>
-</code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/iid14z7dnq9zv9b6ri3f4qeg/image_1bg3gr2rd4to4p01v9c74o7nn1t.png alt=image_1bg3gr2rd4to4p01v9c74o7nn1t.png-41.9kB></p>
-<p>type 为 ALL、key 为 null 表示该次查询未使用索引，而是通过全表扫描进行了查询。全表扫描的性能在数据量较大时比较低下，应该尽量频繁进行全表扫描查询。</p>
-<h3 id=多条件匹配>多条件匹配</h3>
-<p>使用 and 关键字查询是需求中常见的一种情况。
-那么针对下面这样的索引结果，使用 and 关键字会带来怎样的查询效果呢？</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>CREATE</span> <span style=color:#66d9ef>TABLE</span> <span style=color:#f92672>`</span>test_table<span style=color:#f92672>`</span> (
-  <span style=color:#f92672>`</span>id<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>NOT</span> <span style=color:#66d9ef>NULL</span> AUTO_INCREMENT,
-  <span style=color:#f92672>`</span>name<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>birthday<span style=color:#f92672>`</span> datetime <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>address<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>phone<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>note<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#f92672>`</span>age<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
-  <span style=color:#66d9ef>PRIMARY</span> <span style=color:#66d9ef>KEY</span> (<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>),
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>NAME<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>AGE<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>age<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>LeftMostPreFix<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>,<span style=color:#f92672>`</span>address<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
-  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>ADDRESS<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>address<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE
-) ENGINE<span style=color:#f92672>=</span>InnoDB AUTO_INCREMENT<span style=color:#f92672>=</span><span style=color:#ae81ff>145</span> <span style=color:#66d9ef>DEFAULT</span> CHARSET<span style=color:#f92672>=</span>utf8
-</code></pre></div><p>尝试使用 name 与 age 的组合条件进行匹配与范围查询。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span>  name <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span> name <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;张&#39;</span> <span style=color:#66d9ef>and</span> age <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>20</span>;
-</code></pre></div><p>![image_1bg3i2mo0tslo88im17t51vfn2a.png-49.9kB][9]</p>
-<p>表中含有索引 name 但没有 name 与 age 的复合索引。所以本次查询首先通过 NAME 索引定位到表地址，然后 using where 回表扫描根据 age &lt; 20 过滤掉不符合条件的数据。由于 age &lt; 20 条件的存在，即使语句只查询了 name 字段也必须回表扫描从而无法形成索引覆盖查询，对查询性能造成了影响。</p>
-<h2 id=总结>总结</h2>
-<p>以上场景包含了精确匹配、模糊匹配、范围匹配、多条件匹配的查询语句，大部分业务用的查询都离不开这四种范畴。只要在使用索引时牢记住：</p>
-<ul>
-<li>左前缀原则</li>
-<li>尽量使用索引覆盖查询</li>
-<li>索引常量的查询比范围索引查询效率更高</li>
-<li>当查询涉及范围查询时，尽量将精确匹配的条件放在前面。</li>
-<li>一张表中的索引只会被使用一次（or 条件语句除外）。mysql 会选择最优结果使用相应的索引。</li>
-</ul>
-<p>便能享受索引所带来的性能提升。在下一章节，将会继续分享常见的索引误用场景。学会运用索引并且避免误用索引，是应对业务中常见的查询语句性能问题的关键所在。</p>
-<hr>
-<p><em>参考书籍</em>
-<em>《深入浅出 mysql》</em></p>
-</section>
-<footer>
-<a class="permalink u-url" href=https://www.chucklin.net/post/index_overview/>🔗</a>
-<hr class=post-underline>
-<p class=post-tag>Tags for this post:
-<a href=https://www.chucklin.net/tags/sql class="post-tag p-category">sql</a>
-</p>
-</footer>
-</article>
-</div>
-<div class=h-card>
-<img class=u-photo src=https://www.chucklin.net/images/avator.jpg>
-<div class=card-content>
-<h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2>
-<p class=card-subhead>
-<span class=p-locality>Chengdu</span>,
-<span class=p-country-name>China</span><br>
-<a class=u-email href=mailto:chuck1in9996@gmail.com>Email me</a>
-</p>
-</div>
-<p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p>
-</div>
-<div id=footer>
-<nav id=article-skip>
-<div class=next>
-<a alt="Newer article" href=https://www.chucklin.net/post/index_badusage/>&larr; Newer</a>
-</div>
-<div class=top>
-<a alt="Top of page" href=#>Top</a>
-</div>
-<div class=prev>
-<a alt="Older article" href=https://www.chucklin.net/post/analysesql/>Older &rarr;</a>
-</div>
-</nav>
-<aside id=social>
-<div id=social-icons>
-<div class=icon-24x24>
-<a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a>
-</div>
-</div>
-</aside>
-<p class=copyright>
-Copyright © 2021 Chuck Lin. All rights reserved.
-</p>
-</div>
-</body>
-</html>
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>索引的应用 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:chuck1inzl@gmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">索引的应用</h1><p class=post-date>Posted on
+<time class=dt-published datetime=2020-02-22T09:52:00+08:00>22 February, 2020 at 09:52 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><p>接上一章，我们成功分析出了有问题的 sql 语句。接下来该针对问题语句进行更进一步的优化了。索引往往在这个时候被引入来解决 sql 的运行效率的问题。</p><p>虽然索引的使用十分广泛，但是部分开发人员对索引的知识没有成体系的了解，造成了误用索引。误用索引不仅不能解决问题，还会进一步恶化性能。</p><p>好消息是，过阅读索引相关的章节的内容你将掌握以下几个知识点，从而建立起正确运用索引的基本知识。</p><ul><li>索引是什么，都有哪些索引？</li><li>与索引相关的术语的基本概念。</li><li>哪些典型的场景能够使用索引？</li><li>哪些典型的场景无法使用索引？</li></ul><h2 id=索引是什么都有哪些索引>索引是什么？都有哪些索引？</h2><p>和书本能够利用目录快速定位到具体内容一样，索引也能够快速查询到数据库表中的具体内容。索引就是数据库的目录。</p><p>真正的索引是在 mysql 存储引擎中实现的。所以每种不同的存储引擎都对应了不同的索引类型。
+常见的索引类型分为以下四种：</p><ul><li>B-tree 索引：最常见的索引类型</li><li>Hash 索引：只有 Memory 引擎支持</li><li>R-tree 索引（空间索引）：MyIsam 存储引擎支持的一个特殊索引类型。主要用于地理空间数据类型。</li><li>Full-text 索引：全文索引也是 MyIsam 的特殊索引类型。</li></ul><p>B-tree 索引是一个结构类似二叉树的索引。本篇文章只介绍 B-tree 索引的运用，关于其他索引请自行查阅网络资料进行学习。</p><h2 id=能够使用索引的典型场景>能够使用索引的典型场景</h2><h4 id=全值匹配>全值匹配</h4><p>有如下一张测试表。主键为 id，无任何其他索引。
+<img src=http://static.zybuluo.com/mikumikulch/zuqchbxkq2maphi6pxhsw4ak/image_1bg37jhm96kr1qgl1864cobor39.png alt=image_1bg37jhm96kr1qgl1864cobor39.png-31.8kB></p><p>指定索引中所有列的具体值。索引中的所有列，都有等值匹配的条件。
+现在看看 explain 的返回值情况。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>
+</span></span></code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/rkgjhif22l9vc8hhriolvfbw/image_1bg3j72qh160nmvnta15um1n2434.png alt=image_1bg3j72qh160nmvnta15um1n2434.png-40.7kB></p><p>explain 输出结果中字段 type 的值为 const，表示为常量。即对索引中的列有等值的匹配条件。
+字段 key 的值为 Primary。表示索引优化器选择了主键索引进行优化。</p><h4 id=匹配值的范围查询>匹配值的范围查询</h4><p>现在我们给 test_table 这张表增加两个索引，如下：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>CREATE</span> <span style=color:#66d9ef>TABLE</span> <span style=color:#f92672>`</span>test_table<span style=color:#f92672>`</span> (
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>id<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>NOT</span> <span style=color:#66d9ef>NULL</span> AUTO_INCREMENT,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>name<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>birthday<span style=color:#f92672>`</span> datetime <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>address<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>phone<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>note<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>age<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>PRIMARY</span> <span style=color:#66d9ef>KEY</span> (<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>),
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>NAME<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>AGE<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>age<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE
+</span></span><span style=display:flex><span>) ENGINE<span style=color:#f92672>=</span>InnoDB AUTO_INCREMENT<span style=color:#f92672>=</span><span style=color:#ae81ff>145</span> <span style=color:#66d9ef>DEFAULT</span> CHARSET<span style=color:#f92672>=</span>utf8
+</span></span></code></pre></div><p>现在尝试对索引的值进行范围查找。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span> age <span style=color:#f92672>&gt;</span><span style=color:#ae81ff>15</span> <span style=color:#66d9ef>and</span> age <span style=color:#f92672>&lt;</span><span style=color:#ae81ff>20</span>
+</span></span></code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/do5xtj56ywqrkdmicotw5089/image_1bgoc670t130r1l2g11qp1e569nu9.png alt=image_1bgoc670t130r1l2g11qp1e569nu9.png-46.8kB>
+type 为 range，说明优化器选择范围查询。索引 key 为 AGE 代表选择了 AGE 索引来加速访。注意本例中的 Extra 字段。Using index condition 代表在利用索引查询后，还需要对索引回表查询数据。但是把数据过滤操作下放到了存储引擎，从而减少了 IO 处理。</p><h3 id=匹配最左前缀>匹配最左前缀</h3><p>利用索引进行查询时，一定要遵循左前缀查询规则。
+首先在表上建立一个复合索引如下：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>CREATE</span> <span style=color:#66d9ef>TABLE</span> <span style=color:#f92672>`</span>test_table<span style=color:#f92672>`</span> (
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>id<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>NOT</span> <span style=color:#66d9ef>NULL</span> AUTO_INCREMENT,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>name<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>birthday<span style=color:#f92672>`</span> datetime <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>address<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>phone<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>note<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>age<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>PRIMARY</span> <span style=color:#66d9ef>KEY</span> (<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>),
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>NAME<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>AGE<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>age<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>LeftMostPreFix<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>,<span style=color:#f92672>`</span>address<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE
+</span></span><span style=display:flex><span>) ENGINE<span style=color:#f92672>=</span>InnoDB AUTO_INCREMENT<span style=color:#f92672>=</span><span style=color:#ae81ff>145</span> <span style=color:#66d9ef>DEFAULT</span> CHARSET<span style=color:#f92672>=</span>utf8
+</span></span></code></pre></div><p>LeftMostPreFix 索引由 name、address 两列组成。在使用这个索引进行查询时，只有 name 、name and address 可以生效。
+直接使用 address 或者 address 以及 name 进行查询时候，索引都无法生效。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span> <span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span>  name <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39; 张&#39;</span> <span style=color:#66d9ef>and</span> address <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;东京&#39;</span>
+</span></span></code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/o5vmlkjzc4cpk277mksigi8p/image_1bg3g3bhb4ftec14kro8ns542a.png alt=image_1bg3g3bhb4ftec14kro8ns542a.png-50.8kB></p><p>但是，如果仅仅是使用 address 进行查询的话，则复合索引无法产生效果。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span> <span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span>  address <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;东京&#39;</span>
+</span></span></code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/msjvr9xl1a7yhvy5aeoquuen/image_1bg3g4sv21oqh8be1bud1ptl114h9.png alt=image_1bg3g4sv21oqh8be1bud1ptl114h9.png-41.9kB></p><h3 id=覆盖索引查询>覆盖索引查询</h3><p>当查询的所有列都处在索引字段中时，查询的效率会更高。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span> <span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> name <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span>  name <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39; 林&#39;</span>
+</span></span></code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/dg1ue7q34iad5n5gh3doh6aw/image_1bg3g8fg71pj3rck1j7p13cg1clhm.png alt=image_1bg3g8fg71pj3rck1j7p13cg1clhm.png-46.2kB></p><p>Extra 变成了 Using index。代表只需要访问索引就能得到全部数据，不需要通过索引获得地址后，再回表进行扫描。</p><h3 id=左匹配列前缀>左匹配列前缀</h3><p>like 查询是一种常见的查询方式。和左前缀原则一样，进行 like 查询时也需要遵循左前缀匹配原则。</p><p>首先对表增加 address 列的索引。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>CREATE</span> <span style=color:#66d9ef>TABLE</span> <span style=color:#f92672>`</span>test_table<span style=color:#f92672>`</span> (
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>id<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>NOT</span> <span style=color:#66d9ef>NULL</span> AUTO_INCREMENT,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>name<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>birthday<span style=color:#f92672>`</span> datetime <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>address<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>phone<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>note<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>age<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>PRIMARY</span> <span style=color:#66d9ef>KEY</span> (<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>),
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>NAME<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>AGE<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>age<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>LeftMostPreFix<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>,<span style=color:#f92672>`</span>address<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>ADDRESS<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>address<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE
+</span></span><span style=display:flex><span>) ENGINE<span style=color:#f92672>=</span>InnoDB AUTO_INCREMENT<span style=color:#f92672>=</span><span style=color:#ae81ff>145</span> <span style=color:#66d9ef>DEFAULT</span> CHARSET<span style=color:#f92672>=</span>utf8
+</span></span></code></pre></div><p>接着尝试使用 like 检索数据。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span> <span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span> address <span style=color:#66d9ef>like</span> <span style=color:#e6db74>&#39;东%&#39;</span>
+</span></span></code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/cn6bna9ean95xmexjo5ivd1b/image_1bg3gpoh0126g1nbm1m64fsj1fmd1g.png alt=image_1bg3gpoh0126g1nbm1m64fsj1fmd1g.png-45.1kB>
+成功运用到索引 ADDRESS。查询类型为 range。</p><p>然后违背左前缀匹配原则，使用 Like 关键字再查询一次。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span> <span style=color:#f92672>*</span> <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span> address <span style=color:#66d9ef>like</span> <span style=color:#e6db74>&#39;%京&#39;</span>
+</span></span></code></pre></div><p><img src=http://static.zybuluo.com/mikumikulch/iid14z7dnq9zv9b6ri3f4qeg/image_1bg3gr2rd4to4p01v9c74o7nn1t.png alt=image_1bg3gr2rd4to4p01v9c74o7nn1t.png-41.9kB></p><p>type 为 ALL、key 为 null 表示该次查询未使用索引，而是通过全表扫描进行了查询。全表扫描的性能在数据量较大时比较低下，应该尽量频繁进行全表扫描查询。</p><h3 id=多条件匹配>多条件匹配</h3><p>使用 and 关键字查询是需求中常见的一种情况。
+那么针对下面这样的索引结果，使用 and 关键字会带来怎样的查询效果呢？</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>CREATE</span> <span style=color:#66d9ef>TABLE</span> <span style=color:#f92672>`</span>test_table<span style=color:#f92672>`</span> (
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>id<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>NOT</span> <span style=color:#66d9ef>NULL</span> AUTO_INCREMENT,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>name<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>birthday<span style=color:#f92672>`</span> datetime <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>address<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>phone<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>note<span style=color:#f92672>`</span> varchar(<span style=color:#ae81ff>45</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>`</span>age<span style=color:#f92672>`</span> int(<span style=color:#ae81ff>11</span>) <span style=color:#66d9ef>DEFAULT</span> <span style=color:#66d9ef>NULL</span>,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>PRIMARY</span> <span style=color:#66d9ef>KEY</span> (<span style=color:#f92672>`</span>id<span style=color:#f92672>`</span>),
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>NAME<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>AGE<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>age<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>LeftMostPreFix<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>name<span style=color:#f92672>`</span>,<span style=color:#f92672>`</span>address<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE,
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>KEY</span> <span style=color:#f92672>`</span>ADDRESS<span style=color:#f92672>`</span> (<span style=color:#f92672>`</span>address<span style=color:#f92672>`</span>) <span style=color:#66d9ef>USING</span> BTREE
+</span></span><span style=display:flex><span>) ENGINE<span style=color:#f92672>=</span>InnoDB AUTO_INCREMENT<span style=color:#f92672>=</span><span style=color:#ae81ff>145</span> <span style=color:#66d9ef>DEFAULT</span> CHARSET<span style=color:#f92672>=</span>utf8
+</span></span></code></pre></div><p>尝试使用 name 与 age 的组合条件进行匹配与范围查询。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=display:flex><span><span style=color:#66d9ef>explain</span> <span style=color:#66d9ef>SELECT</span>  name <span style=color:#66d9ef>FROM</span> test.test_table <span style=color:#66d9ef>where</span> name <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;张&#39;</span> <span style=color:#66d9ef>and</span> age <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>20</span>;
+</span></span></code></pre></div><p>![image_1bg3i2mo0tslo88im17t51vfn2a.png-49.9kB][9]</p><p>表中含有索引 name 但没有 name 与 age 的复合索引。所以本次查询首先通过 NAME 索引定位到表地址，然后 using where 回表扫描根据 age &lt; 20 过滤掉不符合条件的数据。由于 age &lt; 20 条件的存在，即使语句只查询了 name 字段也必须回表扫描从而无法形成索引覆盖查询，对查询性能造成了影响。</p><h2 id=总结>总结</h2><p>以上场景包含了精确匹配、模糊匹配、范围匹配、多条件匹配的查询语句，大部分业务用的查询都离不开这四种范畴。只要在使用索引时牢记住：</p><ul><li>左前缀原则</li><li>尽量使用索引覆盖查询</li><li>索引常量的查询比范围索引查询效率更高</li><li>当查询涉及范围查询时，尽量将精确匹配的条件放在前面。</li><li>一张表中的索引只会被使用一次（or 条件语句除外）。mysql 会选择最优结果使用相应的索引。</li></ul><p>便能享受索引所带来的性能提升。在下一章节，将会继续分享常见的索引误用场景。学会运用索引并且避免误用索引，是应对业务中常见的查询语句性能问题的关键所在。</p><hr><p><em>参考书籍</em>
+<em>《深入浅出 mysql》</em></p></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/index_overview/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/sql class="post-tag p-category">sql</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br><a class=u-email href=mailto:chuck1inzl@gmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><a alt="Newer article" href=https://www.chucklin.net/post/index_badusage/>&larr; Newer</a></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/analysesql/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
