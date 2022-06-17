@@ -118,7 +118,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span> &lt;span style="color:#66d9ef">in&lt;/span> &lt;span style="color:#a6e22e">eventNumbers&lt;/span>); &lt;span style="color:#75715e">// true
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#ae81ff">3&lt;/span> &lt;span style="color:#66d9ef">in&lt;/span> &lt;span style="color:#a6e22e">eventNumbers&lt;/span>); &lt;span style="color:#75715e">// false
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#a6e22e">eventNumbers&lt;/span>[&lt;span style="color:#ae81ff">7&lt;/span>]); &lt;span style="color:#75715e">// 14
-&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>举这个例子是想说明，Proxy 的作用不仅仅局限于设计模式，还有很多其他功能可以用 Proxy 来体现，比如：「元编程 (meta-programming)、运算符重载 (operator overloading)和对象虚拟化 (object virtualization)」&lt;/p>
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>举这个例子是想说明，Proxy 的作用不仅仅局限于设计模式，还有很多其他功能可以用 Proxy 来体现，比如：「元编程 (meta-programming)、运算符重载 (operator overloading) 和对象虚拟化 (object virtualization)」&lt;/p>
 &lt;h2 id="change-observer-与响应式编程">Change Observer 与响应式编程&lt;/h2>
 &lt;p>结合 Proxy 的 set 方法 (trapMethod) 还可以实现观察者模式——当某个对象的状态发生变化时通知观察者。&lt;/p>
 &lt;p>在强类型语言中观察者一般是一个对象，由于 js 中的所有函数都是闭包的缘故，所以观察者可以是一个回调函数。&lt;/p>
