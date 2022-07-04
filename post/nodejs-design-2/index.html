@@ -1,0 +1,161 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><title>锐评 Nodejs 设计模式 - 行为型 | ChuckLin's Blog</title><meta name=description content="Love and Peace"><meta name=author content><link rel=apple-touch-icon sizes=180x180 href=https://www.chucklin.net/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://www.chucklin.net/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://www.chucklin.net/favicon-16x16.png><link rel=manifest href=https://www.chucklin.net/site.webmanifest><link rel=mask-icon href=https://www.chucklin.net/safari-pinned-tab.svg color=#00416a><meta name=msapplication-TileColor content="#00aba9"><meta name=theme-color content="#ffffff"><link rel=me href=mailto:chuck1inzl@gmail.com><link rel=me href=https://github.com/chuck1in><link rel=authorization_endpoint href=https://indieauth.com/auth><link rel=token_endpoint href=https://tokens.indieauth.com/token><link rel=stylesheet href=https://www.chucklin.net/css/fonts.css><link rel=stylesheet href=https://www.chucklin.net/css/style.css><link rel=stylesheet href=https://www.chucklin.net/css/custom.css><meta name=viewport content="width=device-width,initial-scale=1"></head><body><div id=sitelogo><a class=glyph alt=Home href=https://www.chucklin.net/><img src=https://www.chucklin.net/images/site-logo.svg alt="Site Logo" height=64px width=64px></a></div><header><nav><div id=page-nav><div class=page-nav-item><a href=https://www.chucklin.net/>Home</a></div><div class=page-nav-item><a href=/about/me><span>About</span></a></div><div class=page-nav-item><a href=/tags><span>Tag</span></a></div></div></nav></header><div id=content><article class=h-entry><header><h1 class="post-title p-name">锐评 Nodejs 设计模式 - 行为型</h1><p class=post-date>Posted on
+<time class=dt-published datetime=2022-06-20T04:39:00+08:00>20 June, 2022 at 04:39 +0800</time> by <a href=https://www.chucklin.net/ class="p-author h-card" rel=author>Chuck Lin</a></p></header><section class="content e-content"><h2 id=iterator-迭代器模式>Iterator 迭代器模式</h2><p>Node 中的迭代器是一种约定，这个约定包涵三个部分：</p><p>一. 如果一个对象拥有一个名为 Symbol.iterator 的方法，那这个对象就是一个可迭代对象 (iterable)</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MyIterable</span> {
+</span></span><span style=display:flex><span>  [<span style=color:#a6e22e>Symbol</span>.<span style=color:#a6e22e>iterator</span>]() {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> {};
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>二. Symbol.iterator 方法应该返回一个被称为 iterator 的按照约定实现的对象</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span>{
+</span></span><span style=display:flex><span>  <span style=color:#75715e>// 每次调用时都返回一个表示迭代状态的对象
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#a6e22e>next</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> {
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>done</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>true</span> <span style=color:#75715e>// true:false 表示迭代完成
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>      <span style=color:#a6e22e>value</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;element&#34;</span> <span style=color:#75715e>// 迭代出的元素
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    }
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>三. iterator 需要记录被迭代对象的迭代位置，同时又不能将迭代位置等内部属性暴露到外部</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#75715e>// 被迭代对象
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>MyIterable</span>() {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>this</span>[<span style=color:#a6e22e>Symbol</span>.<span style=color:#a6e22e>iterator</span>] <span style=color:#f92672>=</span> <span style=color:#66d9ef>function</span> () {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 通过闭包来管理 iterator 的迭代位置
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>position</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 返回一个 iterator
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>return</span> {
+</span></span><span style=display:flex><span>      <span style=color:#75715e>// 调用 iterator.next() 获取当前迭代对象的迭代状态的
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>      <span style=color:#a6e22e>next</span>() {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>position</span><span style=color:#f92672>++</span>;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> {
+</span></span><span style=display:flex><span>          <span style=color:#a6e22e>done</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>false</span>, <span style=color:#75715e>// true:false 表示迭代完成
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>          <span style=color:#a6e22e>value</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;element&#34;</span>, <span style=color:#75715e>// 迭代出的元素
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        };
+</span></span><span style=display:flex><span>      },
+</span></span><span style=display:flex><span>    };
+</span></span><span style=display:flex><span>  };
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>任何对象无论是否是集合结构，只要符合上述约定的对象就是可迭代对象。
+比如下面这个可遍历所有英文大写字母的对象就是一个标准的可迭代对象</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>AlphabetIterator</span>() {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>this</span>[<span style=color:#a6e22e>Symbol</span>.<span style=color:#a6e22e>iterator</span>] <span style=color:#f92672>=</span> <span style=color:#66d9ef>function</span> () {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>A_CHAR_CODE</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>65</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>Z_CHAR_CODE</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>90</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>currentCharCode</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>A_CHAR_CODE</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> {
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>next</span><span style=color:#f92672>:</span> () =&gt; {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>currentCharCode</span> <span style=color:#f92672>&lt;=</span> <span style=color:#a6e22e>Z_CHAR_CODE</span>) {
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>currentChar</span> <span style=color:#f92672>=</span> String.<span style=color:#a6e22e>fromCharCode</span>(<span style=color:#a6e22e>currentCharCode</span>);
+</span></span><span style=display:flex><span>          <span style=color:#a6e22e>currentCharCode</span><span style=color:#f92672>++</span>;
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>return</span> { <span style=color:#a6e22e>value</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>currentChar</span>, <span style=color:#a6e22e>done</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>false</span> };
+</span></span><span style=display:flex><span>        } <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>return</span> { <span style=color:#a6e22e>done</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>true</span> };
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>      },
+</span></span><span style=display:flex><span>    };
+</span></span><span style=display:flex><span>  };
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>alphabet</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>AlphabetIterator</span>();
+</span></span><span style=display:flex><span><span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>iterator</span> <span style=color:#66d9ef>of</span> <span style=color:#a6e22e>alphabet</span>) {
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>iterator</span>);
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// output: ABCDE...Z
+</span></span></span></code></pre></div><p>除了 <code>for...of</code> 的方式以外，也可以使用更加直观的手工调用方式</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>iterator</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>AlphabetIterator</span>()[<span style=color:#a6e22e>Symbol</span>.<span style=color:#a6e22e>iterator</span>]();
+</span></span><span style=display:flex><span><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>iteratorStatus</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>null</span>;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>while</span> (<span style=color:#f92672>!</span>(<span style=color:#a6e22e>iteratorStatus</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>iterator</span>.<span style=color:#a6e22e>next</span>()).<span style=color:#a6e22e>done</span>) {
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>iteratorStatus</span>);
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=generator-生成器>Generator 生成器</h2><p>生成器函数是一种特殊的函数，调用这种函数不会立即得到返回值，而是会返回一个 iterable 对象</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#66d9ef>function</span><span style=color:#f92672>*</span> <span style=color:#a6e22e>fruitGenerator</span>() {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>yield</span> <span style=color:#e6db74>&#34;peach&#34;</span>;
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>yield</span> <span style=color:#e6db74>&#34;watermelon&#34;</span>;
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;summer&#34;</span>;
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>or</span> (<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>iterator</span> <span style=color:#66d9ef>of</span> <span style=color:#a6e22e>fruitGenerator</span>()) {
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>iterator</span>);
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span><span style=color:#75715e>// peach
+</span></span></span><span style=display:flex><span><span style=color:#75715e>// watermelon
+</span></span></span></code></pre></div><p>使用 <code>for of</code> 关键字可以迭代这个生成器函数创建的 iterable 对象，紧跟 yield 关键字的值就是每次迭代的元素。</p><p>除了 <code>for of</code> 以外，还可以通过手工的方式迭代这个生成器对象，因为生成器函数并不是什么魔法，调用该函数返回的对象除了可迭代 (iterable) 以外，还是一个 iterator 对象</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>fruitGeneratorObj</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>fruitGenerator</span>();
+</span></span><span style=display:flex><span><span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>fruitGeneratorObj</span>.<span style=color:#a6e22e>next</span>());
+</span></span><span style=display:flex><span><span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>fruitGeneratorObj</span>.<span style=color:#a6e22e>next</span>());
+</span></span><span style=display:flex><span><span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>fruitGeneratorObj</span>.<span style=color:#a6e22e>next</span>());
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// output
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>{ <span style=color:#a6e22e>value</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#39;peach&#39;</span>, <span style=color:#a6e22e>done</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>false</span> }
+</span></span><span style=display:flex><span>{ <span style=color:#a6e22e>value</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#39;watermelon&#39;</span>, <span style=color:#a6e22e>done</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>false</span> }
+</span></span><span style=display:flex><span><span style=color:#75715e>// 手工调用 iterator 能够获取到 done:true 的结果
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>{ <span style=color:#a6e22e>value</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#39;summer&#39;</span>, <span style=color:#a6e22e>done</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>true</span> }
+</span></span></code></pre></div><p>由于使用生成器函数要比构建一个满足<a href=#iterator-%E8%BF%AD%E4%BB%A3%E5%99%A8%E6%A8%A1%E5%BC%8F>约定</a>的可迭代对象简单的多，所以生成器函数常被用来替代普通的迭代器</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>AlphabetIterator</span>() {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>this</span>[<span style=color:#a6e22e>Symbol</span>.<span style=color:#a6e22e>iterator</span>] <span style=color:#f92672>=</span> <span style=color:#66d9ef>function</span><span style=color:#f92672>*</span> () {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>A_CHAR_CODE</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>65</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>Z_CHAR_CODE</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>90</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>currentCharCode</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>A_CHAR_CODE</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>while</span> (<span style=color:#a6e22e>currentCharCode</span> <span style=color:#f92672>&lt;=</span> <span style=color:#a6e22e>Z_CHAR_CODE</span>) {
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>currentChar</span> <span style=color:#f92672>=</span> String.<span style=color:#a6e22e>fromCharCode</span>(<span style=color:#a6e22e>currentCharCode</span>);
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>currentCharCode</span><span style=color:#f92672>++</span>;
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>yield</span> <span style=color:#a6e22e>currentChar</span>;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span>;
+</span></span><span style=display:flex><span>  };
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>alphabetIterator</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>AlphabetIterator</span>();
+</span></span><span style=display:flex><span><span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>iterator</span> <span style=color:#66d9ef>of</span> <span style=color:#a6e22e>alphabetIterator</span>) {
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>iterator</span>);
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=异步迭代器与流>异步迭代器与流</h2><p>迭代器和生成器除了同步以外还有异步的版本。如果一个 iterator 返回了一个 Promise 那这个迭代器就是异步的。</p><p><code>for await...of</code> 语法迭代一个实现了 <code>@@asyncIterator</code> 方法的异步可迭代对象，使用的方法就像下面这样</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>asyncIterator</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>iterable</span>[<span style=color:#a6e22e>Symbol</span>.<span style=color:#a6e22e>asyncIterator</span>]();
+</span></span><span style=display:flex><span><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>iterationResult</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>asyncIterator</span>.<span style=color:#a6e22e>next</span>();
+</span></span><span style=display:flex><span><span style=color:#66d9ef>while</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>iterationResult</span>.<span style=color:#a6e22e>done</span>) {
+</span></span><span style=display:flex><span> <span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>iterationResult</span>.<span style=color:#a6e22e>value</span>);
+</span></span><span style=display:flex><span> <span style=color:#a6e22e>iterationResult</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>asyncIterator</span>.<span style=color:#a6e22e>next</span>();
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>迭代器与流的结构很相似——都是一小块一小块的处理资源。所以很多时候他们都可以互换，并支持被 <code>for await...of</code> 语法迭代</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#66d9ef>async</span> <span style=color:#66d9ef>function</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>stream</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>process</span>.<span style=color:#a6e22e>stdin</span>.<span style=color:#a6e22e>pipe</span>(<span style=color:#a6e22e>split</span>());
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>for</span> <span style=color:#66d9ef>await</span> (<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>line</span> <span style=color:#66d9ef>of</span> <span style=color:#a6e22e>stream</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>line</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=middleware-中间件>Middleware 中间件</h2><p>中间件差不多相当于责任链设计模式(Chain of Responsibility)，不过 Node 语境下的中间件一般是异步的处理函数，而注册中间件的过程就像把流拼接成一个管道，所以用「架构化的异步管道处理」来形容更加贴切一点</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#66d9ef>async</span> <span style=color:#66d9ef>function</span> <span style=color:#a6e22e>combine</span>(<span style=color:#a6e22e>req</span>) {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;hello &#34;</span> <span style=color:#f92672>+</span> <span style=color:#a6e22e>req</span>;
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>async</span> <span style=color:#66d9ef>function</span> <span style=color:#a6e22e>flip</span>(<span style=color:#a6e22e>req</span>) {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>req</span>.<span style=color:#a6e22e>split</span>(<span style=color:#e6db74>&#34;&#34;</span>).<span style=color:#a6e22e>reverse</span>().<span style=color:#a6e22e>join</span>(<span style=color:#e6db74>&#34;&#34;</span>);
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>Manager</span>() {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>middleWares</span> <span style=color:#f92672>=</span> [];
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>use</span> <span style=color:#f92672>=</span> (<span style=color:#a6e22e>middleWare</span>) =&gt; {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>middleWares</span>.<span style=color:#a6e22e>push</span>(<span style=color:#a6e22e>middleWare</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>execute</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>async</span> (<span style=color:#a6e22e>req</span>) =&gt; {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>f</span> <span style=color:#66d9ef>of</span> <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>middleWares</span>) {
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>req</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>f</span>(<span style=color:#a6e22e>req</span>);
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>req</span>);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>manager</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Manager</span>();
+</span></span><span style=display:flex><span><span style=color:#a6e22e>manager</span>.<span style=color:#a6e22e>use</span>(<span style=color:#a6e22e>combine</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>manager</span>.<span style=color:#a6e22e>use</span>(<span style=color:#a6e22e>flip</span>);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>await</span> <span style=color:#a6e22e>manager</span>.<span style=color:#a6e22e>execute</span>(<span style=color:#e6db74>&#34;chuck&#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#e6db74>&#34;finish&#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#75715e>// output ==&gt;
+</span></span></span><span style=display:flex><span><span style=color:#75715e>// hello chuck
+</span></span></span><span style=display:flex><span><span style=color:#75715e>// kcuhc olleh
+</span></span></span><span style=display:flex><span><span style=color:#75715e>// finish
+</span></span></span></code></pre></div><h2 id=命令设计模式>命令设计模式</h2><p>在 Node 中谈命令就像<a href=nodejs-design-1>单例</a>一样有点多余。因为 js 的闭包函数天生就是一个 command</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#75715e>// create command
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>createTask</span>(<span style=color:#a6e22e>target</span>, ...<span style=color:#a6e22e>args</span>) {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> () =&gt; {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// execute target
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#a6e22e>target</span>(...<span style=color:#a6e22e>args</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>arg</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;chuck&#34;</span>;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>command</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>createTask</span>((<span style=color:#a6e22e>arg</span>) =&gt; <span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>arg</span>), <span style=color:#a6e22e>arg</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>command</span>();
+</span></span><span style=display:flex><span><span style=color:#75715e>// output ==&gt; chuck
+</span></span></span></code></pre></div><h2 id=结语>结语</h2><ol><li>迭代器和可迭代对象代表的迭代器设计模式是一种约定。</li><li>生成器就是一个实现了<code>@@iterator</code>的迭代器。</li><li>迭代器和生成器既可以是同步也可以是异步。</li><li>node 中的闭包函数天生就是命令式的。</li></ol></section><footer><a class="permalink u-url" href=https://www.chucklin.net/post/nodejs-design-2/>🔗</a><hr class=post-underline><p class=post-tag>Tags for this post:
+<a href=https://www.chucklin.net/tags/javascript class="post-tag p-category">javascript</a></p></footer></article></div><div class=h-card><img class=u-photo src=https://www.chucklin.net/images/avator.jpg><div class=card-content><h2 class=card-name><a class="p-name u-url" href=https://www.chucklin.net/ rel=me>Chuck Lin</a></h2><p class=card-subhead><span class=p-locality>Chengdu</span>,
+<span class=p-country-name>China</span><br><a class=u-email href=mailto:chuck1inzl@gmail.com>Email me</a></p></div><p class=p-note>从事开发工作10年，持续写作4年，现在的身份是一名 freelancer。项目外包、雇佣洽谈等事项请通过邮箱和我联系。</p></div><div id=footer><nav id=article-skip><div class=next><p>&nbsp;</p></div><div class=top><a alt="Top of page" href=#>Top</a></div><div class=prev><a alt="Older article" href=https://www.chucklin.net/post/nodejs-design-1/>Older &rarr;</a></div></nav><aside id=social><div id=social-icons><div class=icon-24x24><a class=glyph alt="GitHub profile" href=https://github.com/chuck1in><img src=https://www.chucklin.net/icons/github.svg height=24px width=24px></a></div></div></aside><p class=copyright>Copyright © 2021 Chuck Lin. All rights reserved.</p></div></body></html>
