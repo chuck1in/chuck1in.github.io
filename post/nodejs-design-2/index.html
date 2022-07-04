@@ -144,7 +144,7 @@
 </span></span></span><span style=display:flex><span><span style=color:#75715e>// hello chuck
 </span></span></span><span style=display:flex><span><span style=color:#75715e>// kcuhc olleh
 </span></span></span><span style=display:flex><span><span style=color:#75715e>// finish
-</span></span></span></code></pre></div><h2 id=命令设计模式>命令设计模式</h2><p>在 Node 中谈命令就像<a href=nodejs-design-1>单例</a>一样有点多余。因为 js 的闭包函数天生就是一个 command</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#75715e>// create command
+</span></span></span></code></pre></div><h2 id=命令设计模式>命令设计模式</h2><p>在 Node 中谈命令就像<a href=https://www.chucklin.net/post/nodejs-design-1/>单例</a>一样有点多余。因为 js 的闭包函数天生就是一个 command</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#75715e>// create command
 </span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>createTask</span>(<span style=color:#a6e22e>target</span>, ...<span style=color:#a6e22e>args</span>) {
 </span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> () =&gt; {
 </span></span><span style=display:flex><span>    <span style=color:#75715e>// execute target
