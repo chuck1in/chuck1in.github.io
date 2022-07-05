@@ -76,7 +76,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#e6db74">&amp;#34;summer&amp;#34;&lt;/span>;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">or&lt;/span> (&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">iterator&lt;/span> &lt;span style="color:#66d9ef">of&lt;/span> &lt;span style="color:#a6e22e">fruitGenerator&lt;/span>()) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">iterator&lt;/span> &lt;span style="color:#66d9ef">of&lt;/span> &lt;span style="color:#a6e22e">fruitGenerator&lt;/span>()) {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#a6e22e">iterator&lt;/span>);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// peach
