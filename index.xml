@@ -357,7 +357,7 @@
 &lt;li>代理、装饰器、适配器都是结构型模式，体现的设计思想都差不多——通过对象的结构来管理实体间的关系。&lt;/li>
 &lt;li>Proxy 不仅用来实现设计模式，也可以用来完成很多其他功能和编程范式。&lt;/li>
 &lt;li>就像 js 中的闭包函数一样，模块导出天生就是单例。&lt;/li>
-&lt;/ol></description></item><item><title>事务与锁的设计思想</title><link>https://www.chucklin.net/post/transcation_lock/</link><pubDate>Tue, 14 Sep 2021 16:30:57 +0800</pubDate><guid>https://www.chucklin.net/post/transcation_lock/</guid><description>&lt;p>事务是一个抽象的概念，代表一个或多个数据库操作。比如下面这三组查询语句 A、B、C 分别代表三个事务。&lt;/p>
+&lt;/ol></description></item><item><title>事务与锁的设计思想</title><link>https://www.chucklin.net/post/transcation-lock/</link><pubDate>Tue, 14 Sep 2021 16:30:57 +0800</pubDate><guid>https://www.chucklin.net/post/transcation-lock/</guid><description>&lt;p>事务是一个抽象的概念，代表一个或多个数据库操作。比如下面这三组查询语句 A、B、C 分别代表三个事务。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">SET&lt;/span> autocommit &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">ON&lt;/span>;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">//&lt;/span> A
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span>;
@@ -468,7 +468,7 @@
 &lt;/ul>
 &lt;/li>
 &lt;/ol>
-&lt;p>使用 MVCC 的读操作也称为快照读，因为它读取的内容可能是历史数据；写操作是当前读的一种形式，因为他总是面向最新记录写入数据。&lt;/p></description></item><item><title>索引的物理结构</title><link>https://www.chucklin.net/post/index_principle/</link><pubDate>Wed, 08 Sep 2021 14:28:26 +0800</pubDate><guid>https://www.chucklin.net/post/index_principle/</guid><description>&lt;h2 id="行的格式">行的格式&lt;/h2>
+&lt;p>使用 MVCC 的读操作也称为快照读，因为它读取的内容可能是历史数据；写操作是当前读的一种形式，因为他总是面向最新记录写入数据。&lt;/p></description></item><item><title>索引的物理结构</title><link>https://www.chucklin.net/post/index-principle/</link><pubDate>Wed, 08 Sep 2021 14:28:26 +0800</pubDate><guid>https://www.chucklin.net/post/index-principle/</guid><description>&lt;h2 id="行的格式">行的格式&lt;/h2>
 &lt;p>在 innodb 存储引擎中，一个表中的记录(records)会使用固定的行格式，根据字符集的比较规则按主键顺序存储到硬盘上。&lt;/p>
 &lt;p>&lt;img src="https://www.chucklin.net/images/index-principal/row.jpg" alt="row">&lt;/p>
 &lt;p>比如上图中的行格式就规定：除了保存记录的列信息以外，还需要在行中保存额外的信息。如：变长字段的占位长度、空值的列、行的(head)信息等。
@@ -574,7 +574,7 @@
 &lt;li>二级索引是非主键索引——索引树页结点只保存索引项与主键。&lt;/li>
 &lt;li>表链接的索引问题就是多个单表的索引问题。&lt;/li>
 &lt;li>索引能否生效的关键，在于查询条件是否能够减少聚簇索引的扫描范围。&lt;/li>
-&lt;/ol></description></item><item><title>Enum in Typescript</title><link>https://www.chucklin.net/post/ts_enum/</link><pubDate>Mon, 26 Jul 2021 22:16:36 +0800</pubDate><guid>https://www.chucklin.net/post/ts_enum/</guid><description>&lt;h2 id="枚举">枚举&lt;/h2>
+&lt;/ol></description></item><item><title>Enum in Typescript</title><link>https://www.chucklin.net/post/ts-enum/</link><pubDate>Mon, 26 Jul 2021 22:16:36 +0800</pubDate><guid>https://www.chucklin.net/post/ts-enum/</guid><description>&lt;h2 id="枚举">枚举&lt;/h2>
 &lt;p>枚举是对客观事物的归纳与自然语言的抽象。这听起来似乎容易和类混淆，这是正常的。因为在大部分面向对象的语言里，枚举就是类。&lt;/p>
 &lt;p>我们知道一周有七天 —— &lt;code>Week={monday,Tuesday,...., Sunday}&lt;/code>。假设用枚举来描述这个概念的话就是下面这样：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-typescript" data-lang="typescript">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">enum&lt;/span> &lt;span style="color:#a6e22e">Week&lt;/span> {
@@ -1890,7 +1890,7 @@ grant_type=authorization_code&amp;amp;redirect_uri=http://mrpicture.com/callback
 &lt;p>你是否有过这种体验？你是一名资深工程师，受邀加入一个问题百出的团队并被要求显著提升产品质量。经过一段时间的共事后，你发现团队最大的问题是人。混乱的思维方式产生糟糕的设计造就漏洞百出的产品。如果不对问题的根源加以解决，结果就是搞定的问题越多产生的问题更多。&lt;/p>
 &lt;h2 id="最后">最后&lt;/h2>
 &lt;p>工程师思维是技术和艺术的结合。但技术天生的标准化与自动化属性会让艺术所占的比重越来越大。未来也许就像《死亡搁浅》中基于开罗尔粒子的 3D 打印技术一样，你只需要提供创意和设计，剩下的交给全自动化的基础设施去实现。&lt;/p>
-&lt;p>未来是更加多元化的社会。像「销售」、「行政」、「会计」、「翻译」、「管理」这些单一的词汇不再适用于定义一个人的职业。这些标签会进入历史的长河而新的称谓会被创造出来。也许将来有一天，再次看到这些旧称时可能会感觉像「打字员」一样亲切和复古吧。&lt;/p></description></item><item><title>认识数据库锁</title><link>https://www.chucklin.net/post/lockinmysql/</link><pubDate>Tue, 25 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/lockinmysql/</guid><description>&lt;h2 id="前言">前言&lt;/h2>
+&lt;p>未来是更加多元化的社会。像「销售」、「行政」、「会计」、「翻译」、「管理」这些单一的词汇不再适用于定义一个人的职业。这些标签会进入历史的长河而新的称谓会被创造出来。也许将来有一天，再次看到这些旧称时可能会感觉像「打字员」一样亲切和复古吧。&lt;/p></description></item><item><title>认识数据库锁</title><link>https://www.chucklin.net/post/lock-mysql/</link><pubDate>Tue, 25 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/lock-mysql/</guid><description>&lt;h2 id="前言">前言&lt;/h2>
 &lt;p>针对不同的存储引擎的数据库锁的实现是不相同的，而现代大型项目基本都选择了 innoDB 作为存储引擎，所以本章节只探讨 innoDB 数据库锁的内容。&lt;/p>
 &lt;p>innoDB 的数据库锁与事务特性息息相关。所以在探讨开始之前，先来回顾一下 innoDB 的事务特性，会有助于理解后续的内容。&lt;/p>
 &lt;h4 id="事务的挑战与-acid-属性">事务的挑战与 ACID 属性&lt;/h4>
@@ -2024,7 +2024,7 @@ grant_type=authorization_code&amp;amp;redirect_uri=http://mrpicture.com/callback
 &lt;p>大型 web 应用通常都离不开数据库，而现代工程的性能瓶颈往往都在 IO 处理上。若想在面临 IO 处理时作出最佳实践，就应该建立全面的数据库应用知识体系。&lt;/p>
 &lt;hr>
 &lt;p>&lt;em>参考书籍&lt;/em>
-&lt;em>《深入浅出 mysql》&lt;/em>&lt;/p></description></item><item><title>索引的优化技巧</title><link>https://www.chucklin.net/post/index_tips/</link><pubDate>Sun, 23 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/index_tips/</guid><description>&lt;h2 id="优化-order-by-语句">优化 Order by 语句&lt;/h2>
+&lt;em>《深入浅出 mysql》&lt;/em>&lt;/p></description></item><item><title>索引的优化技巧</title><link>https://www.chucklin.net/post/index-tips/</link><pubDate>Sun, 23 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/index-tips/</guid><description>&lt;h2 id="优化-order-by-语句">优化 Order by 语句&lt;/h2>
 &lt;p>众所周知，针对大量数据进行排序费时费力。了解 Mysql 的排序方式是优化数据库排序性能的充分条件。&lt;/p>
 &lt;h3 id="索引顺序扫描">索引顺序扫描&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">show&lt;/span> &lt;span style="color:#66d9ef">index&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> test_index_table
@@ -2068,7 +2068,7 @@ grant_type=authorization_code&amp;amp;redirect_uri=http://mrpicture.com/callback
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">on&lt;/span> a.id &lt;span style="color:#f92672">=&lt;/span> b.id
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="http://static.zybuluo.com/mikumikulch/pkoun1q19wbxccetkfwhk8lb/image_1bhknak3k1ion1uas1iuk610lej13.png" alt="image_1bhknak3k1ion1uas1iuk610lej13.png-69.2kB">&lt;/p>
 &lt;h2 id="总结">总结&lt;/h2>
-&lt;p>本问提及的优化手段虽然十分浅显，但是却至关重要。一个 web 工程大部分的性能问题都是由 database IO 引起的。对 SQL 语句进行适当的合理优化能够解决一个 web 工程 80%的性能问题。&lt;/p></description></item><item><title>索引的使用误区</title><link>https://www.chucklin.net/post/index_badusage/</link><pubDate>Sun, 23 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/index_badusage/</guid><description>&lt;p>回顾上一章的内容，除了介绍了基本的使用索引优化 sql 语句的基本手法以外，还提到了滥用索引会引起性能恶化的问题。本章节的内容将会举例说明哪些场景的索引属于滥用，以及如何避免索引的误用。&lt;/p>
+&lt;p>本问提及的优化手段虽然十分浅显，但是却至关重要。一个 web 工程大部分的性能问题都是由 database IO 引起的。对 SQL 语句进行适当的合理优化能够解决一个 web 工程 80%的性能问题。&lt;/p></description></item><item><title>索引的使用误区</title><link>https://www.chucklin.net/post/index-bad-usage/</link><pubDate>Sun, 23 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/index-bad-usage/</guid><description>&lt;p>回顾上一章的内容，除了介绍了基本的使用索引优化 sql 语句的基本手法以外，还提到了滥用索引会引起性能恶化的问题。本章节的内容将会举例说明哪些场景的索引属于滥用，以及如何避免索引的误用。&lt;/p>
 &lt;h2 id="索引的滥用">索引的滥用&lt;/h2>
 &lt;p>为了优化 sql 语句的执行效率，我们往往会给表中加上各种各样的索引。
 但是在某些场景下索引不仅无法被用来提升效率，还会增加表空间占用，延长 modify 方法的执行时间。
@@ -2135,7 +2135,7 @@ grant_type=authorization_code&amp;amp;redirect_uri=http://mrpicture.com/callback
 &lt;p>最后，索引在精不在多。对于某些经常被访问的查询我们可以尝试使用索引来优化执行效率。而对于某个速度很慢但是为系统管理员设计的查询，是否需要加上索引就需要结合实际情况判断了！&lt;/p>
 &lt;hr>
 &lt;p>&lt;em>参考书籍：&lt;/em>
-&lt;em>《深入浅出 Mysql》&lt;/em>&lt;/p></description></item><item><title>索引的应用</title><link>https://www.chucklin.net/post/index_overview/</link><pubDate>Sat, 22 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/index_overview/</guid><description>&lt;p>接上一章，我们成功分析出了有问题的 sql 语句。接下来该针对问题语句进行更进一步的优化了。索引往往在这个时候被引入来解决 sql 的运行效率的问题。&lt;/p>
+&lt;em>《深入浅出 Mysql》&lt;/em>&lt;/p></description></item><item><title>索引的应用</title><link>https://www.chucklin.net/post/index-overview/</link><pubDate>Sat, 22 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/index-overview/</guid><description>&lt;p>接上一章，我们成功分析出了有问题的 sql 语句。接下来该针对问题语句进行更进一步的优化了。索引往往在这个时候被引入来解决 sql 的运行效率的问题。&lt;/p>
 &lt;p>虽然索引的使用十分广泛，但是部分开发人员对索引的知识没有成体系的了解，造成了误用索引。误用索引不仅不能解决问题，还会进一步恶化性能。&lt;/p>
 &lt;p>好消息是，过阅读索引相关的章节的内容你将掌握以下几个知识点，从而建立起正确运用索引的基本知识。&lt;/p>
 &lt;ul>
@@ -2269,7 +2269,7 @@ type 为 range，说明优化器选择范围查询。索引 key 为 AGE 代表�
 &lt;p>便能享受索引所带来的性能提升。在下一章节，将会继续分享常见的索引误用场景。学会运用索引并且避免误用索引，是应对业务中常见的查询语句性能问题的关键所在。&lt;/p>
 &lt;hr>
 &lt;p>&lt;em>参考书籍&lt;/em>
-&lt;em>《深入浅出 mysql》&lt;/em>&lt;/p></description></item><item><title>分析 SQL 语句的一般步骤</title><link>https://www.chucklin.net/post/analysesql/</link><pubDate>Thu, 20 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/analysesql/</guid><description>&lt;p>数据库的性能调优是一个很大的话题。但是对于开发人员来讲，掌握一些常用的 SQL 优化手段却不是什么难事。
+&lt;em>《深入浅出 mysql》&lt;/em>&lt;/p></description></item><item><title>分析 SQL 语句的一般步骤</title><link>https://www.chucklin.net/post/analyse-sql/</link><pubDate>Thu, 20 Feb 2020 09:52:00 +0800</pubDate><guid>https://www.chucklin.net/post/analyse-sql/</guid><description>&lt;p>数据库的性能调优是一个很大的话题。但是对于开发人员来讲，掌握一些常用的 SQL 优化手段却不是什么难事。
 从本章节开始，将连载总结常用的适合于开发人员的 SQL 优化手段与大家分享。&lt;/p>
 &lt;p>要想解决性能优化的问题，首先要想办法发现哪些 SQL 有性能问题。通过下面这几个手段可以比较准确的定位到有问题的 SQL 进行分析优化。&lt;/p>
 &lt;h2 id="show-status-命令了解各种-sql-的执行频率">Show status 命令了解各种 SQL 的执行频率&lt;/h2>
@@ -2582,7 +2582,7 @@ CSP 目前有两版，CSP1 和 CSP2， 两版的支持状态可以在 &lt;a href
 &lt;li>&lt;a href="https://blog.wilddog.com/?p=290">关于 Web 安全，99%的网站都忽略了这些&lt;/a>, by wilddog&lt;/li>
 &lt;li>&lt;a href="https://www.ibm.com/developerworks/cn/web/se-appscan-detect-csrf-xsrf/">预防跨站点请求伪造：了解浏览器选项卡中的隐藏危险&lt;/a>&lt;/li>
 &lt;li>&lt;a href="http://www.importnew.com/5839.html">CSRF 攻击的应对之道&lt;/a>&lt;/li>
-&lt;/ul></description></item><item><title>SQL 注入</title><link>https://www.chucklin.net/post/sql_inject/</link><pubDate>Wed, 29 Jan 2020 09:51:00 +0800</pubDate><guid>https://www.chucklin.net/post/sql_inject/</guid><description>&lt;h2 id="什么是-sql-注入">什么是 SQL 注入&lt;/h2>
+&lt;/ul></description></item><item><title>SQL 注入</title><link>https://www.chucklin.net/post/sql-inject/</link><pubDate>Wed, 29 Jan 2020 09:51:00 +0800</pubDate><guid>https://www.chucklin.net/post/sql-inject/</guid><description>&lt;h2 id="什么是-sql-注入">什么是 SQL 注入&lt;/h2>
 &lt;p>SQL 注入攻击（SQL Injection），简称注入攻击，是 Web 开发中最常见的一种安全漏洞。可以用它来从数据库获取敏感信息，或者利用数据库的特性执行添加用户，导出文件等一系列恶意操作，甚至有可能获取数据库乃至系统用户最高权限。&lt;/p>
 &lt;p>而造成 SQL 注入的原因是因为程序没有有效过滤用户的输入，使攻击者成功的向服务器提交恶意的 SQL 查询代码，程序在接收后错误的将攻击者的输入作为查询语句的一部分执行，导致原始的查询逻辑被改变，额外的执行了攻击者精心构造的恶意代码。&lt;/p>
 &lt;h2 id="sql-注入实例">SQL 注入实例&lt;/h2>
@@ -3083,7 +3083,7 @@ HTTP/2 大致可以分为两部分：分帧层，即 h2 多路复用能力的核
 &lt;h3 id="服务端推送">服务端推送&lt;/h3>
 &lt;p>提升单个对象性能的最佳方式，就是在它被用到之前就放到浏览器的缓存里面。拿一个简单的 HTML 页面来说，如果服务器接收到一个页面的请求，它需要决定是推送页面上的资源还是等客户端来请求。如果服务器选择正确，那就真的有助于提升页面的整体性能，反之则会损耗页面性能。&lt;/p>
 &lt;h2 id="最后">最后&lt;/h2>
-&lt;p>从 Http2 诞生距今，大量网站都完成了对它的支持工作。实践证明在某些网站上启用 Http2 的确可让性能提高 30%以上。但最好的办法是尽可能详细的测试启用 Http2 所带来的风险和收益之后，再做出决定。&lt;/p></description></item><item><title>为什么选择 Spring data hadoop</title><link>https://www.chucklin.net/post/spring_data_hadoop/</link><pubDate>Mon, 20 Jan 2020 09:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/spring_data_hadoop/</guid><description>&lt;p>hbase 常见的操作方式有以下三种：&lt;/p>
+&lt;p>从 Http2 诞生距今，大量网站都完成了对它的支持工作。实践证明在某些网站上启用 Http2 的确可让性能提高 30%以上。但最好的办法是尽可能详细的测试启用 Http2 所带来的风险和收益之后，再做出决定。&lt;/p></description></item><item><title>为什么选择 Spring data hadoop</title><link>https://www.chucklin.net/post/spring-data-hadoop/</link><pubDate>Mon, 20 Jan 2020 09:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/spring-data-hadoop/</guid><description>&lt;p>hbase 常见的操作方式有以下三种：&lt;/p>
 &lt;h3 id="native-api">Native Api&lt;/h3>
 &lt;p>原生 api 操作繁琐，就像用 JDBC 操作关系型数据库一样，类似 flush、submit、close 的使用让人眼花缭乱。如果碰巧你的应用程序使用 java 开发，那就又多了一条不使用 Native Api 的理由 —— 在问题周围兜一个圈子再解决才是真正的 java 式设计。&lt;/p>
 &lt;h3 id="phoenix">Phoenix&lt;/h3>
@@ -3926,7 +3926,7 @@ HTTP/2 大致可以分为两部分：分帧层，即 h2 多路复用能力的核
 &lt;li>使用基于类型推导的泛型类，泛型方法以使代码变得更加健壮。&lt;/li>
 &lt;li>避免使用源生类型，对于未知类型的集合请使用通配符，以加强代码的约束性。&lt;/li>
 &lt;li>合理使用有限制的通配符，提升你的 API 灵活性。&lt;/li>
-&lt;/ol></description></item><item><title>正确使用内部类</title><link>https://www.chucklin.net/post/innerclass/</link><pubDate>Mon, 13 Jan 2020 09:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/innerclass/</guid><description>&lt;p>Java 的内部类种类较多，语法比较复杂，用法也不尽相同。
+&lt;/ol></description></item><item><title>正确使用内部类</title><link>https://www.chucklin.net/post/inner-class/</link><pubDate>Mon, 13 Jan 2020 09:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/inner-class/</guid><description>&lt;p>Java 的内部类种类较多，语法比较复杂，用法也不尽相同。
 由于篇幅所限，本篇文章只对实际项目开发中用的较多的普通内部类与匿名内部类做一定介绍。&lt;/p>
 &lt;p>内部类概括下来，可以分类为以下五种内部类。&lt;/p>
 &lt;ul>
@@ -4217,7 +4217,7 @@ base_sum()函数中定义了一个指向 sum()函数的指针，并且这个指�
 &lt;li>积极面对失败，不要畏惧失败、拥抱失败、期待失败、接受失败、直面失败。&lt;/li>
 &lt;li>主动寻找失败，即使全世界都认为你是一个傻瓜。脱离自己的舒适区，才能成长的更快。&lt;/li>
 &lt;li>不要把他人的话当成福音。&lt;/li>
-&lt;/ul></description></item><item><title>git 中的分支</title><link>https://www.chucklin.net/post/git_branch/</link><pubDate>Sat, 01 Jun 2019 09:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/git_branch/</guid><description>&lt;h2 id="git-如何存储数据">Git 如何存储数据&lt;/h2>
+&lt;/ul></description></item><item><title>git 中的分支</title><link>https://www.chucklin.net/post/git-branch/</link><pubDate>Sat, 01 Jun 2019 09:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/git-branch/</guid><description>&lt;h2 id="git-如何存储数据">Git 如何存储数据&lt;/h2>
 &lt;p>Git 仓库中包含了三种对象：blob 对象、tree object、commit object。三种对象共同组成 git 仓库中的提交记录。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># add file to workspace&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>vim gitbranchA.txt
@@ -4300,7 +4300,7 @@ please contact us at support@github.com
 &lt;h2 id="结语">结语&lt;/h2>
 &lt;p>git 中的切换分支其实就是改写 HEAD 指针文件中的内容。这样的设计思想，使得其他版本控制系统中费时费力的分支切换到了 git 中变得易如反掌。低廉的分支切换开销，使得在不同的分支上进行快速切换，迅速应对问题的工作方式成为了可能。&lt;/p>
 &lt;hr>
-&lt;p>&lt;a href="https://www.progit.cn">《精通 Git pro 第二版》&lt;/a>&lt;/p></description></item><item><title>git 中的撤回机制</title><link>https://www.chucklin.net/post/git_revert_reset/</link><pubDate>Sat, 01 Jun 2019 09:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/git_revert_reset/</guid><description>&lt;h2 id="reset">Reset&lt;/h2>
+&lt;p>&lt;a href="https://www.progit.cn">《精通 Git pro 第二版》&lt;/a>&lt;/p></description></item><item><title>git 中的撤回机制</title><link>https://www.chucklin.net/post/git-revert-reset/</link><pubDate>Sat, 01 Jun 2019 09:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/git-revert-reset/</guid><description>&lt;h2 id="reset">Reset&lt;/h2>
 &lt;p>假设目前我们处于下图所示的工作场景中。我们正在 master 分支上进行工作。目前工作目录是干净的，这意味着暂存索引区中的文件内容与工作目录是一致的。并且，HEAD 指向的 master 分支指向的提交对象，也和目前工作空间中的文件内容保持一致。&lt;/p>
 &lt;p>&lt;img src="https://git-scm.com/book/en/v2/images/reset-start.png" alt="此处输入图片的描述">&lt;/p>
 &lt;p>现在，让我们来一步步看看 reset 命令究竟做了些什么。&lt;/p>
@@ -4385,7 +4385,7 @@ Already up-to-date.
 &lt;li>Git 使用 hash 算法来对文件进行引用。&lt;/li>
 &lt;/ul>
 &lt;hr>
-&lt;p>&lt;a href="https://www.progit.cn">《精通 Git pro 第二版》&lt;/a>&lt;/p></description></item><item><title>单例设计模式</title><link>https://www.chucklin.net/post/sign_designmode/</link><pubDate>Mon, 01 Oct 2018 18:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/sign_designmode/</guid><description>&lt;p>单例设计模式是应用最广泛的设计模式，没有之一。当我们需要控制一个类只能被创建出单个对象时，就可以采用单例设计模式。
+&lt;p>&lt;a href="https://www.progit.cn">《精通 Git pro 第二版》&lt;/a>&lt;/p></description></item><item><title>单例设计模式</title><link>https://www.chucklin.net/post/sign-design/</link><pubDate>Mon, 01 Oct 2018 18:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/sign-design/</guid><description>&lt;p>单例设计模式是应用最广泛的设计模式，没有之一。当我们需要控制一个类只能被创建出单个对象时，就可以采用单例设计模式。
 使用 java 来实现单例设计模式，普遍有四种实现方式。&lt;/p>
 &lt;ul>
 &lt;li>懒汉式&lt;/li>
@@ -4511,7 +4511,7 @@ Already up-to-date.
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">}&lt;/span>
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="总结">总结&lt;/h2>
-&lt;p>在大多数项目中，如果你对性能不是要求特别苛刻，饿汉式可以满足我们的需求。如果你喜欢 lazy-load，那么普通的懒汉式在大部分项目中也完全够用。innerclass holder 实现很巧妙，如果你的某个类在初始化时会进行大量运算，则推荐使用它来解决问题。&lt;/p></description></item><item><title>命令设计模式</title><link>https://www.chucklin.net/post/command_designmode/</link><pubDate>Fri, 19 Jan 2018 09:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/command_designmode/</guid><description>&lt;h2 id="什么是命令设计模式">什么是命令设计模式&lt;/h2>
+&lt;p>在大多数项目中，如果你对性能不是要求特别苛刻，饿汉式可以满足我们的需求。如果你喜欢 lazy-load，那么普通的懒汉式在大部分项目中也完全够用。innerclass holder 实现很巧妙，如果你的某个类在初始化时会进行大量运算，则推荐使用它来解决问题。&lt;/p></description></item><item><title>命令设计模式</title><link>https://www.chucklin.net/post/command-design/</link><pubDate>Fri, 19 Jan 2018 09:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/command-design/</guid><description>&lt;h2 id="什么是命令设计模式">什么是命令设计模式&lt;/h2>
 &lt;p>通过将“请求”封装成命令对象，来将操作的请求者与操作的执行者解耦，以便使用不同的请求队列或者日志来参数化其他对象，命令模式也支持可撤销的操作。&lt;/p>
 &lt;h2 id="为什么要使用命令设计模式">为什么要使用命令设计模式&lt;/h2>
 &lt;p>试想下面一种业务场景。
@@ -4755,7 +4755,7 @@ client-&amp;gt;createOrders-&amp;gt;waiter-&amp;gt;notifyChef-&amp;gt;chef
 &lt;p>将所需要的任务组合成为一个新的 commandMacro 宏对象。宏对象持有一个 command 对象的数组。并在 execute 中调用数组中所有对象的 execute 方法，就能实现这样的需求。&lt;/p>
 &lt;h2 id="总结">总结&lt;/h2>
 &lt;p>命令设计模式通过一个中间人/件将请求封装为统一的命令，达到了与命令的执行者之间实现解耦的目的。这样的设计使得中间人的代码尽可能的简单，并且能够与任意的对象组合。完整的命令设计模式还拥有 undo，撤销上一次命令的功能。
-你可以试着自己来实现这个功能来加深对命令设计模式的理解。&lt;/p></description></item><item><title>建造者设计模式</title><link>https://www.chucklin.net/post/builder_designmode/</link><pubDate>Fri, 12 Jan 2018 09:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/builder_designmode/</guid><description>&lt;h2 id="什么是建造者设计模式">什么是建造者设计模式&lt;/h2>
+你可以试着自己来实现这个功能来加深对命令设计模式的理解。&lt;/p></description></item><item><title>建造者设计模式</title><link>https://www.chucklin.net/post/builder-design/</link><pubDate>Fri, 12 Jan 2018 09:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/builder-design/</guid><description>&lt;h2 id="什么是建造者设计模式">什么是建造者设计模式&lt;/h2>
 &lt;p>建造者设计模式是将一个复杂对象的构建与它的表示分离，使得同样的构建过程可以创建不同的表示的一种手段。
 建造者设计模式是创建者模式之一。建造者模式往往用来和工厂设计模式做类比，因为这两种设计模式在设计思路上有很相似的地方。
 不过需要注意的是，搞清楚这两者的区别非常重要。当理解了两种设计模式对应的问题场景，以及分别用来解决什么样的问题以后，才算真正掌握了建造者设计模式。&lt;/p>
@@ -5057,7 +5057,7 @@ client-&amp;gt;createOrders-&amp;gt;waiter-&amp;gt;notifyChef-&amp;gt;chef
 &lt;li>建造者设计模式重点在于产品本身的创建，用户直接与创建者打交道，主要解决的是复杂产品对象的创建问题。&lt;/li>
 &lt;li>当一个对象的初始化参数多余 5 个，并且有可选，非可选参数的情况出现时，请直接选用建造者设计模式。&lt;/li>
 &lt;/ol>
-&lt;p>参考资料：《effectiveJava》&lt;/p></description></item><item><title>装饰器设计模式</title><link>https://www.chucklin.net/post/decorater_designmode/</link><pubDate>Fri, 05 Jan 2018 14:01:23 +0800</pubDate><guid>https://www.chucklin.net/post/decorater_designmode/</guid><description>&lt;h2 id="什么是装饰器设计模式">什么是装饰器设计模式&lt;/h2>
+&lt;p>参考资料：《effectiveJava》&lt;/p></description></item><item><title>装饰器设计模式</title><link>https://www.chucklin.net/post/decorater-designmode/</link><pubDate>Fri, 05 Jan 2018 14:01:23 +0800</pubDate><guid>https://www.chucklin.net/post/decorater-designmode/</guid><description>&lt;h2 id="什么是装饰器设计模式">什么是装饰器设计模式&lt;/h2>
 &lt;p>动态的将责任附加到对象身上。若要扩展功能，装饰着提供了比继承更有弹性的替代方案。&lt;/p>
 &lt;h2 id="为什么要用装饰器设计模式">为什么要用装饰器设计模式&lt;/h2>
 &lt;p>试想下面这样一种需求。你供职的咖啡店最近准备设计一套订单系统以满足日益膨胀的业务需要。最初的设计是这样的：
@@ -5305,7 +5305,7 @@ Decorator 是一个装饰器抽象类（或接口）。按照上述装饰器的�
 &lt;li>装饰器和被装饰对象都用有同样的超类型。对于客户端来说，使用装饰器和被装饰对象，都应该拥有一样的体验。&lt;/li>
 &lt;li>装饰者可以在所委托被装饰者的行为之前、或之后，加上自己的行为。&lt;/li>
 &lt;li>对象可以动态的，任何时候被你的装饰器所装饰。&lt;/li>
-&lt;/ol></description></item><item><title>适配器设计模式</title><link>https://www.chucklin.net/post/adpater_designmode/</link><pubDate>Thu, 04 Jan 2018 11:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/adpater_designmode/</guid><description>&lt;h2 id="什么是适配器设计模式">什么是适配器设计模式&lt;/h2>
+&lt;/ol></description></item><item><title>适配器设计模式</title><link>https://www.chucklin.net/post/adpater-design/</link><pubDate>Thu, 04 Jan 2018 11:23:00 +0800</pubDate><guid>https://www.chucklin.net/post/adpater-design/</guid><description>&lt;h2 id="什么是适配器设计模式">什么是适配器设计模式&lt;/h2>
 &lt;p>将一个类的接口，转换成客户期望的另一个接口。适配器让原本接口不兼容的类可以合作无间。&lt;/p>
 &lt;h2 id="为什么要使用适配器设计模式">为什么要使用适配器设计模式&lt;/h2>
 &lt;p>适配器设计模式能够解决的问题，与现实生活中的适配器的用处基本上是一样的。&lt;/p>
@@ -5424,7 +5424,7 @@ gobble obble
 &lt;h2 id="总结">总结&lt;/h2>
 &lt;p>适配器设计模式理解与运用上都比较简单。值得注意的是：适配器设计模式乍看起来与装饰器设计模式，但是这两个设计模式对应处理的是完全不同的问题。
 装饰器设计模式的重点在于动态的为对象添加责任，并且被装饰对象的结构，接口必需与组件相同，并且在装饰过程中，被装饰对象与组建的接口不能发生变化。
-而适配器设计模式的重点在于将不匹配的接口通过封装，将被适配对象的接口改变成为所期望的接口。&lt;/p></description></item><item><title>原型设计模式</title><link>https://www.chucklin.net/post/prototype_designmode/</link><pubDate>Wed, 03 Jan 2018 14:01:23 +0800</pubDate><guid>https://www.chucklin.net/post/prototype_designmode/</guid><description>&lt;h2 id="什么是原型设计模式">什么是原型设计模式&lt;/h2>
+而适配器设计模式的重点在于将不匹配的接口通过封装，将被适配对象的接口改变成为所期望的接口。&lt;/p></description></item><item><title>原型设计模式</title><link>https://www.chucklin.net/post/prototype-design/</link><pubDate>Wed, 03 Jan 2018 14:01:23 +0800</pubDate><guid>https://www.chucklin.net/post/prototype-design/</guid><description>&lt;h2 id="什么是原型设计模式">什么是原型设计模式&lt;/h2>
 &lt;p>用原型实例指定创建对象的种类，并通过拷贝这些原型创建包含了原对象中所有信息的新的对象。
 原型设计模式在某种条件下，是一种非常危险的，难以驾驭的设计模式。使用应该慎之又慎。&lt;/p>
 &lt;h2 id="原型设计模式怎么用">原型设计模式怎么用&lt;/h2>
@@ -5527,7 +5527,7 @@ true&lt;/p>
 &lt;li>鉴于 Cloneable 糟糕的设计，对于任何自定义类，如果你没有充足的把握，请不要实现 Cloneable 接口。凡是实现了 Cloneable 接口的自定义类，一定要给用户提供安全的 clone 实现。&lt;/li>
 &lt;li>如果你的自定义类需要并发安全，请花心思对 clone 方法进行同步处理。&lt;/li>
 &lt;li>复杂对象建议使用序列化+流的方式重写。这相当安全，并且不容易出错。&lt;/li>
-&lt;/ol></description></item><item><title>策略设计模式</title><link>https://www.chucklin.net/post/strategy_designmode/</link><pubDate>Tue, 02 Jan 2018 14:01:23 +0800</pubDate><guid>https://www.chucklin.net/post/strategy_designmode/</guid><description>&lt;p>策略设计模式定义了算法族（行为族）分别封装起来让他们之间可以互相替换。此模式让算法的变化独立于使用算法的客户。&lt;/p>
+&lt;/ol></description></item><item><title>策略设计模式</title><link>https://www.chucklin.net/post/strategy-design/</link><pubDate>Tue, 02 Jan 2018 14:01:23 +0800</pubDate><guid>https://www.chucklin.net/post/strategy-design/</guid><description>&lt;p>策略设计模式定义了算法族（行为族）分别封装起来让他们之间可以互相替换。此模式让算法的变化独立于使用算法的客户。&lt;/p>
 &lt;h2 id="为什么要用策略设计模式">为什么要用策略设计模式？&lt;/h2>
 &lt;p>试想这样一种业务场景。
 公司设计了一款与鸭子有关的游戏，游戏中有各种各样的鸭子在水里嬉戏。
@@ -5895,7 +5895,7 @@ true&lt;/p>
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#f92672">}&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">}&lt;/span>
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="总结">总结&lt;/h2>
-&lt;p>我们将变化部分的代码抽取封装与稳定部分独立开来，接着通过委托的方式使目标对象将变化的功能委托给了抽取出来的行为（算法族）对象。并且在运行中我们还能随意的改变对象的行为。这种通过组合的方式建立的系统具有很大的弹性，这就是策略设计模式的运用方式。&lt;/p></description></item><item><title>状态设计模式</title><link>https://www.chucklin.net/post/status_designmode/</link><pubDate>Tue, 02 Jan 2018 09:48:23 +0800</pubDate><guid>https://www.chucklin.net/post/status_designmode/</guid><description>&lt;h2 id="什么是状态设计模式">什么是状态设计模式？&lt;/h2>
+&lt;p>我们将变化部分的代码抽取封装与稳定部分独立开来，接着通过委托的方式使目标对象将变化的功能委托给了抽取出来的行为（算法族）对象。并且在运行中我们还能随意的改变对象的行为。这种通过组合的方式建立的系统具有很大的弹性，这就是策略设计模式的运用方式。&lt;/p></description></item><item><title>状态设计模式</title><link>https://www.chucklin.net/post/status-design/</link><pubDate>Tue, 02 Jan 2018 09:48:23 +0800</pubDate><guid>https://www.chucklin.net/post/status-design/</guid><description>&lt;h2 id="什么是状态设计模式">什么是状态设计模式？&lt;/h2>
 &lt;p>状态设计模式允许对象在内部状态改变时改变它的行为，对象看起来好像修改了它的类。&lt;/p>
 &lt;h2 id="为什么要使用状态设计模式">为什么要使用状态设计模式？&lt;/h2>
 &lt;p>状态设计模式可将对象的状态行为封装到单独的状态对象中，并将对象的动作委托到当前状态的对象。通过这样的方式实现封装变化、对扩展开放、对修改关闭以增强代码可读性、扩展性、维护性的目的。&lt;/p>
@@ -6209,7 +6209,7 @@ HasQuarterState
 &lt;h2 id="总结">总结&lt;/h2>
 &lt;p>通过上面的示例，我们可以发现这又是一个利用组合来解决问题的设计模式。很显然组合要比继承更适合于扩展与维护。
 在之前的文章中，策略设计模式和状态设计模式非常相似，甚至他们的 uml 图都是一样的。那么为何状态设计模式要单独拿出来讲呢？
-这是因为策略设计模式的使用目的在于对象主动地去控制算法或者行为，而状态设计模式更倾向于定义好一组在客户端对象里可以互相转换的状态。&lt;/p></description></item><item><title>工厂设计模式</title><link>https://www.chucklin.net/post/factory_designmode/</link><pubDate>Mon, 01 Jan 2018 16:43:09 +0800</pubDate><guid>https://www.chucklin.net/post/factory_designmode/</guid><description>&lt;h2 id="什么是工厂设计模式">什么是工厂设计模式？&lt;/h2>
+这是因为策略设计模式的使用目的在于对象主动地去控制算法或者行为，而状态设计模式更倾向于定义好一组在客户端对象里可以互相转换的状态。&lt;/p></description></item><item><title>工厂设计模式</title><link>https://www.chucklin.net/post/factory-design/</link><pubDate>Mon, 01 Jan 2018 16:43:09 +0800</pubDate><guid>https://www.chucklin.net/post/factory-design/</guid><description>&lt;h2 id="什么是工厂设计模式">什么是工厂设计模式？&lt;/h2>
 &lt;p>工厂设计模式是将拥有共性的产品抽象封装到工厂类中统一进行管理和创建，以达到降低使用者与产品之间的耦合度的目的一种手段。
 工厂设计模式是创建者模式之一，且从结构上被划分为三大类。三种不同的结构类型，分别对应处理不同的问题。&lt;/p>
 &lt;ul>
@@ -6830,7 +6830,7 @@ HasQuarterState
 &lt;p>关于哲学家就餐问题详细请参考&lt;a href="https://zh.wikipedia.org/wiki/%E5%93%B2%E5%AD%A6%E5%AE%B6%E5%B0%B1%E9%A4%90%E9%97%AE%E9%A2%98">wiki&lt;/a>&amp;#160;&lt;a href="#fnref:1" class="footnote-backref" role="doc-backlink">&amp;#x21a9;&amp;#xfe0e;&lt;/a>&lt;/p>
 &lt;/li>
 &lt;/ol>
-&lt;/div></description></item><item><title>模板方法设计模式</title><link>https://www.chucklin.net/post/template_designmode/</link><pubDate>Sat, 07 Jan 2017 10:56:57 +0800</pubDate><guid>https://www.chucklin.net/post/template_designmode/</guid><description>&lt;p>定义一个操作的主要逻辑方法，而将其他其他逻辑延迟到子类中实现，使子类可以在不改变主要逻辑结构的基础上，即可对某些特定逻辑进行重新实现的做法，叫做模板方法设计模式。&lt;/p>
+&lt;/div></description></item><item><title>模板方法设计模式</title><link>https://www.chucklin.net/post/template-design/</link><pubDate>Sat, 07 Jan 2017 10:56:57 +0800</pubDate><guid>https://www.chucklin.net/post/template-design/</guid><description>&lt;p>定义一个操作的主要逻辑方法，而将其他其他逻辑延迟到子类中实现，使子类可以在不改变主要逻辑结构的基础上，即可对某些特定逻辑进行重新实现的做法，叫做模板方法设计模式。&lt;/p>
 &lt;h2 id="模板方法设计模式怎么用">模板方法设计模式怎么用？&lt;/h2>
 &lt;p>试想一个业务场景。项目产生了一个代码排序后打印的需求。此需求被交付给了程序员 A 来实现。A 通过分析需求后发现要解决此问题需要 2 个步骤.&lt;/p>
 &lt;ol>
